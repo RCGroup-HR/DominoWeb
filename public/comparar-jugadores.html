@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparar Jugadores - Sistema de Estadísticas Dominó</title>
+    <link rel="stylesheet" href="css/comparar-jugadores.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎲 Comparar jugadores</h1>
+        </div>
+
+        <div class="comparar-section">
+            <h2>Comparar Jugadores</h2>
+
+            <!-- Formulario de búsqueda -->
+            <div class="comparar-form">
+                <div class="input-group">
+                    <label for="jugador1">Jugador 1</label>
+                    <input 
+                        type="text" 
+                        id="jugador1" 
+                        placeholder="Ingresa carnet del jugador 1"
+                        class="comparar-input">
+                </div>
+
+                <div class="input-group">
+                    <label for="jugador2">Jugador 2</label>
+                    <input 
+                        type="text" 
+                        id="jugador2" 
+                        placeholder="Ingresa carnet del jugador 2"
+                        class="comparar-input">
+                </div>
+
+                <button id="btn-comparar" class="btn-comparar" onclick="compararJugadores()">
+                    Comparar
+                </button>
+            </div>
+
+            <!-- Mensaje de error -->
+            <div id="mensaje-error" class="mensaje-error" style="display: none;"></div>
+
+            <!-- Loading -->
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Cargando datos...</p>
+            </div>
+
+            <!-- Resultados -->
+            <div id="resultados" class="comparar-resultados" style="display: none;">
+                <!-- Tarjeta Jugador 1 -->
+                <div class="jugador-card">
+                    <div class="jugador-header">
+                        <h3 id="nombre-j1">Atleta: Jugador 1</h3>
+                        <div class="jugador-pais">
+                            <img id="bandera-j1" src="" alt="" class="bandera-icon">
+                            <span id="pais-j1">País:</span>
+                        </div>
+                    </div>
+                    <div class="jugador-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Partidas:</span>
+                            <span class="stat-value" id="partidas-j1">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Victorias:</span>
+                            <span class="stat-value" id="victorias-j1">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Derrotas:</span>
+                            <span class="stat-value" id="derrotas-j1">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">% Victorias:</span>
+                            <span class="stat-value" id="pct-victorias-j1">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pts Obtenidos:</span>
+                            <span class="stat-value" id="pts-obtenidos-j1">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pts Permitidos:</span>
+                            <span class="stat-value" id="pts-permitidos-j1">0</span>
+                        </div>
+                        <div class="stat-item efectividad">
+                            <span class="stat-label">Efectividad:</span>
+                            <span class="stat-value" id="efectividad-j1">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta Jugador 2 -->
+                <div class="jugador-card">
+                    <div class="jugador-header">
+                        <h3 id="nombre-j2">Atleta: Jugador 2</h3>
+                        <div class="jugador-pais">
+                            <img id="bandera-j2" src="" alt="" class="bandera-icon">
+                            <span id="pais-j2">País:</span>
+                        </div>
+                    </div>
+                    <div class="jugador-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Partidas:</span>
+                            <span class="stat-value" id="partidas-j2">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Victorias:</span>
+                            <span class="stat-value" id="victorias-j2">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Derrotas:</span>
+                            <span class="stat-value" id="derrotas-j2">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">% Victorias:</span>
+                            <span class="stat-value" id="pct-victorias-j2">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pts Obtenidos:</span>
+                            <span class="stat-value" id="pts-obtenidos-j2">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pts Permitidos:</span>
+                            <span class="stat-value" id="pts-permitidos-j2">0</span>
+                        </div>
+                        <div class="stat-item efectividad">
+                            <span class="stat-label">Efectividad:</span>
+                            <span class="stat-value" id="efectividad-j2">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-bottom">
+                <p>&copy; 2025 Sistema de Estadísticas Dominó. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+        <!-- SCRIPT PARA INYECTAR BOTÓN FLOTANTE (SOLUCIÓN JAVASCRIPT) -->
+    <script>
+        (function() {
+            // Crear el botón
+            const boton = document.createElement('a');
+            boton.href = 'index.html';
+            boton.className = 'btn-inicio-flotante-js';
+            
+            // Crear el contenido del botón
+            boton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Inicio</span>
+            `;
+            
+            // Estilos inline (garantiza que siempre funcione)
+            boton.style.cssText = `
+                position: fixed !important;
+                bottom: 30px !important;
+                right: 30px !important;
+                background: linear-gradient(135deg, #114d37 0%, #16a34a 100%) !important;
+                color: white !important;
+                padding: 14px 26px !important;
+                border-radius: 50px !important;
+                text-decoration: none !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 10px !important;
+                font-family: Arial, sans-serif !important;
+                font-size: 16px !important;
+                font-weight: 600 !important;
+                box-shadow: 0 6px 20px rgba(17, 77, 55, 0.5) !important;
+                transition: all 0.3s ease !important;
+                z-index: 999999 !important;
+                border: 3px solid #f97316 !important;
+                cursor: pointer !important;
+            `;
+            
+            // Agregar efecto hover
+            boton.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px)';
+                this.style.boxShadow = '0 8px 25px rgba(17, 77, 55, 0.7)';
+                this.style.background = 'linear-gradient(135deg, #0d3d2b 0%, #15803d 100%)';
+            });
+            
+            boton.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 6px 20px rgba(17, 77, 55, 0.5)';
+                this.style.background = 'linear-gradient(135deg, #114d37 0%, #16a34a 100%)';
+            });
+            
+            // Agregar al body
+            document.body.appendChild(boton);
+            
+            console.log('✅ Botón flotante de inicio creado correctamente');
+        })();
+    </script>
+
+    <script>
+        // Configuración de la API
+        const API_URL = '/api/comparar'; // Ajusta según tu configuración
+
+        // Función para comparar jugadores
+        async function compararJugadores() {
+            const carnet1 = document.getElementById('jugador1').value.trim();
+            const carnet2 = document.getElementById('jugador2').value.trim();
+            
+            // Limpiar mensaje de error
+            ocultarMensaje();
+            
+            // Validar que ambos campos estén llenos
+            if (!carnet1 || !carnet2) {
+                mostrarError('Por favor ingresa ambos carnets de jugadores');
+                return;
+            }
+            
+            // Validar que no sean el mismo jugador
+            if (carnet1 === carnet2) {
+                mostrarError('No puedes comparar un jugador consigo mismo');
+                return;
+            }
+            
+            // Mostrar loading
+            mostrarLoading();
+            ocultarResultados();
+            
+            try {
+                // Hacer peticiones para ambos jugadores
+                const [response1, response2] = await Promise.all([
+                    fetch(`${API_URL}/${carnet1}`),
+                    fetch(`${API_URL}/${carnet2}`)
+                ]);
+                
+                // Verificar respuestas
+                let jugador1Data = null;
+                let jugador2Data = null;
+                let errores = [];
+                
+                // Procesar respuesta jugador 1
+                if (response1.ok) {
+                    const result1 = await response1.json();
+                    if (result1.success && result1.data && result1.data.length > 0) {
+                        jugador1Data = result1.data[0];
+                    } else {
+                        errores.push('Jugador 1');
+                    }
+                } else {
+                    errores.push('Jugador 1');
+                }
+                
+                // Procesar respuesta jugador 2
+                if (response2.ok) {
+                    const result2 = await response2.json();
+                    if (result2.success && result2.data && result2.data.length > 0) {
+                        jugador2Data = result2.data[0];
+                    } else {
+                        errores.push('Jugador 2');
+                    }
+                } else {
+                    errores.push('Jugador 2');
+                }
+                
+                // Ocultar loading
+                ocultarLoading();
+                
+                // Mostrar errores si existen
+                if (errores.length > 0) {
+                    const mensaje = errores.length === 2 
+                        ? 'Ninguno de los jugadores existe en la base de datos'
+                        : `El ${errores[0]} no existe en la base de datos`;
+                    mostrarError(mensaje);
+                    return;
+                }
+                
+                // Mostrar resultados
+                mostrarDatosJugadores(jugador1Data, jugador2Data);
+                
+            } catch (error) {
+                console.error('Error al obtener datos:', error);
+                ocultarLoading();
+                mostrarError('Error al conectar con el servidor. Por favor intenta nuevamente.');
+            }
+        }
+        
+        // Función para mostrar los datos de los jugadores
+        function mostrarDatosJugadores(j1, j2) {
+            // Jugador 1
+            document.getElementById('nombre-j1').textContent = `${j1.Jugador}`;
+            document.getElementById('pais-j1').textContent = `${j1.Pais}`;
+            document.getElementById('bandera-j1').src = `https://flagcdn.com/24x18/${j1.Bandera}.png`;
+            document.getElementById('bandera-j1').alt = j1.Pais;
+            document.getElementById('partidas-j1').textContent = j1.Partidas;
+            document.getElementById('victorias-j1').textContent = j1.Victorias;
+            document.getElementById('derrotas-j1').textContent = j1.Derrotas;
+            
+            const pctVictorias1 = j1.Partidas > 0 ? ((j1.Victorias / j1.Partidas) * 100).toFixed(2) : 0;
+            document.getElementById('pct-victorias-j1').textContent = `${pctVictorias1}%`;
+            
+            document.getElementById('pts-obtenidos-j1').textContent = j1.PuntosOb;
+            document.getElementById('pts-permitidos-j1').textContent = j1.PuntosPer;
+            document.getElementById('efectividad-j1').textContent = j1.Efectividad;
+            
+            // Jugador 2
+            document.getElementById('nombre-j2').textContent = `${j2.Jugador}`;
+            document.getElementById('pais-j2').textContent = `${j2.Pais}`;
+            document.getElementById('bandera-j2').src = `https://flagcdn.com/24x18/${j2.Bandera}.png`;
+            document.getElementById('bandera-j2').alt = j2.Pais;
+            document.getElementById('partidas-j2').textContent = j2.Partidas;
+            document.getElementById('victorias-j2').textContent = j2.Victorias;
+            document.getElementById('derrotas-j2').textContent = j2.Derrotas;
+            
+            const pctVictorias2 = j2.Partidas > 0 ? ((j2.Victorias / j2.Partidas) * 100).toFixed(2) : 0;
+            document.getElementById('pct-victorias-j2').textContent = `${pctVictorias2}%`;
+            
+            document.getElementById('pts-obtenidos-j2').textContent = j2.PuntosOb;
+            document.getElementById('pts-permitidos-j2').textContent = j2.PuntosPer;
+            document.getElementById('efectividad-j2').textContent = j2.Efectividad;
+            
+            // Resaltar mejor estadística
+            resaltarMejores(j1, j2);
+            
+            // Mostrar resultados
+            document.getElementById('resultados').style.display = 'grid';
+        }
+        
+        // Función para resaltar las mejores estadísticas
+        function resaltarMejores(j1, j2) {
+            // Limpiar resaltados previos
+            document.querySelectorAll('.stat-value').forEach(el => {
+                el.classList.remove('mejor-stat');
+            });
+            
+            // Comparar y resaltar
+            const comparaciones = [
+                { id1: 'partidas-j1', id2: 'partidas-j2', val1: j1.Partidas, val2: j2.Partidas },
+                { id1: 'victorias-j1', id2: 'victorias-j2', val1: j1.Victorias, val2: j2.Victorias },
+                { id1: 'pts-obtenidos-j1', id2: 'pts-obtenidos-j2', val1: j1.PuntosOb, val2: j2.PuntosOb },
+                { id1: 'efectividad-j1', id2: 'efectividad-j2', val1: j1.Efectividad, val2: j2.Efectividad }
+            ];
+            
+            comparaciones.forEach(comp => {
+                if (comp.val1 > comp.val2) {
+                    document.getElementById(comp.id1).classList.add('mejor-stat');
+                } else if (comp.val2 > comp.val1) {
+                    document.getElementById(comp.id2).classList.add('mejor-stat');
+                }
+            });
+            
+            // Calcular y comparar porcentaje de victorias (mayor es mejor)
+            const pctVictorias1 = j1.Partidas > 0 ? ((j1.Victorias / j1.Partidas) * 100) : 0;
+            const pctVictorias2 = j2.Partidas > 0 ? ((j2.Victorias / j2.Partidas) * 100) : 0;
+            
+            if (pctVictorias1 > pctVictorias2) {
+                document.getElementById('pct-victorias-j1').classList.add('mejor-stat');
+            } else if (pctVictorias2 > pctVictorias1) {
+                document.getElementById('pct-victorias-j2').classList.add('mejor-stat');
+            }
+            // Si son iguales, ambos quedan rojos (sin clase)
+            
+            // Menos derrotas es mejor
+            if (j1.Derrotas < j2.Derrotas && j1.Derrotas > 0) {
+                document.getElementById('derrotas-j1').classList.add('mejor-stat');
+            } else if (j2.Derrotas < j1.Derrotas && j2.Derrotas > 0) {
+                document.getElementById('derrotas-j2').classList.add('mejor-stat');
+            }
+            
+            // Menos puntos permitidos es mejor
+            if (j1.PuntosPer < j2.PuntosPer && j1.PuntosPer > 0) {
+                document.getElementById('pts-permitidos-j1').classList.add('mejor-stat');
+            } else if (j2.PuntosPer < j1.PuntosPer && j2.PuntosPer > 0) {
+                document.getElementById('pts-permitidos-j2').classList.add('mejor-stat');
+            }
+        }
+        
+        // Funciones de utilidad
+        function mostrarError(mensaje) {
+            const errorDiv = document.getElementById('mensaje-error');
+            errorDiv.textContent = mensaje;
+            errorDiv.style.display = 'block';
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                ocultarMensaje();
+            }, 5000);
+        }
+        
+        function ocultarMensaje() {
+            document.getElementById('mensaje-error').style.display = 'none';
+        }
+        
+        function mostrarLoading() {
+            document.getElementById('loading').style.display = 'flex';
+        }
+        
+        function ocultarLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function ocultarResultados() {
+            document.getElementById('resultados').style.display = 'none';
+        }
+        
+        // Permitir búsqueda con Enter
+        document.getElementById('jugador1').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                compararJugadores();
+            }
+        });
+        
+        document.getElementById('jugador2').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                compararJugadores();
+            }
+        });
+    </script>
+</body>
+</html>

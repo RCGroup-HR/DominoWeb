@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Estadísticas Dominó</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎲 Sistema de Estadísticas Dominó</h1>
+            <p>     Gestión y análisis de datos de torneos</p>
+        </div>
+
+        <div class="hero-section">
+            <h2>Bienvenido</h2>
+            <p>Plataforma completa para consultar estadísticas, rankings y eventos en vivo.</p>
+            
+            <!-- Contenedor del video de YouTube -->
+            <div class="video-container">
+                <iframe 
+                    id="youtube-player"
+                    src="" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+
+            <!-- Botones de control (inline styles mínimos para funcionalidad) -->
+            <div style="text-align: center; margin-top: 15px;">
+                <button id="btn-live" onclick="verificarYCambiarLive()" 
+                    style="display: none; padding: 12px 24px; background: linear-gradient(135deg, #ff0844 0%, #ff6b6b 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1em; box-shadow: 0 4px 12px rgba(255, 8, 68, 0.3); transition: all 0.3s;">
+                    🔴 Cambiar a Modo En Vivo
+                </button>
+
+                <button id="btn-volver" onclick="volverVideo()" 
+                    style="display: none; padding: 12px 24px; background: white; color: #667eea; border: 2px solid #667eea; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1em; transition: all 0.3s;">
+                    📹 Volver al Video
+                </button>
+            </div>
+
+            <p class="video-note">
+                <span id="video-status">🎥 Cargando video...</span>
+            </p>
+        </div>
+
+        <!-- Script con API de YouTube -->
+        <script>
+            // ============================================
+            // CONFIGURACIÓN
+            // ============================================
+            
+            const CONFIG = {
+                // API Key de YouTube
+                YOUTUBE_API_KEY: 'AIzaSyDnZLWxAXplr2j_pzJspBOsLeXuwGE6TFQ',
+                
+                // ID del canal (Alofoke Radio Show)
+                CHANNEL_ID: 'UCvDvBAOuJIHKWK59duvM0JQ', // Alofoke
+
+             //   CHANNEL_ID: 'UCEzJUQ76-ftC6DmcfDaDC7A', // RonnieHdez
+                
+                // Video por defecto
+                DEFAULT_VIDEO_ID: 'i__LmMigfRw',
+                
+                // Configuración del video
+                AUTOPLAY: true,
+                MUTE: true
+            };
+
+            // ============================================
+            // VARIABLES GLOBALES
+            // ============================================
+            
+            let modoActual = 'video'; // 'video' o 'live'
+            let liveVideoIdActual = null;
+            
+            const player = document.getElementById('youtube-player');
+            const statusText = document.getElementById('video-status');
+            const btnLive = document.getElementById('btn-live');
+            const btnVolver = document.getElementById('btn-volver');
+
+            // ============================================
+            // DETECCIÓN DE LIVE CON API
+            // ============================================
+            
+            async function detectarLive() {
+                if (!CONFIG.YOUTUBE_API_KEY) {
+                    console.error('❌ API Key no configurada');
+                    return null;
+                }
+
+                try {
+                    console.log('🔍 Verificando si hay live activo...');
+                    
+                    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CONFIG.CHANNEL_ID}&eventType=live&type=video&key=${CONFIG.YOUTUBE_API_KEY}`;
+                    
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        console.error('❌ Error en la respuesta:', response.status);
+                        return null;
+                    }
+                    
+                    const data = await response.json();
+
+                    if (data.error) {
+                        console.error('❌ Error de API:', data.error.message);
+                        return null;
+                    }
+
+                    if (data.items && data.items.length > 0) {
+                        const liveVideoId = data.items[0].id.videoId;
+                        console.log('✅ Live encontrado:', liveVideoId);
+                        return liveVideoId;
+                    }
+
+                    console.log('ℹ️ No hay live activo');
+                    return false;
+                    
+                } catch (error) {
+                    console.error('❌ Error al verificar:', error);
+                    return null;
+                }
+            }
+
+            // ============================================
+            // FUNCIONES DE VISUALIZACIÓN
+            // ============================================
+            
+            function mostrarVideoDestacado() {
+                console.log('🎥 Mostrando video destacado');
+                
+                const params = [];
+                if (CONFIG.AUTOPLAY) params.push('autoplay=1');
+                if (CONFIG.MUTE) params.push('mute=1');
+                
+                player.src = `https://www.youtube.com/embed/${CONFIG.DEFAULT_VIDEO_ID}?${params.join('&')}`;
+                statusText.innerHTML = '🎥 Video destacado';
+                modoActual = 'video';
+                
+                // Mostrar botón "Modo En Vivo", ocultar "Volver"
+                btnLive.style.display = 'inline-block';
+                btnVolver.style.display = 'none';
+            }
+
+            function mostrarLive(videoId) {
+                console.log('🔴 Mostrando live:', videoId);
+                
+                // Live con autoplay activado (sin mute para escuchar audio)
+                player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`;
+                statusText.innerHTML = '🔴 Transmisión en vivo';
+                modoActual = 'live';
+                liveVideoIdActual = videoId;
+                
+                // Ocultar botón "Modo En Vivo", mostrar "Volver"
+                btnLive.style.display = 'none';
+                btnVolver.style.display = 'inline-block';
+            }
+
+            // ============================================
+            // FUNCIONES PÚBLICAS (BOTONES)
+            // ============================================
+            
+            // Botón "Cambiar a Modo En Vivo"
+            async function verificarYCambiarLive() {
+                // Deshabilitar botón mientras verifica
+                btnLive.disabled = true;
+                btnLive.innerHTML = '⏳ Verificando...';
+                
+                const liveId = await detectarLive();
+                
+                if (liveId && liveId !== false) {
+                    // HAY LIVE - Cambiar al live
+                    mostrarLive(liveId);
+                } else {
+                    // NO HAY LIVE - Mantener video destacado
+                    console.log('ℹ️ No hay live, manteniendo video destacado');
+                    alert('No hay transmisión en vivo en este momento.\nEl video destacado continuará reproduciéndose.');
+                }
+                
+                // Rehabilitar botón
+                btnLive.disabled = false;
+                btnLive.innerHTML = '🔴 Cambiar a Modo En Vivo';
+            }
+
+            // Botón "Volver al Video"
+            function volverVideo() {
+                mostrarVideoDestacado();
+            }
+
+            // ============================================
+            // INICIALIZACIÓN
+            // ============================================
+            
+            async function init() {
+                console.log('🚀 Sistema iniciado');
+                console.log('📺 Canal:', CONFIG.CHANNEL_ID);
+                console.log('🎥 Video destacado:', CONFIG.DEFAULT_VIDEO_ID);
+                
+                // Validar API Key
+                if (!CONFIG.YOUTUBE_API_KEY) {
+                    console.error('⚠️ API Key no configurada');
+                    statusText.innerHTML = '⚠️ API Key no configurada';
+                    mostrarVideoDestacado();
+                    return;
+                }
+                
+                // VERIFICACIÓN INICIAL (solo al cargar)
+                console.log('🔄 Verificación inicial al cargar...');
+                const liveId = await detectarLive();
+                
+                if (liveId && liveId !== false) {
+                    // HAY LIVE - Mostrarlo directamente
+                    console.log('✅ Live detectado al cargar, mostrando live');
+                    mostrarLive(liveId);
+                } else {
+                    // NO HAY LIVE - Mostrar video destacado
+                    console.log('ℹ️ No hay live, mostrando video destacado');
+                    mostrarVideoDestacado();
+                }
+            }
+
+            // Iniciar cuando cargue la página
+            window.addEventListener('load', init);
+        </script>
+
+        <div class="features">
+
+            <a href="ranking-general.html" class="feature-card">
+                <div class="icon">🏆</div>
+                <h3>Ranking Individual</h3>
+                <p>Visualiza la clasificación completa de jugadores ordenados por rendimiento y efectividad.</p>
+            </a>
+
+            <a href="#" class="feature-card" onclick="alert('Próximamente'); return false;">
+                <div class="icon">🏆🏆🏆</div>
+                <h3>Ranking Colectivo</h3>
+                <p>Visualiza la clasificación completa por equipos por rendimiento y efectividad.</p>
+            </a>
+
+            
+            <a href="historico-partidas.html" class="feature-card">
+                <div class="icon">📊</div>
+                <h3>Histórico de Jugadores</h3>
+                <p>Consulta el historial completo de partidas de cualquier jugador por torneo con estadísticas resumindas.</p>
+            </a>
+
+            <a href="comparar-jugadores.html" class="feature-card">
+                <div class="icon">🥊vs🥊</div>
+                <h3>Comparar</h3>
+                <p>Muestra el rendimiento entre dos jugadores.</p>
+            </a>
+
+
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-bottom">
+                <p>&copy; 2025 Sistema de Estadísticas Dominó. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botón flotante de WhatsApp -->
+    <a href="https://wa.me/18299610267?text=Hola,%20me%20interesa%20obtener%20información%20sobre%20eventos%20y%20contrataciones" 
+       class="whatsapp-float" 
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Contactar por WhatsApp">
+        <svg viewBox="0 0 32 32" class="whatsapp-icon">
+            <path fill="currentColor" d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.737 5.607 2.137 8.048l-2.137 7.952 7.933-2.127c2.42 1.37 5.173 2.127 8.067 2.127 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.467c-2.482 0-4.908-0.646-7.07-1.87l-0.507-0.292-5.252 1.408 1.408-5.245-0.292-0.508c-1.207-2.100-1.847-4.507-1.847-6.96 0-7.443 6.057-13.5 13.5-13.5s13.5 6.057 13.5 13.5-6.057 13.467-13.44 13.467zM21.305 18.305c-0.352-0.177-2.085-1.030-2.408-1.147-0.323-0.117-0.558-0.177-0.793 0.177s-0.912 1.147-1.117 1.383c-0.205 0.235-0.41 0.265-0.763 0.088s-1.487-0.548-2.833-1.748c-1.048-0.935-1.755-2.090-1.96-2.443s-0.022-0.543 0.155-0.72c0.158-0.158 0.352-0.41 0.528-0.615s0.235-0.352 0.352-0.587c0.117-0.235 0.058-0.44-0.030-0.615s-0.793-1.913-1.088-2.618c-0.287-0.687-0.578-0.593-0.793-0.605-0.205-0.010-0.44-0.012-0.675-0.012s-0.615 0.087-0.937 0.44c-0.323 0.352-1.235 1.208-1.235 2.943s1.265 3.413 1.44 3.648c0.177 0.235 2.473 3.775 5.99 5.292 0.837 0.362 1.492 0.577 2.002 0.738 0.84 0.267 1.605 0.230 2.21 0.140 0.675-0.100 2.085-0.852 2.38-1.675s0.295-1.528 0.205-1.675c-0.087-0.147-0.323-0.235-0.675-0.413z"/>
+        </svg>
+    </a>
+
+    <style>
+        /* Estilos del botón flotante de WhatsApp */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            text-decoration: none;
+        }
+
+        .whatsapp-float:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
+        }
+
+        .whatsapp-float:active {
+            transform: scale(0.95);
+        }
+
+        .whatsapp-icon {
+            width: 35px;
+            height: 35px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Responsivo para móviles */
+        @media (max-width: 768px) {
+            .whatsapp-float {
+                width: 55px;
+                height: 55px;
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .whatsapp-icon {
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+        /* Efecto de tooltip opcional */
+        .whatsapp-float::before {
+            content: "¿Necesitas ayuda?";
+            position: absolute;
+            right: 70px;
+            background: #128C7E;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .whatsapp-float:hover::before {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .whatsapp-float::before {
+                display: none;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,1240 @@
+/* ==========================================
+   ESTILOS GLOBALES - DISEÑO COMPACTO Y RESPONSIVE
+   ========================================== */
+
+/* Reset y configuración base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #f5f7fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0 15px;
+    position: relative;
+}
+
+/* ==========================================
+   IMAGEN DE FONDO SUAVE Y FIJA
+   ========================================== */
+
+
+/* ==========================================
+   CONTENEDOR PRINCIPAL
+   ========================================== */
+
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    max-width: 100%;
+    margin: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================
+   HEADER - Compacto
+   ========================================== */
+
+.header {
+    background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+    color: white;
+    padding: 25px 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    font-size: 2em;
+    font-weight: 400;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.header p {
+    font-size: 1em;
+    opacity: 0.9;
+    margin-top: 5px;
+    font-weight: 300;
+}
+
+/* ==========================================
+   CONTROLES - Compactos y responsive
+   ========================================== */
+
+.controls {
+    background: white;
+    padding: 30px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 20px;
+    align-items: end;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.95em;
+}
+
+.form-group select,
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.95em;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    color: #374151;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.form-group select:hover,
+.form-input:hover {
+    border-color: #9ca3af;
+}
+
+.form-group select:focus,
+.form-input:focus {
+    outline: none;
+    border-color: #1e6b4f;
+    box-shadow: 0 0 0 3px rgba(30, 107, 79, 0.1);
+}
+
+.form-input::placeholder {
+    color: #9ca3af;
+}
+
+/* Botones */
+.btn-buscar,
+.btn-primary {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.btn-buscar:hover,
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #1a5f46 0%, #114d37 100%);
+}
+
+.btn-buscar:active,
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* ==========================================
+   CONTENIDO PRINCIPAL
+   ========================================== */
+
+#content {
+    flex: 1;
+    background: white;
+    margin: 0;
+}
+
+/* ==========================================
+   MENSAJES Y ESTADOS
+   ========================================== */
+
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+    font-size: 1.1em;
+}
+
+.error {
+    text-align: center;
+    padding: 60px 20px;
+    color: #ef4444;
+    font-size: 1.1em;
+}
+
+.initial-message {
+    text-align: center;
+    padding: 80px 20px;
+    color: #6b7280;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.initial-message .icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+    opacity: 0.3;
+    filter: grayscale(50%);
+}
+
+.initial-message p {
+    font-size: 1.1em;
+    color: #9ca3af;
+    font-weight: 400;
+    max-width: 500px;
+}
+
+/* ==========================================
+   TABLAS
+   ========================================== */
+
+.table-container {
+    padding: 0;
+    overflow-x: auto;
+    background: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    min-width: 1000px;
+}
+
+thead {
+    background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+    color: white;
+}
+
+thead th {
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease;
+}
+
+tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+tbody td {
+    padding: 14px 16px;
+    color: #4b5563;
+}
+
+/* Estilos especiales de tabla */
+.centrado {
+    text-align: center;
+}
+
+.rank-cell {
+    font-weight: 600;
+    color: #1e6b4f;
+    font-size: 1.1em;
+}
+
+.rank-1 {
+    color: #f59e0b;
+    font-size: 1.3em;
+    font-weight: 700;
+}
+
+.rank-2 {
+    color: #9ca3af;
+    font-size: 1.2em;
+    font-weight: 700;
+}
+
+.rank-3 {
+    color: #cd7f32;
+    font-size: 1.15em;
+    font-weight: 700;
+}
+
+.flag {
+    width: 32px;
+    height: 22px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.efectividad {
+    font-weight: 600;
+    color: #059669;
+}
+
+.efectividad.negativa {
+    color: #dc2626;
+}
+
+.total-row {
+    background-color: #f9fafb !important;
+    font-weight: 600;
+    border-top: 2px solid #e5e7eb !important;
+    border-bottom: 2px solid #e5e7eb !important;
+}
+
+.total-row:hover {
+    background-color: #f3f4f6 !important;
+}
+
+.total-row td {
+    color: #1f2937;
+    padding: 16px !important;
+}
+
+/* ==========================================
+   ESTADÍSTICAS
+   ========================================== */
+
+.stats {
+    display: flex;
+    padding: 25px 30px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 20px 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-width: 140px;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-card .label {
+    font-size: 0.85em;
+    color: #6b7280;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.stat-card .value {
+    font-size: 2em;
+    font-weight: 700;
+    color: #1e6b4f;
+}
+
+/* ==========================================
+   PAGINACIÓN
+   ========================================== */
+
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.pagination-container.single-page {
+    justify-content: center;
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 0.9em;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.page-size-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-size-selector label {
+    color: #6b7280;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.page-size-selector select {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    border: 1.5px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-size-selector select:hover {
+    border-color: #9ca3af;
+}
+
+.page-size-selector select:focus {
+    outline: none;
+    border-color: #1e6b4f;
+    box-shadow: 0 0 0 3px rgba(30, 107, 79, 0.1);
+}
+
+.pagination-btn {
+    padding: 8px 12px;
+    background: white;
+    border: 1.5px solid #d1d5db;
+    border-radius: 6px;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+    min-width: 36px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #f9fafb;
+    border-color: #1e6b4f;
+    color: #1e6b4f;
+}
+
+.pagination-btn:disabled {
+    background: #f9fafb;
+    color: #d1d5db;
+    cursor: not-allowed;
+    border-color: #e5e7eb;
+}
+
+.pagination-btn.active {
+    background: #1e6b4f;
+    color: white;
+    border-color: #1e6b4f;
+}
+
+.pagination-btn.dots {
+    border: none;
+    background: none;
+    cursor: default;
+    pointer-events: none;
+    color: #9ca3af;
+}
+
+/* ==========================================
+   FOOTER
+   ========================================== */
+
+.footer {
+    background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+    color: white;
+     padding: 25px 30px;
+    margin: 10px 15px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    z-index: 1;
+}
+
+.footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.footer h3 {
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.footer-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.footer-link {
+    display: block;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 400;
+    font-size: 0.95em;
+}
+
+.footer-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(5px);
+}
+
+.footer-link span {
+    margin-right: 8px;
+    font-size: 1.1em;
+}
+
+.footer-bottom {
+    padding-top: 20px;
+
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85em;
+}
+
+/* ==========================================
+   HOMEPAGE
+   ========================================== */
+
+.hero-section {
+    background: white;
+    padding: 60px 30px;
+    text-align: center;
+
+}
+
+.hero-section h2 {
+    font-size: 2.2em;
+    color: #1f2937;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.hero-section p {
+    font-size: 1.1em;
+    color: #6b7280;
+    max-width: 700px;
+    margin: 0 auto 30px;
+    line-height: 1.6;
+}
+
+/* ==========================================
+   VIDEO DE YOUTUBE - RESPONSIVE
+   ========================================== */
+
+.video-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;  /* ← Cambia este valor para el tamaño del video */
+    margin: 15px auto;
+    padding-bottom: 27%;  /* Tamaño vertical del contenedor del video */
+    height: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 12px;
+}
+
+.video-note {
+    font-size: 0.95em;
+    color: #6b7280;
+    margin-top: 15px;
+    font-style: italic;
+}
+
+/* ==========================================
+   FEATURES
+   ========================================== */
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    padding: 40px 30px;
+    background: #f9fafb;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-color: #1e6b4f;
+}
+
+.feature-card .icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.feature-card h3 {
+    font-size: 1.3em;
+    color: #1f2937;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.feature-card p {
+    color: #6b7280;
+    line-height: 1.6;
+    font-size: 0.95em;
+}
+
+/* ==========================================
+   RESPONSIVE - TABLET
+   ========================================== */
+
+@media (max-width: 1024px) {
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .form-row .form-group:last-child {
+        grid-column: 1 / -1;
+    }
+
+    .btn-buscar,
+    .btn-primary {
+        width: 100%;
+    }
+
+    .video-container {
+        max-width: 90%;
+    }
+}
+
+/* ==========================================
+   RESPONSIVE - MÓVIL
+   ========================================== */
+
+@media (max-width: 768px) {
+    body {
+        padding: 0 10px;
+    }
+
+    .container {
+        margin: 10px auto;
+        border-radius: 8px;
+    }
+
+    .footer {
+        margin: 0 auto 10px;
+        border-radius: 8px;
+    }
+
+    .header {
+        padding: 20px;
+    }
+
+    .header h1 {
+        font-size: 1.6em;
+    }
+
+    .header p {
+        font-size: 0.9em;
+    }
+
+    .controls {
+        padding: 20px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    table {
+        font-size: 0.75em;
+        min-width: 800px;
+    }
+
+    thead th,
+    tbody td {
+        padding: 10px 8px;
+    }
+
+    .stats {
+        padding: 20px;
+        justify-content: center;
+    }
+
+    .stat-card {
+        min-width: 120px;
+        padding: 15px 20px;
+    }
+
+    .stat-card .value {
+        font-size: 1.6em;
+    }
+
+    .pagination-container {
+        padding: 20px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pagination-controls {
+        justify-content: center;
+    }
+
+    .page-size-selector {
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    .initial-message {
+        padding: 60px 20px;
+    }
+
+    .initial-message .icon {
+        font-size: 3em;
+    }
+
+    .footer {
+        padding: 25px 20px;
+    }
+
+    .footer h3 {
+        font-size: 1.1em;
+    }
+
+    .footer-links {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-section {
+        padding: 40px 20px;
+    }
+
+    .hero-section h2 {
+        font-size: 1.6em;
+    }
+
+    .hero-section p {
+        font-size: 1em;
+    }
+
+    .video-container {
+        max-width: 100%;
+        margin: 20px auto;
+    }
+
+    .features {
+        padding: 30px 20px;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+/* ==========================================
+   RESPONSIVE - MÓVIL PEQUEÑO
+   ========================================== */
+
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.4em;
+    }
+
+    table {
+        font-size: 0.7em;
+    }
+
+    .stat-card .value {
+        font-size: 1.4em;
+    }
+
+    .pagination-btn {
+        padding: 6px 10px;
+        font-size: 0.8em;
+        min-width: 32px;
+    }
+
+    .hero-section {
+        padding: 30px 15px;
+    }
+
+    .video-container {
+        border-radius: 8px;
+    }
+}
+
+/* ========================================
+   BOTÓN FLOTANTE DE INICIO - COLOR VERDE
+   Agregar este código al final de tu archivo main.css
+   ======================================== */
+
+.btn-inicio-flotante {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    background: linear-gradient(135deg, #114d37 0%, #16a34a 100%) !important;
+    color: white !important;
+    padding: 14px 26px !important;
+    border-radius: 50px !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 6px 20px rgba(17, 77, 55, 0.5) !important;
+    transition: all 0.3s ease !important;
+    z-index: 999999 !important;
+    border: 3px solid #f97316 !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+.btn-inicio-flotante:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(17, 77, 55, 0.7) !important;
+    background: linear-gradient(135deg, #0d3d2b 0%, #15803d 100%) !important;
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.btn-inicio-flotante svg {
+    width: 24px !important;
+    height: 24px !important;
+    flex-shrink: 0 !important;
+}
+
+.btn-inicio-flotante span {
+    display: inline-block !important;
+    white-space: nowrap !important;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .btn-inicio-flotante {
+        bottom: 20px !important;
+        right: 20px !important;
+        padding: 12px 22px !important;
+        font-size: 14px !important;
+    }
+    
+    .btn-inicio-flotante svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+}
+
+/* Para tablets */
+@media (max-width: 1024px) {
+    .btn-inicio-flotante {
+        bottom: 25px !important;
+        right: 25px !important;
+    }
+
+
+ /* ============================================
+   ESTILOS PARA PÁGINA COMPARAR JUGADORES
+   Agregar estos estilos al final de css/main.css
+   ============================================ */
+
+/* Sección de comparación */
+.comparar-section {
+    background: white;
+    border-radius: 15px;
+    padding: 40px;
+    margin: 30px 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.comparar-section h2 {
+    color: #2c3e50;
+    font-size: 2em;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.comparar-section > p {
+    text-align: center;
+    color: #7f8c8d;
+    margin-bottom: 30px;
+}
+
+/* Formulario de comparación */
+.comparar-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 20px;
+    align-items: end;
+    margin-bottom: 30px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95em;
+}
+
+.comparar-input {
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.comparar-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn-comparar {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-comparar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.btn-comparar:active {
+    transform: translateY(0);
+}
+
+/* Mensaje de error */
+.mensaje-error {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    text-align: center;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 15px;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading p {
+    color: #7f8c8d;
+    font-weight: 600;
+}
+
+/* Resultados de comparación */
+.comparar-resultados {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+/* Tarjeta de jugador */
+.jugador-card {
+    background: linear-gradient(135deg, #2d5016 0%, #3a6b1f 100%);
+    border-radius: 15px;
+    padding: 25px;
+    color: white;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.jugador-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+}
+
+/* Header de jugador */
+.jugador-header {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.jugador-header h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.4em;
+    color: white;
+}
+
+.jugador-pais {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95em;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.bandera-icon {
+    width: 24px;
+    height: 18px;
+    border-radius: 3px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Estadísticas del jugador */
+.jugador-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.stat-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.stat-label {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.stat-value {
+    font-weight: 700;
+    font-size: 1.1em;
+    color: white;
+}
+
+/* Estadística destacada - efectividad */
+.stat-item.efectividad {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    margin-top: 5px;
+}
+
+.stat-item.efectividad .stat-value {
+    font-size: 1.3em;
+}
+
+/* Resaltar mejor estadística */
+.mejor-stat {
+    background: linear-gradient(135deg, #f9ca24 0%, #f0932b 100%);
+    color: #2c3e50 !important;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 800 !important;
+    box-shadow: 0 2px 8px rgba(249, 202, 36, 0.4);
+}
+
+/* Botón volver */
+.back-button-container {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.btn-back {
+    display: inline-block;
+    padding: 12px 30px;
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-back:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .comparar-section {
+        padding: 25px 20px;
+    }
+
+    .comparar-form {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .btn-comparar {
+        width: 100%;
+    }
+
+    .comparar-resultados {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .jugador-card {
+        padding: 20px;
+    }
+
+    .jugador-header h3 {
+        font-size: 1.2em;
+    }
+
+    .stat-value {
+        font-size: 1em;
+    }
+
+    .stat-item.efectividad .stat-value {
+        font-size: 1.1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .comparar-section h2 {
+        font-size: 1.5em;
+    }
+
+    .jugador-card {
+        padding: 15px;
+    }
+
+    .stat-item {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+
+    .stat-label,
+    .stat-value {
+        font-size: 0.9em;
+    }
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.comparar-resultados {
+    animation: fadeIn 0.5s ease;
+}
+
+.jugador-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.jugador-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+}

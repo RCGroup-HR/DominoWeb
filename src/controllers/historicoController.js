@@ -35,7 +35,7 @@ const historicoController = {
 SELECT 
  *
 From
-RankingIndividual
+HIndividual
 WHERE 
 	   Id = ${Carnet}
 

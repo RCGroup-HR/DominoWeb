@@ -10,18 +10,20 @@ const compararController = {
       const [rows] = await pool.query(`
 SELECT 
   ID,
-  Jugador,
-  IFNULL(SUM(partidas),0) AS Partidas,
+  ANY_VALUE(Jugador) AS Jugador,
+  IFNULL(SUM(Partidas),0) AS Partidas,
   IFNULL(SUM(Victorias),0) AS Victorias,
   IFNULL(SUM(Derrotas),0) AS Derrotas,
   IFNULL(SUM(PuntosOb),0) AS PuntosOb,
   IFNULL(SUM(PuntosPer),0) AS PuntosPer,
   IFNULL(SUM(Efectividad),0) AS Efectividad,
-  LOWER(Bandera) AS Bandera,
-  Pais
+  LOWER(ANY_VALUE(Bandera)) AS Bandera,
+  ANY_VALUE(Pais) AS Pais
 FROM HIndividual
 WHERE ID = ${carnet}
-GROUP BY ID, Jugador, Bandera, Pais
+GROUP BY ID
+ORDER BY ID
+ 
 
 
       `, [carnet]);

@@ -154,11 +154,11 @@
                 const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-cell';
                 return `
                     <tr>
-                        <td class="centrado">${jugador.Rank || '-'}</td>
-                        <td>${jugador.ID || '-'}</td>
-                        <td><strong>${jugador.Jugador || '-'}</strong></td>     
+                        <td class="centrado">${jugador.Ranking || '-'}</td>
+                        <td>${jugador.Id_Jugador || '-'}</td>
+                        <td><strong>${jugador.NJugador || '-'}</strong></td>     
                         <td>${jugador.NEquipo || '-'}</td>
-                        <td>${jugador.Bandera ? `<img src="pais/${jugador.Bandera}.png" class="flag" alt="${jugador.Bandera}">` : '-'}</td>
+                        <td>${jugador.Flag ? `<img src="pais/${jugador.Bandera}.png" class="flag" alt="${jugador.Bandera}">` : '-'}</td>
                         <td>${jugador.Pais || '-'}</td>
                         <td class="centrado">${jugador.Partidas || 0}</td>
                         <td class="centrado">${jugador.Victorias || 0}</td>

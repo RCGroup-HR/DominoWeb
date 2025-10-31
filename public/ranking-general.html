@@ -155,10 +155,10 @@
                 return `
                     <tr>
                         <td class="centrado">${jugador.Ranking || '-'}</td>
-                        <td>${jugador.Id_Jugador || '-'}</td>
+                        <td>${jugador.ID_Jugador || '-'}</td>
                         <td><strong>${jugador.NJugador || '-'}</strong></td>     
-                        <td>${jugador.NEquipo || '-'}</td>
-                        <td>${jugador.Flag ? `<img src="pais/${jugador.Bandera}.png" class="flag" alt="${jugador.Bandera}">` : '-'}</td>
+                        <td>${jugador.Equipo || '-'}</td>
+                        <td>${jugador.Siglas ? `<img src="pais/${jugador.Bandera}.png" class="flag" alt="${jugador.Bandera}">` : '-'}</td>
                         <td>${jugador.Pais || '-'}</td>
                         <td class="centrado">${jugador.Partidas || 0}</td>
                         <td class="centrado">${jugador.Victorias || 0}</td>

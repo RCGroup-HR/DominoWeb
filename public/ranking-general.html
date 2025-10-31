@@ -53,7 +53,7 @@
 
         async function buscaTorneo() {
                         try {
-                const response = await fetch(`${API_URL}/ranking`);
+                const response = await fetch(`${API_URL}/ranking/torneo`);
                 const data = await response.json();
 
                 console.log(data)

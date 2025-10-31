@@ -29,9 +29,10 @@ const rankingsController = {
   getRankingByTorneo: async (req, res) => {
     try {      
       const [rows] = await pool.query(`
-SELECT 
- * FROM 
-RIndividual
+      SELECT 
+      * 
+      FROM 
+        RIndividual
 
       `);
 

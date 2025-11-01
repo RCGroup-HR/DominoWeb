@@ -16,6 +16,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comparar Jugadores - Sistema de Estadísticas Dominó</title>
     <link rel="stylesheet" href="css/comparar-jugadores.css">
+    
+    <!-- ✅ Script de configuración de API (protegida) -->
+    <script src="js/api-config.js"></script>
 </head>
 <body>
     <div class="container">
@@ -145,8 +148,6 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 
     <footer class="footer">
@@ -157,15 +158,13 @@
         </div>
     </footer>
 
-        <!-- SCRIPT PARA INYECTAR BOTÓN FLOTANTE (SOLUCIÓN JAVASCRIPT) -->
+    <!-- Botón flotante de inicio -->
     <script>
         (function() {
-            // Crear el botón
             const boton = document.createElement('a');
             boton.href = 'index.html';
             boton.className = 'btn-inicio-flotante-js';
             
-            // Crear el contenido del botón
             boton.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -174,7 +173,6 @@
                 <span>Inicio</span>
             `;
             
-            // Estilos inline (garantiza que siempre funcione)
             boton.style.cssText = `
                 position: fixed !important;
                 bottom: 30px !important;
@@ -197,7 +195,6 @@
                 cursor: pointer !important;
             `;
             
-            // Agregar efecto hover
             boton.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-3px)';
                 this.style.boxShadow = '0 8px 25px rgba(17, 77, 55, 0.7)';
@@ -210,81 +207,73 @@
                 this.style.background = 'linear-gradient(135deg, #114d37 0%, #16a34a 100%)';
             });
             
-            // Agregar al body
             document.body.appendChild(boton);
-            
-            console.log('✅ Botón flotante de inicio creado correctamente');
         })();
     </script>
 
     <script>
-        // Configuración de la API
-        const API_URL = 'https://www.scoredomino.com/api/comparar'; // Ajusta según tu configuración
+        // ============================================
+        // ✅ CÓDIGO PROTEGIDO (SIN URLs EXPUESTAS)
+        // ============================================
+        
+        // ✅ Esperar a que la API se inicialice
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (API.initialized) {
+                    console.log('🚀 Comparador de jugadores listo con configuración segura');
+                } else {
+                    console.error('❌ Error al inicializar configuración');
+                }
+            }, 500);
+        });
 
         // Función para comparar jugadores
         async function compararJugadores() {
             const carnet1 = document.getElementById('jugador1').value.trim();
             const carnet2 = document.getElementById('jugador2').value.trim();
             
-            // Limpiar mensaje de error
             ocultarMensaje();
             
-            // Validar que ambos campos estén llenos
             if (!carnet1 || !carnet2) {
                 mostrarError('Por favor ingresa ambos carnets de jugadores');
                 return;
             }
             
-            // Validar que no sean el mismo jugador
             if (carnet1 === carnet2) {
                 mostrarError('No puedes comparar un jugador consigo mismo');
                 return;
             }
             
-            // Mostrar loading
             mostrarLoading();
             ocultarResultados();
             
             try {
-                // Hacer peticiones para ambos jugadores
-                const [response1, response2] = await Promise.all([
-                    fetch(`${API_URL}/${carnet1}`),
-                    fetch(`${API_URL}/${carnet2}`)
+                // ✅ Peticiones protegidas (API Key incluida automáticamente)
+                const [result1, result2] = await Promise.all([
+                    API.get(`/comparar/${carnet1}`).catch(e => ({ success: false })),
+                    API.get(`/comparar/${carnet2}`).catch(e => ({ success: false }))
                 ]);
                 
-                // Verificar respuestas
                 let jugador1Data = null;
                 let jugador2Data = null;
                 let errores = [];
                 
                 // Procesar respuesta jugador 1
-                if (response1.ok) {
-                    const result1 = await response1.json();
-                    if (result1.success && result1.data && result1.data.length > 0) {
-                        jugador1Data = result1.data[0];
-                    } else {
-                        errores.push('Jugador 1');
-                    }
+                if (result1.success && result1.data && result1.data.length > 0) {
+                    jugador1Data = result1.data[0];
                 } else {
                     errores.push('Jugador 1');
                 }
                 
                 // Procesar respuesta jugador 2
-                if (response2.ok) {
-                    const result2 = await response2.json();
-                    if (result2.success && result2.data && result2.data.length > 0) {
-                        jugador2Data = result2.data[0];
-                    } else {
-                        errores.push('Jugador 2');
-                    }
+                if (result2.success && result2.data && result2.data.length > 0) {
+                    jugador2Data = result2.data[0];
                 } else {
                     errores.push('Jugador 2');
                 }
                 
-                // Ocultar loading
                 ocultarLoading();
                 
-                // Mostrar errores si existen
                 if (errores.length > 0) {
                     const mensaje = errores.length === 2 
                         ? 'Ninguno de los jugadores existe en la base de datos'
@@ -293,7 +282,6 @@
                     return;
                 }
                 
-                // Mostrar resultados
                 mostrarDatosJugadores(jugador1Data, jugador2Data);
                 
             } catch (error) {
@@ -303,7 +291,6 @@
             }
         }
         
-        // Función para mostrar los datos de los jugadores
         function mostrarDatosJugadores(j1, j2) {
             // Jugador 1
             document.getElementById('nombre-j1').textContent = `${j1.Jugador}`;
@@ -337,21 +324,16 @@
             document.getElementById('pts-permitidos-j2').textContent = j2.PuntosPer;
             document.getElementById('efectividad-j2').textContent = j2.Efectividad;
             
-            // Resaltar mejor estadística
             resaltarMejores(j1, j2);
             
-            // Mostrar resultados
             document.getElementById('resultados').style.display = 'grid';
         }
         
-        // Función para resaltar las mejores estadísticas
         function resaltarMejores(j1, j2) {
-            // Limpiar resaltados previos
             document.querySelectorAll('.stat-value').forEach(el => {
                 el.classList.remove('mejor-stat');
             });
             
-            // Comparar y resaltar
             const comparaciones = [
                 { id1: 'partidas-j1', id2: 'partidas-j2', val1: j1.Partidas, val2: j2.Partidas },
                 { id1: 'victorias-j1', id2: 'victorias-j2', val1: j1.Victorias, val2: j2.Victorias },
@@ -367,7 +349,6 @@
                 }
             });
             
-            // Calcular y comparar porcentaje de victorias (mayor es mejor)
             const pctVictorias1 = j1.Partidas > 0 ? ((j1.Victorias / j1.Partidas) * 100) : 0;
             const pctVictorias2 = j2.Partidas > 0 ? ((j2.Victorias / j2.Partidas) * 100) : 0;
             
@@ -376,16 +357,13 @@
             } else if (pctVictorias2 > pctVictorias1) {
                 document.getElementById('pct-victorias-j2').classList.add('mejor-stat');
             }
-            // Si son iguales, ambos quedan rojos (sin clase)
             
-            // Menos derrotas es mejor
             if (j1.Derrotas < j2.Derrotas && j1.Derrotas > 0) {
                 document.getElementById('derrotas-j1').classList.add('mejor-stat');
             } else if (j2.Derrotas < j1.Derrotas && j2.Derrotas > 0) {
                 document.getElementById('derrotas-j2').classList.add('mejor-stat');
             }
             
-            // Menos puntos permitidos es mejor
             if (j1.PuntosPer < j2.PuntosPer && j1.PuntosPer > 0) {
                 document.getElementById('pts-permitidos-j1').classList.add('mejor-stat');
             } else if (j2.PuntosPer < j1.PuntosPer && j2.PuntosPer > 0) {
@@ -393,13 +371,11 @@
             }
         }
         
-        // Funciones de utilidad
         function mostrarError(mensaje) {
             const errorDiv = document.getElementById('mensaje-error');
             errorDiv.textContent = mensaje;
             errorDiv.style.display = 'block';
             
-            // Auto-ocultar después de 5 segundos
             setTimeout(() => {
                 ocultarMensaje();
             }, 5000);
@@ -421,7 +397,6 @@
             document.getElementById('resultados').style.display = 'none';
         }
         
-        // Permitir búsqueda con Enter
         document.getElementById('jugador1').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 compararJugadores();

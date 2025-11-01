@@ -16,6 +16,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Histórico de Partidas</title>
 <link rel="stylesheet" href="css/main.css">
+
+    <meta charset="UTF-8">
+    <title>Ranking Individual</title>
+    <link rel="stylesheet" href="css/main.css">
+    
+    <!-- ✅ AGREGAR ESTA LÍNEA -->
+    <script src="js/api-config.js"></script>
 </head>
 
 <body>
@@ -49,7 +56,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://www.scoredomino.com/api';
+
         let torneos = [];
         let jugadoresActuales = [];
         let todosJugadoresActuales = [];
@@ -58,14 +65,23 @@
         // Variables de paginación
         let paginaActual = 1;
         let registrosPorPagina = 10;
-        buscaTorneo();
-        buscarJugador();
+
+        // Esperar a que la API se inicialice
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (API.initialized) {
+                    buscaTorneo();
+                    buscarJugador();
+                } else {
+                    console.error('❌ Error al inicializar configuración');
+                }
+            }, 500);
+        });
         
 
         async function buscaTorneo() {
                         try {
-                const response = await fetch(`${API_URL}/ranking/torneo`);
-                const data = await response.json();
+                            const data = await API.get('/ranking/torneo');
 
                 console.log(data)
                 
@@ -96,8 +112,7 @@
             content.innerHTML = '<div class="loading">Buscando jugador...</div>';
 
             try {
-                const response = await fetch(`${API_URL}/ranking/torneo`);
-                const data = await response.json();
+                    const data = await API.get('/ranking/torneo');
 
                 console.log(data)
                 

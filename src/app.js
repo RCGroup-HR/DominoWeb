@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const configRoutes = require('./routes/config');
+const { requireApiKey } = require('./middleware/auth');
 const path = require('path');
 const rankingRoutes = require('./routes/rankingRoutes');
 const torneoRoutes = require('./routes/torneoRoutes');
@@ -15,12 +17,18 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rutas API (ANTES de los archivos estáticos)
+// ✅ ORDEN CORRECTO:
+// 1. Primero la ruta de configuración (SIN protección)
+app.use('/', configRoutes);
+
+// 2. Luego aplicar protección a TODAS las rutas /api/*
+app.use('/api', requireApiKey);
+
+// 3. Finalmente las rutas protegidas
 app.use('/api/torneos', torneoRoutes);
 app.use('/api/ranking', rankingRoutes);
 app.use('/api/historico', historicoRoutes);
 app.use('/api/comparar', compararRoutes);
-// ===== Agregar esta línea donde registras las rutas =====
 app.use('/api/youtube', youtubeRoutes);
 
 // Ruta de bienvenida API

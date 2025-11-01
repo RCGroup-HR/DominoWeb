@@ -57,24 +57,23 @@
             </p>
         </div>
 
-        <!-- Script con API de YouTube -->
+        <!-- Script ACTUALIZADO con API protegida en backend -->
         <script>
             // ============================================
             // CONFIGURACIÓN
             // ============================================
             
             const CONFIG = {
-                // API Key de YouTube
-                YOUTUBE_API_KEY: 'AIzaSyDnZLWxAXplr2j_pzJspBOsLeXuwGE6TFQ',
+                // ✅ API protegida en backend (NO más API Keys expuestas)
+                API_BASE_URL: '/api/youtube',
                 
-        // ID del canal (Alofoke Radio Show)
+                // ID del canal (Alofoke Radio Show)
                 //CHANNEL_ID: 'UCvDvBAOuJIHKWK59duvM0JQ', // Alofoke
-        // ID Canal RonnieHdez
+                // ID Canal RonnieHdez
                 CHANNEL_ID: 'UCEzJUQ76-ftC6DmcfDaDC7A', // RonnieHdez
                 
-        // Video por defecto
+                // Video por defecto
                 DEFAULT_VIDEO_ID: 'Mt5X-K7TMos',
-                prueba: "",
                 
                 // Configuración del video
                 AUTOPLAY: true,
@@ -94,38 +93,33 @@
             const btnVolver = document.getElementById('btn-volver');
 
             // ============================================
-            // DETECCIÓN DE LIVE CON API
+            // DETECCIÓN DE LIVE CON BACKEND PROXY
             // ============================================
             
             async function detectarLive() {
-                if (!CONFIG.YOUTUBE_API_KEY) {
-                    console.error('❌ API Key no configurada');
-                    return null;
-                }
-
                 try {
                     console.log('🔍 Verificando si hay live activo...');
                     
-                    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${CONFIG.CHANNEL_ID}&eventType=live&type=video&key=${CONFIG.YOUTUBE_API_KEY}`;
+                    // ✅ Llamar al backend proxy (NO expone API Keys)
+                    const url = `${CONFIG.API_BASE_URL}/check-live?channelId=${CONFIG.CHANNEL_ID}`;
                     
                     const response = await fetch(url);
                     
                     if (!response.ok) {
-                        console.error('❌ Error en la respuesta:', response.status);
+                        console.error('❌ Error en la respuesta del servidor:', response.status);
                         return null;
                     }
                     
                     const data = await response.json();
 
                     if (data.error) {
-                        console.error('❌ Error de API:', data.error.message);
+                        console.error('❌ Error del servidor:', data.error);
                         return null;
                     }
 
-                    if (data.items && data.items.length > 0) {
-                        const liveVideoId = data.items[0].id.videoId;
-                        console.log('✅ Live encontrado:', liveVideoId);
-                        return liveVideoId;
+                    if (data.isLive && data.videoId) {
+                        console.log('✅ Live encontrado:', data.videoId);
+                        return data.videoId;
                     }
 
                     console.log('ℹ️ No hay live activo');
@@ -210,14 +204,7 @@
                 console.log('🚀 Sistema iniciado');
                 console.log('📺 Canal:', CONFIG.CHANNEL_ID);
                 console.log('🎥 Video destacado:', CONFIG.DEFAULT_VIDEO_ID);
-                
-                // Validar API Key
-                if (!CONFIG.YOUTUBE_API_KEY) {
-                    console.error('⚠️ API Key no configurada');
-                    statusText.innerHTML = '⚠️ API Key no configurada';
-                    mostrarVideoDestacado();
-                    return;
-                }
+                console.log('🔒 API Keys protegidas en backend');
                 
                 // VERIFICACIÓN INICIAL (solo al cargar)
                 console.log('🔄 Verificación inicial al cargar...');

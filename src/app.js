@@ -5,6 +5,8 @@ const rankingRoutes = require('./routes/rankingRoutes');
 const torneoRoutes = require('./routes/torneoRoutes');
 const historicoRoutes = require('./routes/historicoRoutes');
 const compararRoutes = require('./routes/compararRoutes');
+// ===== Agregar esta línea donde importas las rutas =====
+const youtubeRoutes = require('./routes/youtube');
 
 const app = express();
 
@@ -18,6 +20,8 @@ app.use('/api/torneos', torneoRoutes);
 app.use('/api/ranking', rankingRoutes);
 app.use('/api/historico', historicoRoutes);
 app.use('/api/comparar', compararRoutes);
+// ===== Agregar esta línea donde registras las rutas =====
+app.use('/api/youtube', youtubeRoutes);
 
 // Ruta de bienvenida API
 app.get('/api', (req, res) => {

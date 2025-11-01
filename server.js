@@ -18,4 +18,5 @@ app.listen(PORT, () => {
   console.log(`   - GET http://localhost:${PORT}/api/ranking/jugador/:id`);
   console.log(`   - GET http://localhost:${PORT}/api/historico/Resumen/:Carnet`);
   console.log(`   - GET http://localhost:${PORT}/api/comparar/:carnet`);
+  console.log(`   - GET http://localhost:3000/api/youtube/check-live`);
 });

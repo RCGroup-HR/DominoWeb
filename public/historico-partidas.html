@@ -131,8 +131,8 @@
                 Partidas: acc.Partidas + (Number(jugador.Partidas) || 0),
                 Victorias: acc.Victorias + (Number(jugador.Victorias) || 0),
                 Derrotas: acc.Derrotas + (Number(jugador.Derrotas) || 0),
-                PtsObtenidos: acc.PtsObtenidos + (Number(jugador.PtsObtenidos) || 0),
-                PtsPermitidos: acc.PtsPermitidos + (Number(jugador.PtsPermitidos) || 0),
+                PtsObtenidos: acc.PtsObtenidos + (Number(jugador.PuntosOb) || 0),
+                PtsPermitidos: acc.PtsPermitidos + (Number(jugador.PuntosPer) || 0),
                 Efectividad: acc.Efectividad + (Number(jugador.Efectividad) || 0),
                 TotalPts: acc.TotalPts + (Number(jugador.TotalPts) || 0)
             }), {
@@ -165,8 +165,8 @@
                         <td class="centrado">${jugador.Partidas || 0}</td>
                         <td class="centrado">${jugador.Victorias || 0}</td>
                         <td class="centrado">${jugador.Derrotas || 0}</td>
-                        <td class="centrado">${jugador.PtsObtenidos || 0}</td>
-                        <td class="centrado">${jugador.PtsPermitidos || 0}</td>
+                        <td class="centrado">${jugador.PuntosOb || 0}</td>
+                        <td class="centrado">${jugador.PuntosPer || 0}</td>
                         <td class="efectividad centrado ${(jugador.Efectividad || 0) < 0 ? 'negativa' : ''}">${jugador.Efectividad || 0}</td>
                     </tr>
                 `;
@@ -183,7 +183,7 @@
                     <td class="centrado">${totalesJugador.Partidas}</td>
                     <td class="centrado">${totalesJugador.Victorias}</td>
                     <td class="centrado">${totalesJugador.Derrotas}</td>
-                    <td class="centrado">${totalesJugador.PtsObtenidos}</td>
+                    <td class="centrado">${totalesJugador.PuntosOb}</td>
                     <td class="centrado">${totalesJugador.PtsPermitidos}</td>
                     <td class="centrado" class="efectividad ${totalesJugador.Efectividad < 0 ? 'negativa' : ''}">${totalesJugador.Efectividad}</td>
                 </tr>
@@ -203,7 +203,7 @@
                                 <th class="centrado">Partidas</th>
                                 <th>Victorias</th>
                                 <th>Derrotas</th>
-                                <th>PtsObtenidos</th>
+                                <th>PuntosOb</th>
                                 <th>PtsPermitidos</th>
                                 <th>Efectividad</th>
                             </tr>

@@ -131,16 +131,16 @@
                 Partidas: acc.Partidas + (Number(jugador.Partidas) || 0),
                 Victorias: acc.Victorias + (Number(jugador.Victorias) || 0),
                 Derrotas: acc.Derrotas + (Number(jugador.Derrotas) || 0),
-                PuntosOb: acc.PuntosOb + (Number(jugador.PuntosOb) || 0),
-                PuntosPer: acc.PuntosPer + (Number(jugador.PuntosPer) || 0),
+                PtsObtenidos: acc.PtsObtenidos + (Number(jugador.PtsObtenidos) || 0),
+                PtsPermitidos: acc.PtsPermitidos + (Number(jugador.PtsPermitidos) || 0),
                 Efectividad: acc.Efectividad + (Number(jugador.Efectividad) || 0),
                 TotalPts: acc.TotalPts + (Number(jugador.TotalPts) || 0)
             }), {
                 Partidas: 0,
                 Victorias: 0,
                 Derrotas: 0,
-                PuntosOb: 0,
-                PuntosPer: 0,
+                PtsObtenidos: 0,
+                PtsPermitidos: 0,
                 Efectividad: 0,
                 TotalPts: 0
             });
@@ -183,8 +183,8 @@
                     <td class="centrado">${totalesJugador.Partidas}</td>
                     <td class="centrado">${totalesJugador.Victorias}</td>
                     <td class="centrado">${totalesJugador.Derrotas}</td>
-                    <td class="centrado">${totalesJugador.PuntosOb}</td>
-                    <td class="centrado">${totalesJugador.PuntosPer}</td>
+                    <td class="centrado">${totalesJugador.PtsObtenidos}</td>
+                    <td class="centrado">${totalesJugador.PtsPermitidos}</td>
                     <td class="centrado" class="efectividad ${totalesJugador.Efectividad < 0 ? 'negativa' : ''}">${totalesJugador.Efectividad}</td>
                 </tr>
             `;

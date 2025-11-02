@@ -171,8 +171,8 @@
                         <td class="centrado">${jugador.Partidas || 0}</td>
                         <td class="centrado">${jugador.Victorias || 0}</td>
                         <td class="centrado">${jugador.Derrotas || 0}</td>
-                        <td class="centrado">${jugador.PuntosOb || 0}</td>
-                        <td class="centrado">${jugador.PuntosPer || 0}</td>
+                        <td class="centrado">${jugador.PtsObtenidos || 0}</td>
+                        <td class="centrado">${jugador.PtsPermitidos || 0}</td>
                         <td class="efectividad centrado ${(jugador.Efectividad || 0) < 0 ? 'negativa' : ''}">${jugador.Efectividad || 0}</td>
                     </tr>
                 `;
@@ -189,8 +189,8 @@
                     <td class="centrado">${totalesJugador.Partidas}</td>
                     <td class="centrado">${totalesJugador.Victorias}</td>
                     <td class="centrado">${totalesJugador.Derrotas}</td>
-                    <td class="centrado">${totalesJugador.PuntosOb}</td>
-                    <td class="centrado">${totalesJugador.PuntosPer}</td>
+                    <td class="centrado">${totalesJugador.PtsObtenidos}</td>
+                    <td class="centrado">${totalesJugador.PtsPermitidos}</td>
                     <td class="centrado" class="efectividad ${totalesJugador.Efectividad < 0 ? 'negativa' : ''}">${totalesJugador.Efectividad}</td>
                 </tr>
             `;

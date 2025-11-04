@@ -232,41 +232,43 @@ body {
     border-color: var(--accent-green);
 }
 
-/* Header de la tarjeta - COMPACTO CON AVATAR */
+/* Header de la tarjeta - AVATAR EN ESQUINA SUPERIOR IZQUIERDA */
 .jugador-header {
     background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-light) 100%);
     color: var(--white);
     padding: 15px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    position: relative;
+    text-align: center;
+    padding-top: 25px;
 }
 
-/* Avatar circular placeholder */
+/* Avatar circular en esquina superior izquierda */
 .jugador-avatar {
     width: 60px;
     height: 60px;
-    min-width: 60px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.2);
-    border: 3px solid rgba(255, 255, 255, 0.4);
+    border: 3px solid #f97316;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.8rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transition: var(--transition);
+    position: absolute;
+    top: 15px;
+    left: 15px;
 }
 
 .jugador-avatar:hover {
     transform: scale(1.05);
-    border-color: rgba(255, 255, 255, 0.6);
+    border-color: rgba(249, 115, 22, 0.8);
 }
 
-/* Contenedor de info del jugador */
+/* Contenedor de info del jugador - Centrado */
 .jugador-info {
-    flex: 1;
-    text-align: left;
+    width: 100%;
+    text-align: center;
 }
 
 .jugador-header h3 {
@@ -278,6 +280,7 @@ body {
 .jugador-pais {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     font-size: 0.85rem;
     opacity: 0.95;
@@ -557,12 +560,13 @@ body {
     .jugador-avatar {
         width: 50px;
         height: 50px;
-        min-width: 50px;
         font-size: 1.5rem;
+        top: 12px;
+        left: 12px;
     }
     
     .jugador-header {
-        gap: 12px;
+        padding-top: 22px;
     }
     
     .jugador-header h3 {
@@ -610,15 +614,16 @@ body {
     
     .jugador-header {
         padding: 12px;
-        gap: 10px;
+        padding-top: 20px;
     }
     
     .jugador-avatar {
         width: 45px;
         height: 45px;
-        min-width: 45px;
         font-size: 1.3rem;
         border-width: 2px;
+        top: 10px;
+        left: 10px;
     }
     
     .jugador-stats {

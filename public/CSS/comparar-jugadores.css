@@ -45,15 +45,11 @@ body {
 
 /* Contenedor principal */
 .container {
-    margin: 5px 10px ;
-
+    margin: 5px 10px;
     width: 100%;
     padding: 15px;
 }
 
-/* ==========================================
-   HEADER
-   ========================================== */
 /* ==========================================
    HEADER - Compacto
    ========================================== */
@@ -236,12 +232,41 @@ body {
     border-color: var(--accent-green);
 }
 
-/* Header de la tarjeta - COMPACTO */
+/* Header de la tarjeta - COMPACTO CON AVATAR */
 .jugador-header {
     background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-light) 100%);
     color: var(--white);
     padding: 15px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Avatar circular placeholder */
+.jugador-avatar {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transition: var(--transition);
+}
+
+.jugador-avatar:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Contenedor de info del jugador */
+.jugador-info {
+    flex: 1;
+    text-align: left;
 }
 
 .jugador-header h3 {
@@ -253,7 +278,6 @@ body {
 .jugador-pais {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 8px;
     font-size: 0.85rem;
     opacity: 0.95;
@@ -427,8 +451,6 @@ body {
     height: auto;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    position: relative;
-    z-index: 1;
 }
 
 .footer-content {
@@ -473,7 +495,6 @@ body {
 
 .footer-bottom {
     padding-top: 20px;
-
     text-align: center;
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.85em;
@@ -533,6 +554,17 @@ body {
         gap: 20px;
     }
     
+    .jugador-avatar {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .jugador-header {
+        gap: 12px;
+    }
+    
     .jugador-header h3 {
         font-size: 1.05rem;
     }
@@ -578,6 +610,15 @@ body {
     
     .jugador-header {
         padding: 12px;
+        gap: 10px;
+    }
+    
+    .jugador-avatar {
+        width: 45px;
+        height: 45px;
+        min-width: 45px;
+        font-size: 1.3rem;
+        border-width: 2px;
     }
     
     .jugador-stats {

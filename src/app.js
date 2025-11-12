@@ -7,7 +7,6 @@ const rankingRoutes = require('./routes/rankingRoutes');
 const torneoRoutes = require('./routes/torneoRoutes');
 const historicoRoutes = require('./routes/historicoRoutes');
 const compararRoutes = require('./routes/compararRoutes');
-// ===== Agregar esta línea donde importas las rutas =====
 const youtubeRoutes = require('./routes/youtube');
 
 const app = express();
@@ -18,8 +17,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ✅ ORDEN CORRECTO:
-// 1. Primero la ruta de configuración (SIN protección)
+// 1. Primero las rutas SIN protección
 app.use('/', configRoutes);
+app.use('/api/youtube', youtubeRoutes); // ← MOVER AQUÍ (antes del requireApiKey)
 
 // 2. Luego aplicar protección a TODAS las rutas /api/*
 app.use('/api', requireApiKey);
@@ -29,7 +29,6 @@ app.use('/api/torneos', torneoRoutes);
 app.use('/api/ranking', rankingRoutes);
 app.use('/api/historico', historicoRoutes);
 app.use('/api/comparar', compararRoutes);
-app.use('/api/youtube', youtubeRoutes);
 
 // Ruta de bienvenida API
 app.get('/api', (req, res) => {
@@ -40,7 +39,8 @@ app.get('/api', (req, res) => {
       torneos: '/api/torneos',
       ranking: '/api/ranking',
       historico: '/api/historico',
-      comparar: '/api/comparar'
+      comparar: '/api/comparar',
+      youtube: '/api/youtube'
     }
   });
 });

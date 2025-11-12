@@ -17,6 +17,208 @@
     <title>Sistema de Estadísticas Dominó</title>
     <link rel="stylesheet" href="css/main.css">
 </head>
+
+<!-- POPUP MODAL -->
+<div id="popup-modal" class="popup-modal">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h3>Patrocinador de ScoreDomino.com</h3>
+        </div>
+        <button class="popup-close" onclick="cerrarPopup()">✕</button>
+        <img id="popup-image" src="" alt="Promoción" class="popup-image">
+        <div class="popup-footer">
+            <p> - </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos del Popup Modal */
+    .popup-modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .popup-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 0;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 600px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translate(-50%, -60%);
+            opacity: 0;
+        }
+        to {
+            transform: translate(-50%, -50%);
+            opacity: 1;
+        }
+    }
+
+    .popup-image {
+        width: 100%;
+        height: auto;
+        border-radius: 15px;
+        display: block;
+    }
+
+    .popup-close {
+        position: absolute;
+        right: -15px;
+        top: -15px;
+        background: #a9240c;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 2001;
+    }
+
+    .popup-close:hover {
+        background: #128C7E;
+        transform: scale(1.1);
+    }
+
+    .popup-close:active {
+        transform: scale(0.95);
+    }
+.popup-header {
+    background: linear-gradient(135deg, #0a903b 0%, #128C7E 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px 15px 0 0;
+    text-align: center;
+    margin: 0;
+}
+
+.popup-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.popup-image {
+    width: 100%;
+    height: auto;
+    border-radius: 0 0 0px 0px;
+    display: block;
+}
+.popup-footer {
+    background: #eceef0;
+    padding: 20px;
+    text-align: center;
+    border-radius: 0 0 15px 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.popup-footer p {
+    margin: 0;
+    color: #495057;
+    font-size: 0.95em;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.popup-footer strong {
+    color: #f7f8fc;
+    font-weight: 600;
+}
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .popup-content {
+            width: 95%;
+            max-width: 90vw;
+        }
+
+        .popup-close {
+            right: -10px;
+            top: -10px;
+            width: 35px;
+            height: 35px;
+            font-size: 20px;
+        }
+    }
+</style>
+
+<script>
+    // Función para mostrar popup (solo si no fue mostrado en esta sesión)
+    function mostrarPopup(imagenSrc) {
+        // Verificar si el popup ya fue mostrado en esta sesión
+        if (sessionStorage.getItem('popupMostrado') === 'true') {
+            return; // No mostrar si ya fue mostrado
+        }
+        
+        const modal = document.getElementById('popup-modal');
+        const img = document.getElementById('popup-image');
+        img.src = imagenSrc;
+        modal.style.display = 'block';
+    }
+
+    // Función para cerrar popup
+    function cerrarPopup() {
+        const modal = document.getElementById('popup-modal');
+        modal.style.display = 'none';
+        
+        // Guardar que el popup fue mostrado en esta sesión
+        sessionStorage.setItem('popupMostrado', 'true');
+    }
+
+    // Cerrar popup al hacer click fuera de la imagen
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('popup-modal');
+        if (event.target === modal) {
+            cerrarPopup();
+        }
+    });
+
+    // Cerrar popup con tecla ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            cerrarPopup();
+        }
+    });
+
+    // Mostrar popup cuando cargue la página
+    window.addEventListener('load', function() {
+        mostrarPopup('patrocinadores/logo.jpg');
+    });
+</script>
+
 <body>
     <div class="container">
         <div class="header">

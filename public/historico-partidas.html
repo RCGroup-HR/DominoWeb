@@ -15,8 +15,538 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Histórico de Partidas</title>
-    <link rel="stylesheet" href="css/main.css">
-    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-green: #2d6a4f;
+            --primary-green-dark: #1b4332;
+            --primary-green-light: #40916c;
+            --accent-green: #52b788;
+            --background: #f8f9fa;
+            --white: #ffffff;
+            --text-dark: #212529;
+            --text-light: #6c757d;
+            --border-color: #dee2e6;
+            --error-red: #dc3545;
+            --success-green: #28a745;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f0 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            margin: 5px 10px;
+            width: 100%;
+            padding: 15px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+            padding: 25px 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        .controls {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-green);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.1);
+        }
+
+        .btn-buscar {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--primary-green-light) 100%);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-buscar:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-buscar:active {
+            transform: translateY(0);
+        }
+
+        #content {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .initial-message {
+            text-align: center;
+            padding: 50px 20px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .initial-message .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .initial-message p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border: 2px solid #f5c2c7;
+            color: #842029;
+            padding: 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px;
+            gap: 15px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* TARJETA DEL JUGADOR */
+        .jugador-profile-card {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .jugador-avatar-section {
+            display: none;
+        }
+
+        .jugador-avatar {
+            display: none;
+        }
+
+        .jugador-nombre-pais {
+            text-align: left;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .jugador-nombre-pais h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .jugador-pais-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        .bandera-icon {
+            width: 28px;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #f97316;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-item.positivo {
+            border-left-color: #52b788;
+        }
+
+        .stat-item.negativo {
+            border-left-color: #dc3545;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        /* TABLA DE DATOS */
+        .table-container {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+        }
+
+        thead th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 2px solid var(--accent-green);
+        }
+
+        thead th.centrado {
+            text-align: center;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        tbody td {
+            padding: 12px 15px;
+        }
+
+        td.centrado {
+            text-align: center;
+        }
+
+        .flag {
+            width: 24px;
+            height: auto;
+            border-radius: 3px;
+        }
+
+        .total-row {
+            background: linear-gradient(90deg, #d4edda 0%, #f8f9fa 100%);
+            font-weight: 600;
+            border-top: 3px solid var(--accent-green);
+            border-bottom: 3px solid var(--accent-green);
+        }
+
+        .efectividad.negativa {
+            color: #dc3545;
+        }
+
+        /* PAGINACIÓN */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 15px;
+            background: var(--white);
+            flex-wrap: wrap;
+            gap: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .page-size-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-size-selector label {
+            font-weight: 600;
+            color: var(--primary-green);
+        }
+
+        .page-size-selector select {
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--white);
+            cursor: pointer;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pagination-btn {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            background: var(--white);
+            color: var(--primary-green);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--accent-green);
+            color: white;
+            border-color: var(--accent-green);
+        }
+
+        .pagination-btn.active {
+            background: var(--accent-green);
+            color: white;
+            border-color: var(--accent-green);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .stats {
+            padding: 20px;
+            background: var(--white);
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .stat-card {
+            display: inline-block;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            padding: 20px 30px;
+            border-radius: 10px;
+            border-left: 4px solid var(--success-green);
+        }
+
+        .stat-card .label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--success-green);
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+            padding: 25px 30px;
+            margin: 30px 10px 10px 10px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .footer-bottom {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85em;
+        }
+
+        @media (max-width: 768px) {
+            .jugador-profile-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 20px;
+                gap: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                min-width: 100%;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .form-group {
+                min-width: 100%;
+            }
+
+            .btn-buscar {
+                width: 100%;
+            }
+
+            .pagination-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .pagination-controls {
+                width: 100%;
+            }
+
+            .jugador-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 3rem;
+            }
+        }
+
+        .btn-inicio-flotante-js {
+            position: fixed !important;
+            bottom: 30px !important;
+            right: 30px !important;
+            background: linear-gradient(135deg, #16a34a 0%, #114d37 100%) !important;
+            color: white !important;
+            padding: 15px 28px !important;
+            border-radius: 50px !important;
+            text-decoration: none !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 12px !important;
+            font-family: 'Segoe UI', Arial, sans-serif !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 8px 25px rgba(22, 163, 74, 0.6) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            z-index: 999999 !important;
+            border: 3px solid #f97316 !important;
+            cursor: pointer !important;
+            outline: none !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            white-space: nowrap !important;
+        }
+
+        .btn-inicio-flotante-js svg {
+            width: 24px !important;
+            height: 24px !important;
+            flex-shrink: 0 !important;
+            stroke: white !important;
+        }
+
+        .btn-inicio-flotante-js:hover {
+            transform: translateY(-4px) scale(1.05) !important;
+            box-shadow: 0 12px 35px rgba(22, 163, 74, 0.8) !important;
+            background: linear-gradient(135deg, #15803d 0%, #0d3d2b 100%) !important;
+        }
+
+        .btn-inicio-flotante-js:active {
+            transform: translateY(-2px) scale(0.98) !important;
+        }
+    </style>
+
     <!-- ✅ Script de configuración de API (protegida) -->
     <script src="js/api-config.js"></script>
 </head>
@@ -57,6 +587,7 @@
         let jugadoresActuales = [];
         let todosJugadoresActuales = [];
         let filaTotalActual = null;
+        let jugadorPrincipalActual = null;
         
         // Variables de paginación
         let paginaActual = 1;
@@ -65,10 +596,10 @@
         // ✅ Esperar a que la API se inicialice
         window.addEventListener('load', () => {
             setTimeout(() => {
-                if (API.initialized) {
+                if (typeof API !== 'undefined' && API.initialized) {
                     console.log('🚀 Histórico de Partidas listo con configuración segura');
                 } else {
-                    console.error('❌ Error al inicializar configuración');
+                    console.warn('⚠️ Configuración de API no disponible');
                 }
             }, 500);
         });
@@ -92,11 +623,17 @@
             }
 
             const content = document.getElementById('content');
-            content.innerHTML = '<div class="loading">Buscando jugador...</div>';
+            content.innerHTML = '<div class="loading"><div class="spinner"></div>Buscando jugador...</div>';
 
             try {
                 // ✅ Petición protegida (API Key incluida automáticamente)
-                const data = await API.get(`/historico/Resumen/${Carnet}`);
+                let data;
+                if (typeof API !== 'undefined' && API.get) {
+                    data = await API.get(`/historico/Resumen/${Carnet}`);
+                } else {
+                    // Para pruebas sin API real
+                    throw new Error('API no configurada');
+                }
                 
                 if (data.success && data.data.length > 0) {
                     const filaTotal = data.data.find(j => j.isTotal);
@@ -108,6 +645,7 @@
                         jugadoresActuales = jugador;
                         todosJugadoresActuales = jugadoresNormales;
                         filaTotalActual = filaTotal;
+                        jugadorPrincipalActual = jugador[0];
                         paginaActual = 1;
                         
                         mostrarJugador();
@@ -119,14 +657,16 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                mostrarError('Error al cargar el ranking');
+                mostrarError('Error al cargar el ranking. Verifique que la API esté configurada correctamente.');
             }
         }
 
         function mostrarJugador() {
             const jugadores = jugadoresActuales;
             const todosJugadores = todosJugadoresActuales;
+            const jugadorPrincipal = jugadorPrincipalActual;
             
+            // Calcular totales
             const totalesJugador = jugadores.reduce((acc, jugador) => ({
                 Partidas: acc.Partidas + (Number(jugador.Partidas) || 0),
                 Victorias: acc.Victorias + (Number(jugador.Victorias) || 0),
@@ -145,6 +685,56 @@
                 TotalPts: 0
             });
 
+            // Calcular porcentaje de victorias
+            const porcentajeVictorias = jugadores.length > 0 
+                ? (totalesJugador.Victorias / totalesJugador.Partidas * 100).toFixed(2) 
+                : 0;
+
+            // Crear tarjeta del jugador
+            const tarjetaJugador = `
+                <div class="jugador-profile-card">
+                    <div class="jugador-nombre-pais">
+                        <h2>${jugadorPrincipal.Jugador || '-'}</h2>
+                        <div class="jugador-pais-info">
+                            ${jugadorPrincipal.Bandera ? `<img src="pais/${jugadorPrincipal.Bandera}.png" class="bandera-icon" alt="${jugadorPrincipal.Bandera}">` : ''}
+                            <span>${jugadorPrincipal.Pais || '-'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item positivo">
+                            <div class="stat-label">Partidas</div>
+                            <div class="stat-value">${totalesJugador.Partidas}</div>
+                        </div>
+                        <div class="stat-item positivo">
+                            <div class="stat-label">Victorias</div>
+                            <div class="stat-value">${totalesJugador.Victorias}</div>
+                        </div>
+                        <div class="stat-item negativo">
+                            <div class="stat-label">Derrotas</div>
+                            <div class="stat-value">${totalesJugador.Derrotas}</div>
+                        </div>
+                        <div class="stat-item positivo">
+                            <div class="stat-label">% Victorias</div>
+                            <div class="stat-value">${porcentajeVictorias}%</div>
+                        </div>
+                        <div class="stat-item positivo">
+                            <div class="stat-label">Pts Obtenidos</div>
+                            <div class="stat-value">${totalesJugador.PtsObtenidos}</div>
+                        </div>
+                        <div class="stat-item negativo">
+                            <div class="stat-label">Pts Permitidos</div>
+                            <div class="stat-value">${totalesJugador.PtsPermitidos}</div>
+                        </div>
+                        <div class="stat-item positivo">
+                            <div class="stat-label">Efectividad</div>
+                            <div class="stat-value">${totalesJugador.Efectividad}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Preparar tabla de datos
             const totalRegistros = jugadores.length;
             const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
             const inicio = (paginaActual - 1) * registrosPorPagina;
@@ -152,8 +742,6 @@
             const jugadoresPaginados = jugadores.slice(inicio, fin);
 
             let filas = jugadoresPaginados.map(jugador => {
-                const rank = todosJugadores.findIndex(j => j.ID === jugador.ID) + 1;
-                const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-cell';
                 return `
                     <tr>
                         <td class="centrado">${jugador.ID || '-'}</td>
@@ -183,13 +771,14 @@
                     <td class="centrado">${totalesJugador.Partidas}</td>
                     <td class="centrado">${totalesJugador.Victorias}</td>
                     <td class="centrado">${totalesJugador.Derrotas}</td>
-                    <td class="centrado">${totalesJugador.PtssObtenidos}</td>
+                    <td class="centrado">${totalesJugador.PtsObtenidos}</td>
                     <td class="centrado">${totalesJugador.PtsPermitidos}</td>
-                    <td class="centrado" class="efectividad ${totalesJugador.Efectividad < 0 ? 'negativa' : ''}">${totalesJugador.Efectividad}</td>
+                    <td class="centrado efectividad ${totalesJugador.Efectividad < 0 ? 'negativa' : ''}">${totalesJugador.Efectividad}</td>
                 </tr>
             `;
 
             const html = `
+                ${tarjetaJugador}
                 <div class="table-container">
                     <table>
                         <thead>
@@ -201,11 +790,11 @@
                                 <th>Flag</th>
                                 <th>País</th>
                                 <th class="centrado">Partidas</th>
-                                <th>Victorias</th>
-                                <th>Derrotas</th>
-                                <th>PuntosOb</th>
-                                <th>PtsPermitidos</th>
-                                <th>Efectividad</th>
+                                <th class="centrado">Victorias</th>
+                                <th class="centrado">Derrotas</th>
+                                <th class="centrado">PuntosOb</th>
+                                <th class="centrado">PtsPermitidos</th>
+                                <th class="centrado">Efectividad</th>
                             </tr>
                         </thead>
                         <tbody>${filas}</tbody>
@@ -214,7 +803,7 @@
                 ${generarPaginacion(totalRegistros, totalPaginas, inicio, fin)}
                 <div class="stats">
                     <div class="stat-card">
-                        <div class="label">Total de Torneos</div>
+                        <div class="label">Total de Torneos/Participaciones</div>
                         <div class="value">${jugadores.length}</div>
                     </div>
                 </div>
@@ -241,7 +830,7 @@
                 if (inicioRango > 1) {
                     botonesPaginas += `<button class="pagination-btn" data-page="1">1</button>`;
                     if (inicioRango > 2) {
-                        botonesPaginas += `<button class="pagination-btn dots">...</button>`;
+                        botonesPaginas += `<button class="pagination-btn dots" disabled>...</button>`;
                     }
                 }
 
@@ -252,7 +841,7 @@
 
                 if (finRango < totalPaginas) {
                     if (finRango < totalPaginas - 1) {
-                        botonesPaginas += `<button class="pagination-btn dots">...</button>`;
+                        botonesPaginas += `<button class="pagination-btn dots" disabled>...</button>`;
                     }
                     botonesPaginas += `<button class="pagination-btn" data-page="${totalPaginas}">${totalPaginas}</button>`;
                 }
@@ -282,7 +871,7 @@
                             <option value="15" ${registrosPorPagina === 15 ? 'selected' : ''}>15</option>
                             <option value="25" ${registrosPorPagina === 25 ? 'selected' : ''}>25</option>
                             <option value="50" ${registrosPorPagina === 50 ? 'selected' : ''}>50</option>
-                            <option value="${totalRegistros}">Todos</option>
+                            <option value="${totalRegistros}" ${registrosPorPagina === totalRegistros ? 'selected' : ''}>Todos</option>
                         </select>
                     </div>
                     <div class="pagination-info">
@@ -352,57 +941,13 @@
     </footer>
 
     <!-- Botón flotante de inicio -->
-    <script>
-        (function() {
-            const boton = document.createElement('a');
-            boton.href = 'index.html';
-            boton.className = 'btn-inicio-flotante-js';
-            
-            boton.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                </svg>
-                <span>Inicio</span>
-            `;
-            
-            boton.style.cssText = `
-                position: fixed !important;
-                bottom: 30px !important;
-                right: 30px !important;
-                background: linear-gradient(135deg, #114d37 0%, #16a34a 100%) !important;
-                color: white !important;
-                padding: 14px 26px !important;
-                border-radius: 50px !important;
-                text-decoration: none !important;
-                display: flex !important;
-                align-items: center !important;
-                gap: 10px !important;
-                font-family: Arial, sans-serif !important;
-                font-size: 16px !important;
-                font-weight: 600 !important;
-                box-shadow: 0 6px 20px rgba(17, 77, 55, 0.5) !important;
-                transition: all 0.3s ease !important;
-                z-index: 999999 !important;
-                border: 3px solid #f97316 !important;
-                cursor: pointer !important;
-            `;
-            
-            boton.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-3px)';
-                this.style.boxShadow = '0 8px 25px rgba(17, 77, 55, 0.7)';
-                this.style.background = 'linear-gradient(135deg, #0d3d2b 0%, #15803d 100%)';
-            });
-            
-            boton.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = '0 6px 20px rgba(17, 77, 55, 0.5)';
-                this.style.background = 'linear-gradient(135deg, #114d37 0%, #16a34a 100%)';
-            });
-            
-            document.body.appendChild(boton);
-        })();
-    </script>
+    <a href="index.html" class="btn-inicio-flotante-js" title="Volver al inicio">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Inicio</span>
+    </a>
 
 </body>
 </html>

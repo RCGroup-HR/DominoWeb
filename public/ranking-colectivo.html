@@ -14,7 +14,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking Individual</title>
+    <title>Ranking Colectivo</title>
     <link rel="stylesheet" href="css/main.css">
     
     <!-- ✅ Script de configuración de API (protegida) -->
@@ -44,12 +44,11 @@
 
     <script>
         // ============================================
-        // ✅ CÓDIGO PROTEGIDO (SIN URLs EXPUESTAS)
+        // ✅ CÓDIGO PROTEGIDO - RANKING COLECTIVO
         // ============================================
         
-        let torneos = [];
-        let jugadoresActuales = [];
-        let todosJugadoresActuales = [];
+        let equiposActuales = [];
+        let todosEquiposActuales = [];
         let filaTotalActual = null;
         
         // Variables de paginación
@@ -60,9 +59,9 @@
         window.addEventListener('load', () => {
             setTimeout(() => {
                 if (API.initialized) {
-                    console.log('🚀 Iniciando aplicación con configuración segura');
+                    console.log('🚀 Iniciando aplicación de Ranking Colectivo');
                     buscaTorneo();
-                    buscarJugador();
+                    buscarEquipos();
                 } else {
                     console.error('❌ Error al inicializar configuración');
                     mostrarError('Error al conectar con el servidor. Por favor recarga la página.');
@@ -72,8 +71,8 @@
 
         async function buscaTorneo() {
             try {
-                // ✅ Petición protegida (API Key incluida automáticamente)
-                const data = await API.get('/ranking/torneo');
+                // ✅ Petición protegida - obtener nombre del torneo
+                const data = await API.get('/colectivo');
 
                 console.log(data);
                 
@@ -90,57 +89,53 @@
             }
         }
 
-        async function buscarJugador() {
-            const Carnet = 1;
-
+        async function buscarEquipos() {
             const content = document.getElementById('content');
-            content.innerHTML = '<div class="loading">Cargando jugadores...</div>';
+            content.innerHTML = '<div class="loading">Cargando equipos...</div>';
 
             try {
-                // ✅ Petición protegida (API Key incluida automáticamente)
-                const data = await API.get('/ranking/torneo');
+                // ✅ Petición protegida - obtener ranking colectivo
+                const data = await API.get('/colectivo/torneo');
 
                 console.log(data);
                 
                 if (data.success && data.data.length > 0) {
-                    const filaTotal = data.data.find(j => j.isTotal);
-                    const jugadoresNormales = data.data.filter(j => !j.isTotal);
+                    const filaTotal = data.data.find(e => e.isTotal);
+                    const equiposNormales = data.data.filter(e => !e.isTotal);
                     
-                    const jugador = jugadoresNormales;
-                    
-                    if (jugador.length > 0) {
-                        jugadoresActuales = jugadoresNormales;
-                        todosJugadoresActuales = jugadoresNormales;
+                    if (equiposNormales.length > 0) {
+                        equiposActuales = equiposNormales;
+                        todosEquiposActuales = equiposNormales;
                         filaTotalActual = filaTotal;
                         paginaActual = 1;
                         
-                        mostrarJugador();
+                        mostrarEquipos();
                     } else {
-                        mostrarError(`No se encontró ningún jugador con el carnet ${Carnet} en este torneo`);
+                        mostrarError('No hay datos de equipos en este torneo');
                     }
                 } else {
-                    mostrarError('No hay datos de ranking para este torneo');
+                    mostrarError('No hay datos de ranking colectivo para este torneo');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                mostrarError('Error al cargar el ranking');
+                mostrarError('Error al cargar el ranking colectivo');
             }
         }
 
-        function mostrarJugador() {
-            const jugadores = jugadoresActuales;
-            const todosJugadores = todosJugadoresActuales;
+        function mostrarEquipos() {
+            const equipos = equiposActuales;
+            const todosEquipos = todosEquiposActuales;
 
-            console.log(jugadores);
+            console.log(equipos);
             
-            const totalesJugador = jugadores.reduce((acc, jugador) => ({
-                Partidas: acc.Partidas + (Number(jugador.Partidas) || 0),
-                Victorias: acc.Victorias + (Number(jugador.Victorias) || 0),
-                Derrotas: acc.Derrotas + (Number(jugador.Derrotas) || 0),
-                PuntosOb: acc.PuntosOb + (Number(jugador.PtsObtenidos) || 0),
-                PuntosPer: acc.PuntosPer + (Number(jugador.PtsPermitidos) || 0),
-                Efectividad: acc.Efectividad + (Number(jugador.Efectividad) || 0),
-                TotalPts: acc.TotalPts + (Number(jugador.TotalPts) || 0)
+            const totalesEquipo = equipos.reduce((acc, equipo) => ({
+                Partidas: acc.Partidas + (Number(equipo.Partidas) || 0),
+                Victorias: acc.Victorias + (Number(equipo.Victorias) || 0),
+                Derrotas: acc.Derrotas + (Number(equipo.Derrotas) || 0),
+                PuntosOb: acc.PuntosOb + (Number(equipo.PuntosOb) || 0),
+                PuntosPer: acc.PuntosPer + (Number(equipo.PuntosPer) || 0),
+                Efectividad: acc.Efectividad + (Number(equipo.Efectividad) || 0),
+                TotalPts: acc.TotalPts + (Number(equipo.TotalPts) || 0)
             }), {
                 Partidas: 0,
                 Victorias: 0,
@@ -151,29 +146,26 @@
                 TotalPts: 0
             });
 
-            const totalRegistros = jugadores.length;
+            const totalRegistros = equipos.length;
             const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
             const inicio = (paginaActual - 1) * registrosPorPagina;
             const fin = inicio + registrosPorPagina;
-            const jugadoresPaginados = jugadores.slice(inicio, fin);
+            const equiposPaginados = equipos.slice(inicio, fin);
 
-            let filas = jugadoresPaginados.map(jugador => {
-                const rank = todosJugadores.findIndex(j => j.ID === jugador.ID) + 1;
+            let filas = equiposPaginados.map(equipo => {
+                const rank = todosEquipos.findIndex(e => e.ID === equipo.ID) + 1;
                 const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-cell';
                 return `
                     <tr>
-                        <td class="centrado">${jugador.Ranking || '-'}</td>
-                        <td>${jugador.ID_Jugador || '-'}</td>
-                        <td><strong>${jugador.NJugador || '-'}</strong></td>     
-                        <td>${jugador.Equipo || '-'}</td>
-                        <td>${jugador.Siglas ? `<img src="pais/${jugador.Siglas}.png" class="flag" alt="${jugador.Siglas}">` : '-'}</td>
-                        <td>${jugador.Pais || '-'}</td>
-                        <td class="centrado">${jugador.Partidas || 0}</td>
-                        <td class="centrado">${jugador.Victorias || 0}</td>
-                        <td class="centrado">${jugador.Derrotas || 0}</td>
-                        <td class="centrado">${jugador.PtsObtenidos || 0}</td>
-                        <td class="centrado">${jugador.PtsPermitidos || 0}</td>
-                        <td class="efectividad centrado ${(jugador.Efectividad || 0) < 0 ? 'negativa' : ''}">${jugador.Efectividad || 0}</td>
+                        <td class="centrado"><strong>${equipo.Ranking || '-'}</strong></td>
+                        <td><strong>${equipo.Equipo || '-'}</strong></td>     
+                        <td class="centrado">${equipo.Partidas || 0}</td>
+                        <td class="centrado">${equipo.Victorias || 0}</td>
+                        <td class="centrado">${equipo.Derrotas || 0}</td>
+                        <td class="centrado">${equipo.PuntosOb || 0}</td>
+                        <td class="centrado">${equipo.PuntosPer || 0}</td>
+                        <td class="efectividad centrado ${(equipo.Efectividad || 0) < 0 ? 'negativa' : ''}">${equipo.Efectividad || 0}</td>
+                        <td class="centrado">${equipo.TotalPts || 0}</td>
                     </tr>
                 `;
             }).join('');
@@ -181,17 +173,14 @@
             filas += `
                 <tr class="total-row">
                     <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
                     <td><strong>TOTAL</strong></td>
-                    <td class="centrado">${totalesJugador.Partidas}</td>
-                    <td class="centrado">${totalesJugador.Victorias}</td>
-                    <td class="centrado">${totalesJugador.Derrotas}</td>
-                    <td class="centrado">${totalesJugador.PuntosOb}</td>  <!-- ✅ CORREGIDO -->
-                    <td class="centrado">${totalesJugador.PuntosPer}</td> <!-- ✅ CORREGIDO -->
-                    <td class="centrado" class="efectividad ${totalesJugador.Efectividad < 0 ? 'negativa' : ''}">${totalesJugador.Efectividad}</td>
+                    <td class="centrado">${totalesEquipo.Partidas}</td>
+                    <td class="centrado">${totalesEquipo.Victorias}</td>
+                    <td class="centrado">${totalesEquipo.Derrotas}</td>
+                    <td class="centrado">${totalesEquipo.PuntosOb}</td>
+                    <td class="centrado">${totalesEquipo.PuntosPer}</td>
+                    <td class="centrado efectividad ${totalesEquipo.Efectividad < 0 ? 'negativa' : ''}">${totalesEquipo.Efectividad}</td>
+                    <td class="centrado">${totalesEquipo.TotalPts}</td>
                 </tr>
             `;
 
@@ -201,17 +190,14 @@
                         <thead>
                             <tr>
                                 <th>Rank</th>
-                                <th>ID</th>
-                                <th>Jugador</th>                                
                                 <th>Equipo</th>
-                                <th>Flag</th>
-                                <th>País</th>
                                 <th class="centrado">Partidas</th>
-                                <th>Victorias</th>
-                                <th>Derrotas</th>
-                                <th>PtsObtenidos</th>
-                                <th>PtsPermitidos</th>
-                                <th>Efectividad</th>
+                                <th class="centrado">Victorias</th>
+                                <th class="centrado">Derrotas</th>
+                                <th class="centrado">Pts Obtenidos</th>
+                                <th class="centrado">Pts Permitidos</th>
+                                <th class="centrado">Efectividad</th>
+                                <th class="centrado">Total Pts</th>
                             </tr>
                         </thead>
                         <tbody>${filas}</tbody>
@@ -220,8 +206,8 @@
                 ${generarPaginacion(totalRegistros, totalPaginas, inicio, fin)}
                 <div class="stats">
                     <div class="stat-card">
-                        <div class="label">Total de Jugadores</div>
-                        <div class="value">${jugadores.length}</div>
+                        <div class="label">Total de Equipos</div>
+                        <div class="value">${equipos.length}</div>
                     </div>
                 </div>
             `;
@@ -305,7 +291,7 @@
                 btnPrev.addEventListener('click', () => {
                     if (paginaActual > 1) {
                         paginaActual--;
-                        mostrarJugador();
+                        mostrarEquipos();
                     }
                 });
             }
@@ -313,10 +299,10 @@
             const btnNext = document.getElementById('btnNextPage');
             if (btnNext) {
                 btnNext.addEventListener('click', () => {
-                    const totalPaginas = Math.ceil(jugadoresActuales.length / registrosPorPagina);
+                    const totalPaginas = Math.ceil(equiposActuales.length / registrosPorPagina);
                     if (paginaActual < totalPaginas) {
                         paginaActual++;
-                        mostrarJugador();
+                        mostrarEquipos();
                     }
                 });
             }
@@ -325,7 +311,7 @@
             botonesPagina.forEach(boton => {
                 boton.addEventListener('click', () => {
                     paginaActual = parseInt(boton.getAttribute('data-page'));
-                    mostrarJugador();
+                    mostrarEquipos();
                 });
             });
 
@@ -334,7 +320,7 @@
                 pageSize.addEventListener('change', (e) => {
                     registrosPorPagina = parseInt(e.target.value);
                     paginaActual = 1;
-                    mostrarJugador();
+                    mostrarEquipos();
                 });
             }
         }

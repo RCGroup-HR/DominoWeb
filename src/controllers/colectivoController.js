@@ -41,31 +41,34 @@ const colectivoController = {
         Partidas: acc.Partidas + (row.Partidas || 0),
         Victorias: acc.Victorias + (row.Victorias || 0),
         Derrotas: acc.Derrotas + (row.Derrotas || 0),
-        PuntosOb: acc.PuntosOb + (row.PuntosOb || 0),
-        PuntosPer: acc.PuntosPer + (row.PuntosPer || 0),
+        PtsObtenidos: acc.PtsObtenidos + (row.PtsObtenidos || 0),
+        PtsPermitidos: acc.PtsPermitidos + (row.PtsPermitidos || 0),
         Efectividad: acc.Efectividad + (row.Efectividad || 0),
         TotalPts: acc.TotalPts + (row.TotalPts || 0)
       }), {
         Partidas: 0,
         Victorias: 0,
         Derrotas: 0,
-        PuntosOb: 0,
-        PuntosPer: 0,
+        PtsObtenidos: 0,
+        PtsPermitidos: 0,
         Efectividad: 0,
         TotalPts: 0
       });
 
-      // ✅ Agregar fila de totales
+      // ✅ Agregar fila de totales (opcional)
       const filaTotal = {
         ID: null,
+        Ranking: null,
         Equipo: 'TOTAL',
         Partidas: totales.Partidas,
         Victorias: totales.Victorias,
         Derrotas: totales.Derrotas,
-        PuntosOb: totales.PuntosOb,
-        PuntosPer: totales.PuntosPer,
+        PtsObtenidos: totales.PtsObtenidos,
+        PtsPermitidos: totales.PtsPermitidos,
         Efectividad: totales.Efectividad,
         TotalPts: totales.TotalPts,
+        Siglas: null,
+        Pais: null,
         isTotal: true
       };
 

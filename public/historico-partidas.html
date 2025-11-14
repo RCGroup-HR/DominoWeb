@@ -285,18 +285,22 @@
             background: var(--white);
             border-radius: 12px;
             box-shadow: var(--shadow-md);
-            overflow: hidden;
+            overflow-x: auto;
             margin-top: 30px;
+            -webkit-overflow-scrolling: touch;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 900px;
         }
 
         thead {
             background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
             color: white;
+            position: sticky;
+            top: 0;
         }
 
         thead th {
@@ -305,6 +309,7 @@
             font-weight: 600;
             font-size: 0.9rem;
             border-bottom: 2px solid var(--accent-green);
+            white-space: nowrap;
         }
 
         thead th.centrado {
@@ -322,6 +327,7 @@
 
         tbody td {
             padding: 12px 15px;
+            white-space: nowrap;
         }
 
         td.centrado {
@@ -500,6 +506,31 @@
                 height: 100px;
                 font-size: 3rem;
             }
+
+            /* Tabla scrolleable en móvil */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin-left: -15px;
+                margin-right: -15px;
+                padding-left: 15px;
+                padding-right: 15px;
+                border-radius: 0;
+            }
+
+            table {
+                min-width: 1000px;
+            }
+
+            thead th {
+                padding: 12px 8px;
+                font-size: 0.8rem;
+            }
+
+            tbody td {
+                padding: 10px 8px;
+                font-size: 0.9rem;
+            }
         }
 
         .btn-inicio-flotante-js {
@@ -544,6 +575,26 @@
 
         .btn-inicio-flotante-js:active {
             transform: translateY(-2px) scale(0.98) !important;
+        }
+
+        /* Indicador visual para scroll horizontal */
+        @media (max-width: 768px) {
+            .table-container::after {
+                content: "👈 Desliza para ver más 👉";
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.1) 100%);
+                padding: 5px 10px;
+                font-size: 0.75rem;
+                color: #666;
+                animation: pulse-horizontal 2s ease-in-out infinite;
+            }
+
+            @keyframes pulse-horizontal {
+                0%, 100% { opacity: 0.7; }
+                50% { opacity: 1; }
+            }
         }
     </style>
 
@@ -935,7 +986,7 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-bottom">
-                <p>&copy; 2025 Sistema de Estadísticas Dominó. Todos los derechos reservados.</p>
+                <p>&copy; © 2025 Ronnie Hernandez — Sistema de Estadísticas Dominó. Todos los derechos reservados..</p>
             </div>
         </div>
     </footer>

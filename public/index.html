@@ -18,14 +18,26 @@
     <link rel="stylesheet" href="css/main.css">
 </head>
 
-<!-- POPUP MODAL -->
+<!-- POPUP MODAL CON CARRUSEL -->
 <div id="popup-modal" class="popup-modal">
     <div class="popup-content">
         <div class="popup-header">
-            <h3>Patrocinador de ScoreDomino.com</h3>
+            <h3>Patrocinadores de ScoreDomino.com</h3>
         </div>
         <button class="popup-close" onclick="cerrarPopup()">✕</button>
-        <img id="popup-image" src="" alt="Promoción" class="popup-image">
+        
+        <!-- Carrusel de imágenes -->
+        <div class="carousel-container">
+            <div id="carousel-images" class="carousel-images"></div>
+            
+            <!-- Indicadores (dots) -->
+            <div class="carousel-dots" id="carousel-dots"></div>
+            
+            <!-- Botones de navegación -->
+            <button class="carousel-btn prev" onclick="carouselPrev()">❮</button>
+            <button class="carousel-btn next" onclick="carouselNext()">❯</button>
+        </div>
+        
         <div class="popup-footer">
             <p> - </p>
         </div>
@@ -81,13 +93,6 @@
         }
     }
 
-    .popup-image {
-        width: 100%;
-        height: auto;
-        border-radius: 15px;
-        display: block;
-    }
-
     .popup-close {
         position: absolute;
         right: -15px;
@@ -115,48 +120,147 @@
     .popup-close:active {
         transform: scale(0.95);
     }
-.popup-header {
-    background: linear-gradient(135deg, #0a903b 0%, #128C7E 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 15px 15px 0 0;
-    text-align: center;
-    margin: 0;
-}
 
-.popup-header h3 {
-    margin: 0;
-    font-size: 1.2em;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
+    .popup-header {
+        background: linear-gradient(135deg, #0a903b 0%, #128C7E 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px 15px 0 0;
+        text-align: center;
+        margin: 0;
+    }
 
-.popup-image {
-    width: 100%;
-    height: auto;
-    border-radius: 0 0 0px 0px;
-    display: block;
-}
-.popup-footer {
-    background: #eceef0;
-    padding: 20px;
-    text-align: center;
-    border-radius: 0 0 15px 15px;
-    border-top: 1px solid #e9ecef;
-}
+    .popup-header h3 {
+        margin: 0;
+        font-size: 1.2em;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
 
-.popup-footer p {
-    margin: 0;
-    color: #495057;
-    font-size: 0.95em;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-}
+    /* ===== ESTILOS DEL CARRUSEL ===== */
+    .carousel-container {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 0 0 0px 0px;
+    }
 
-.popup-footer strong {
-    color: #f7f8fc;
-    font-weight: 600;
-}
+    .carousel-images {
+        display: flex;
+        width: 100%;
+        height: 450px;
+        position: relative;
+        background: #f8f9fa;
+    }
+
+    .carousel-image {
+        width: 100%;
+        height: 100%;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        transition: opacity 0.6s ease-in-out;
+        background: #f8f9fa;
+    }
+
+    .carousel-image.active {
+        opacity: 1;
+        position: relative;
+    }
+
+    .carousel-image img {
+        width: auto;
+        height: auto;
+        max-width: 95%;
+        max-height: 95%;
+        object-fit: contain;
+        display: block;
+    }
+
+    /* Indicadores (dots) */
+    .carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 0;
+        background: #f5f5f5;
+    }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .dot.active {
+        background: #128C7E;
+        transform: scale(1.3);
+    }
+
+    .dot:hover {
+        background: #128C7E;
+    }
+
+    /* Botones de navegación */
+    .carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.4);
+        color: white;
+        border: none;
+        font-size: 24px;
+        padding: 10px 15px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .carousel-btn:hover {
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+    .carousel-btn.prev {
+        left: 10px;
+    }
+
+    .carousel-btn.next {
+        right: 10px;
+    }
+
+    .popup-footer {
+        background: #eceef0;
+        padding: 20px;
+        text-align: center;
+        border-radius: 0 0 15px 15px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .popup-footer p {
+        margin: 0;
+        color: #495057;
+        font-size: 0.95em;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+    }
+
+    .popup-footer strong {
+        color: #f7f8fc;
+        font-weight: 600;
+    }
 
     /* Responsive */
     @media (max-width: 768px) {
@@ -172,33 +276,127 @@
             height: 35px;
             font-size: 20px;
         }
+
+        .carousel-image {
+            height: 300px;
+        }
+
+        .carousel-btn {
+            font-size: 18px;
+            padding: 8px 12px;
+        }
     }
 </style>
 
 <script>
-    // Función para mostrar popup (solo si no fue mostrado en esta sesión)
-    function mostrarPopup(imagenSrc) {
+    // ===== CONFIGURACIÓN DEL CARRUSEL =====
+    const CAROUSEL_CONFIG = {
+        images: [
+            'patrocinadores/logo.jpg',
+            'patrocinadores/logo2.jpg',
+            'patrocinadores/logo3.png'
+            // ⬆️ Agrega más imágenes aquí según necesites
+        ],
+        autoplayInterval: 2000, // 3 segundos
+        currentIndex: 0,
+        autoplayTimer: null
+    };
+
+    // ===== INICIALIZACIÓN DEL CARRUSEL =====
+    function inicializarCarrusel() {
+        const container = document.getElementById('carousel-images');
+        const dotsContainer = document.getElementById('carousel-dots');
+
+        // Crear elementos de imágenes
+        CAROUSEL_CONFIG.images.forEach((src, index) => {
+            const div = document.createElement('div');
+            div.className = `carousel-image ${index === 0 ? 'active' : ''}`;
+            div.innerHTML = `<img src="${src}" alt="Patrocinador ${index + 1}">`;
+            container.appendChild(div);
+        });
+
+        // Crear indicadores (dots)
+        CAROUSEL_CONFIG.images.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.className = `dot ${index === 0 ? 'active' : ''}`;
+            dot.onclick = () => irAImagen(index);
+            dotsContainer.appendChild(dot);
+        });
+
+        // Iniciar autoplay
+        iniciarAutoplay();
+    }
+
+    // ===== FUNCIONES DEL CARRUSEL =====
+    function mostrarImagen(index) {
+        // Validar índice
+        if (index < 0) index = CAROUSEL_CONFIG.images.length - 1;
+        if (index >= CAROUSEL_CONFIG.images.length) index = 0;
+
+        CAROUSEL_CONFIG.currentIndex = index;
+
+        // Actualizar imágenes
+        document.querySelectorAll('.carousel-image').forEach((img, i) => {
+            img.classList.toggle('active', i === index);
+        });
+
+        // Actualizar dots
+        document.querySelectorAll('.dot').forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+
+        // Reiniciar autoplay
+        detenerAutoplay();
+        iniciarAutoplay();
+    }
+
+    function carouselNext() {
+        mostrarImagen(CAROUSEL_CONFIG.currentIndex + 1);
+    }
+
+    function carouselPrev() {
+        mostrarImagen(CAROUSEL_CONFIG.currentIndex - 1);
+    }
+
+    function irAImagen(index) {
+        mostrarImagen(index);
+    }
+
+    function iniciarAutoplay() {
+        CAROUSEL_CONFIG.autoplayTimer = setInterval(() => {
+            carouselNext();
+        }, CAROUSEL_CONFIG.autoplayInterval);
+    }
+
+    function detenerAutoplay() {
+        if (CAROUSEL_CONFIG.autoplayTimer) {
+            clearInterval(CAROUSEL_CONFIG.autoplayTimer);
+        }
+    }
+
+    // ===== FUNCIONES DEL POPUP =====
+    function mostrarPopup() {
         // Verificar si el popup ya fue mostrado en esta sesión
         if (sessionStorage.getItem('popupMostrado') === 'true') {
-            return; // No mostrar si ya fue mostrado
+            return;
         }
         
         const modal = document.getElementById('popup-modal');
-        const img = document.getElementById('popup-image');
-        img.src = imagenSrc;
         modal.style.display = 'block';
     }
 
-    // Función para cerrar popup
     function cerrarPopup() {
         const modal = document.getElementById('popup-modal');
         modal.style.display = 'none';
         
         // Guardar que el popup fue mostrado en esta sesión
         sessionStorage.setItem('popupMostrado', 'true');
+        
+        // Detener autoplay al cerrar
+        detenerAutoplay();
     }
 
-    // Cerrar popup al hacer click fuera de la imagen
+    // Cerrar popup al hacer click fuera
     window.addEventListener('click', function(event) {
         const modal = document.getElementById('popup-modal');
         if (event.target === modal) {
@@ -215,7 +413,8 @@
 
     // Mostrar popup cuando cargue la página
     window.addEventListener('load', function() {
-        mostrarPopup('patrocinadores/logo.jpg');
+        inicializarCarrusel();
+        mostrarPopup();
     });
 </script>
 

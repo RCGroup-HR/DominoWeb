@@ -127,24 +127,6 @@
             const todosEquipos = todosEquiposActuales;
 
             console.log(equipos);
-            
-            const totalesEquipo = equipos.reduce((acc, equipo) => ({
-                Partidas: acc.Partidas + (Number(equipo.Partidas) || 0),
-                Victorias: acc.Victorias + (Number(equipo.Victorias) || 0),
-                Derrotas: acc.Derrotas + (Number(equipo.Derrotas) || 0),
-                PuntosOb: acc.PuntosOb + (Number(equipo.PuntosOb) || 0),
-                PuntosPer: acc.PuntosPer + (Number(equipo.PuntosPer) || 0),
-                Efectividad: acc.Efectividad + (Number(equipo.Efectividad) || 0),
-                TotalPts: acc.TotalPts + (Number(equipo.TotalPts) || 0)
-            }), {
-                Partidas: 0,
-                Victorias: 0,
-                Derrotas: 0,
-                PuntosOb: 0,
-                PuntosPer: 0,
-                Efectividad: 0,
-                TotalPts: 0
-            });
 
             const totalRegistros = equipos.length;
             const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
@@ -159,6 +141,8 @@
                     <tr>
                         <td class="centrado"><strong>${equipo.Ranking || '-'}</strong></td>
                         <td><strong>${equipo.Equipo || '-'}</strong></td>     
+                        <td>${equipo.Siglas ? `<img src="pais/${equipo.Siglas}.png" class="flag" alt="${equipo.Siglas}">` : '-'}</td>
+                        <td>${equipo.Pais || '-'}</td>
                         <td class="centrado">${equipo.Partidas || 0}</td>
                         <td class="centrado">${equipo.Victorias || 0}</td>
                         <td class="centrado">${equipo.Derrotas || 0}</td>
@@ -170,20 +154,6 @@
                 `;
             }).join('');
 
-            filas += `
-                <tr class="total-row">
-                    <td></td>
-                    <td><strong>TOTAL</strong></td>
-                    <td class="centrado">${totalesEquipo.Partidas}</td>
-                    <td class="centrado">${totalesEquipo.Victorias}</td>
-                    <td class="centrado">${totalesEquipo.Derrotas}</td>
-                    <td class="centrado">${totalesEquipo.PuntosOb}</td>
-                    <td class="centrado">${totalesEquipo.PuntosPer}</td>
-                    <td class="centrado efectividad ${totalesEquipo.Efectividad < 0 ? 'negativa' : ''}">${totalesEquipo.Efectividad}</td>
-                    <td class="centrado">${totalesEquipo.TotalPts}</td>
-                </tr>
-            `;
-
             const html = `
                 <div class="table-container">
                     <table>
@@ -191,6 +161,8 @@
                             <tr>
                                 <th>Rank</th>
                                 <th>Equipo</th>
+                                <th>Flag</th>
+                                <th>País</th>
                                 <th class="centrado">Partidas</th>
                                 <th class="centrado">Victorias</th>
                                 <th class="centrado">Derrotas</th>

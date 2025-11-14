@@ -7,7 +7,6 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-VFG529YRBN');
 </script>
 
@@ -24,7 +23,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Ranking Colectivo <span id="TituloTorneo"> Copa Elite </span> </h1>            
+            <h1>Ranking Colectivo <span id="TituloTorneo">Cargando...</span></h1>            
         </div>  
 
         <div class="controls">
@@ -58,12 +57,12 @@
         // ✅ Esperar a que la API se inicialice
         window.addEventListener('load', () => {
             setTimeout(() => {
-                if (API.initialized) {
+                if (API && API.initialized) {
                     console.log('🚀 Iniciando aplicación de Ranking Colectivo');
                     buscaTorneo();
                     buscarEquipos();
                 } else {
-                    console.error('❌ Error al inicializar configuración');
+                    console.error('❌ Error: API no inicializada');
                     mostrarError('Error al conectar con el servidor. Por favor recarga la página.');
                 }
             }, 500);
@@ -71,21 +70,25 @@
 
         async function buscaTorneo() {
             try {
-                // ✅ Petición protegida - obtener nombre del torneo
-                const data = await API.get('/colectivo');
-
-                console.log(data);
+                console.log('📡 Llamando a /colectivo (nombre del torneo)...');
                 
-                if (data.success && data.data.length > 0) {
+                const data = await API.get('/colectivo');
+                console.log('✅ Respuesta recibida:', data);
+                
+                if (data && data.success && data.data && data.data.length > 0) {
                     const Torneo = data.data[0];
-                    const TituloTorneo = document.getElementById('TituloTorneo');
-                    TituloTorneo.innerHTML = `<span> ${Torneo.Nombre} </span>`;
+                    console.log('🎯 Torneo:', Torneo);
+                    
+                    const nombreTorneo = Torneo.Nombre || 'Torneo Sin Nombre';
+                    document.getElementById('TituloTorneo').textContent = nombreTorneo;
+                    console.log('✅ Título actualizado a:', nombreTorneo);
                 } else {
-                    mostrarError('No hay datos de Torneo para este torneo');
+                    console.warn('⚠️ No hay datos de torneo');
+                    document.getElementById('TituloTorneo').textContent = 'Torneo No Disponible';
                 }
             } catch (error) {
-                console.error('Error:', error);
-                mostrarError('Error al cargar el Torneo');
+                console.error('❌ Error en buscaTorneo:', error);
+                document.getElementById('TituloTorneo').textContent = 'Error Cargando';
             }
         }
 
@@ -94,14 +97,17 @@
             content.innerHTML = '<div class="loading">Cargando equipos...</div>';
 
             try {
-                // ✅ Petición protegida - obtener ranking colectivo
-                const data = await API.get('/colectivo/torneo');
-
-                console.log(data);
+                console.log('📡 Llamando a /colectivo/torneo (ranking)...');
                 
-                if (data.success && data.data.length > 0) {
+                const data = await API.get('/colectivo/torneo');
+                console.log('✅ Respuesta recibida:', data);
+                
+                if (data && data.success && data.data && data.data.length > 0) {
                     const filaTotal = data.data.find(e => e.isTotal);
                     const equiposNormales = data.data.filter(e => !e.isTotal);
+                    
+                    console.log('🎯 Equipos encontrados:', equiposNormales.length);
+                    console.log('📋 Primer equipo:', equiposNormales[0]);
                     
                     if (equiposNormales.length > 0) {
                         equiposActuales = equiposNormales;
@@ -114,11 +120,12 @@
                         mostrarError('No hay datos de equipos en este torneo');
                     }
                 } else {
+                    console.error('❌ Respuesta inválida:', data);
                     mostrarError('No hay datos de ranking colectivo para este torneo');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                mostrarError('Error al cargar el ranking colectivo');
+                console.error('❌ Error en buscarEquipos:', error);
+                mostrarError('Error al cargar el ranking colectivo: ' + error.message);
             }
         }
 
@@ -126,7 +133,7 @@
             const equipos = equiposActuales;
             const todosEquipos = todosEquiposActuales;
 
-            console.log(equipos);
+            console.log('📋 Equipos a mostrar:', equipos);
 
             const totalRegistros = equipos.length;
             const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
@@ -135,8 +142,6 @@
             const equiposPaginados = equipos.slice(inicio, fin);
 
             let filas = equiposPaginados.map(equipo => {
-                const rank = todosEquipos.findIndex(e => e.ID === equipo.ID) + 1;
-                const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-cell';
                 return `
                     <tr>
                         <td class="centrado"><strong>${equipo.Ranking || '-'}</strong></td>

@@ -8,6 +8,80 @@
     <script src="js/api-config.js"></script>
 
     <style>
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 50px 0;
+            padding: 0 20px;
+        }
+
+        .feature-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 35px 25px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 15px;
+            border: 2px solid #e5e7eb;
+            text-decoration: none;
+            color: #1f2937;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #16a34a 0%, #114d37 100%);
+            opacity: 0.08;
+            transition: left 0.3s ease;
+            z-index: 0;
+        }
+
+        .feature-card:hover::before {
+            left: 0;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(22, 163, 74, 0.15);
+            border-color: #16a34a;
+        }
+
+        .feature-card .icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            color: #114d37;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            text-align: center;
+            color: #666;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
         .btn-inicio-flotante-js {
             position: fixed !important;
             bottom: 30px !important;
@@ -175,35 +249,31 @@
         </div>
     </div>
 
-            <div class="features">
+    <div class="features">
+        <a href="ranking-individual.html" class="feature-card">
+            <div class="icon">🏆</div>
+            <h3>Ranking Individual</h3>
+            <p>Visualiza la clasificación completa de jugadores ordenados por rendimiento y efectividad.</p>
+        </a>
 
-            <a href="ranking-general.html" class="feature-card">
-                <div class="icon">🏆</div>
-                <h3>Ranking Individual</h3>
-                <p>Visualiza la clasificación completa de jugadores ordenados por rendimiento y efectividad.</p>
-            </a>
+        <a href="ranking-colectivo.html" class="feature-card">
+            <div class="icon">🏆🏆🏆</div>
+            <h3>Ranking Colectivo</h3>
+            <p>Visualiza la clasificación completa por equipos por rendimiento y efectividad.</p>
+        </a>
 
-            <a href="ranking-colectivo.html" class="feature-card">
-                <div class="icon">🏆🏆🏆</div>
-                <h3>Ranking Colectivo</h3>
-                <p>Visualiza la clasificación completa por equipos por rendimiento y efectividad.</p>
-            </a>
+        <a href="historico-partidas.html" class="feature-card">
+            <div class="icon">📊</div>
+            <h3>Histórico de Jugadores</h3>
+            <p>Consulta el historial completo de partidas de cualquier jugador por torneo con estadísticas resumindas.</p>
+        </a>
 
-            
-            <a href="historico-partidas.html" class="feature-card">
-                <div class="icon">📊</div>
-                <h3>Histórico de Jugadores</h3>
-                <p>Consulta el historial completo de partidas de cualquier jugador por torneo con estadísticas resumindas.</p>
-            </a>
-
-            <a href="comparar-jugadores.html" class="feature-card">
-                <div class="icon">🥊vs🥊</div>
-                <h3>Comparar</h3>
-                <p>Muestra el rendimiento entre dos jugadores.</p>
-            </a>
-
-
-        </div>
+        <a href="comparar-jugadores.html" class="feature-card">
+            <div class="icon">🥊vs🥊</div>
+            <h3>Comparar</h3>
+            <p>Muestra el rendimiento entre dos jugadores.</p>
+        </a>
+    </div>
 
     <footer class="footer">
         <div class="footer-bottom">

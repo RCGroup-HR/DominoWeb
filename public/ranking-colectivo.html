@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VFG529YRBN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VFG529YRBN');
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Individual</title>
+    <link rel="stylesheet" href="css/main.css">
+    
+    <!-- ✅ Script de configuración de API (protegida) -->
+    <script src="js/api-config.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ranking Colectivo <span id="TituloTorneo"> Copa Elite </span> </h1>            
+        </div>  
+
+        <div class="controls">
+            <div class="form-row">
+                <!-- Controles aquí si los necesitas -->
+            </div>
+        </div>
+
+        <div id="content">
+            <div class="initial-message">
+                <div class="icon">🔍</div>
+                <p>Cargando datos...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================
+        // ✅ CÓDIGO PROTEGIDO (SIN URLs EXPUESTAS)
+        // ============================================
+        
+        let torneos = [];
+        let jugadoresActuales = [];
+        let todosJugadoresActuales = [];
+        let filaTotalActual = null;
+        
+        // Variables de paginación
+        let paginaActual = 1;
+        let registrosPorPagina = 10;
+        
+        // ✅ Esperar a que la API se inicialice
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (API.initialized) {
+                    console.log('🚀 Iniciando aplicación con configuración segura');
+                    buscaTorneo();
+                    buscarJugador();
+                } else {
+                    console.error('❌ Error al inicializar configuración');
+                    mostrarError('Error al conectar con el servidor. Por favor recarga la página.');
+                }
+            }, 500);
+        });
+
+        async function buscaTorneo() {
+            try {
+                // ✅ Petición protegida (API Key incluida automáticamente)
+                const data = await API.get('/ranking/torneo');
+
+                console.log(data);
+                
+                if (data.success && data.data.length > 0) {
+                    const Torneo = data.data[0];
+                    const TituloTorneo = document.getElementById('TituloTorneo');
+                    TituloTorneo.innerHTML = `<span> ${Torneo.Nombre} </span>`;
+                } else {
+                    mostrarError('No hay datos de Torneo para este torneo');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al cargar el Torneo');
+            }
+        }
+
+        async function buscarJugador() {
+            const Carnet = 1;
+
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Cargando jugadores...</div>';
+
+            try {
+                // ✅ Petición protegida (API Key incluida automáticamente)
+                const data = await API.get('/ranking/torneo');
+
+                console.log(data);
+                
+                if (data.success && data.data.length > 0) {
+                    const filaTotal = data.data.find(j => j.isTotal);
+                    const jugadoresNormales = data.data.filter(j => !j.isTotal);
+                    
+                    const jugador = jugadoresNormales;
+                    
+                    if (jugador.length > 0) {
+                        jugadoresActuales = jugadoresNormales;
+                        todosJugadoresActuales = jugadoresNormales;
+                        filaTotalActual = filaTotal;
+                        paginaActual = 1;
+                        
+                        mostrarJugador();
+                    } else {
+                        mostrarError(`No se encontró ningún jugador con el carnet ${Carnet} en este torneo`);
+                    }
+                } else {
+                    mostrarError('No hay datos de ranking para este torneo');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al cargar el ranking');
+            }
+        }
+
+        function mostrarJugador() {
+            const jugadores = jugadoresActuales;
+            const todosJugadores = todosJugadoresActuales;
+
+            console.log(jugadores);
+            
+            const totalesJugador = jugadores.reduce((acc, jugador) => ({
+                Partidas: acc.Partidas + (Number(jugador.Partidas) || 0),
+                Victorias: acc.Victorias + (Number(jugador.Victorias) || 0),
+                Derrotas: acc.Derrotas + (Number(jugador.Derrotas) || 0),
+                PuntosOb: acc.PuntosOb + (Number(jugador.PtsObtenidos) || 0),
+                PuntosPer: acc.PuntosPer + (Number(jugador.PtsPermitidos) || 0),
+                Efectividad: acc.Efectividad + (Number(jugador.Efectividad) || 0),
+                TotalPts: acc.TotalPts + (Number(jugador.TotalPts) || 0)
+            }), {
+                Partidas: 0,
+                Victorias: 0,
+                Derrotas: 0,
+                PuntosOb: 0,
+                PuntosPer: 0,
+                Efectividad: 0,
+                TotalPts: 0
+            });
+
+            const totalRegistros = jugadores.length;
+            const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
+            const inicio = (paginaActual - 1) * registrosPorPagina;
+            const fin = inicio + registrosPorPagina;
+            const jugadoresPaginados = jugadores.slice(inicio, fin);
+
+            let filas = jugadoresPaginados.map(jugador => {
+                const rank = todosJugadores.findIndex(j => j.ID === jugador.ID) + 1;
+                const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-cell';
+                return `
+                    <tr>
+                        <td class="centrado">${jugador.Ranking || '-'}</td>
+                        <td>${jugador.ID_Jugador || '-'}</td>
+                        <td><strong>${jugador.NJugador || '-'}</strong></td>     
+                        <td>${jugador.Equipo || '-'}</td>
+                        <td>${jugador.Siglas ? `<img src="pais/${jugador.Siglas}.png" class="flag" alt="${jugador.Siglas}">` : '-'}</td>
+                        <td>${jugador.Pais || '-'}</td>
+                        <td class="centrado">${jugador.Partidas || 0}</td>
+                        <td class="centrado">${jugador.Victorias || 0}</td>
+                        <td class="centrado">${jugador.Derrotas || 0}</td>
+                        <td class="centrado">${jugador.PtsObtenidos || 0}</td>
+                        <td class="centrado">${jugador.PtsPermitidos || 0}</td>
+                        <td class="efectividad centrado ${(jugador.Efectividad || 0) < 0 ? 'negativa' : ''}">${jugador.Efectividad || 0}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            filas += `
+                <tr class="total-row">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><strong>TOTAL</strong></td>
+                    <td class="centrado">${totalesJugador.Partidas}</td>
+                    <td class="centrado">${totalesJugador.Victorias}</td>
+                    <td class="centrado">${totalesJugador.Derrotas}</td>
+                    <td class="centrado">${totalesJugador.PuntosOb}</td>  <!-- ✅ CORREGIDO -->
+                    <td class="centrado">${totalesJugador.PuntosPer}</td> <!-- ✅ CORREGIDO -->
+                    <td class="centrado" class="efectividad ${totalesJugador.Efectividad < 0 ? 'negativa' : ''}">${totalesJugador.Efectividad}</td>
+                </tr>
+            `;
+
+            const html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>ID</th>
+                                <th>Jugador</th>                                
+                                <th>Equipo</th>
+                                <th>Flag</th>
+                                <th>País</th>
+                                <th class="centrado">Partidas</th>
+                                <th>Victorias</th>
+                                <th>Derrotas</th>
+                                <th>PtsObtenidos</th>
+                                <th>PtsPermitidos</th>
+                                <th>Efectividad</th>
+                            </tr>
+                        </thead>
+                        <tbody>${filas}</tbody>
+                    </table>
+                </div>
+                ${generarPaginacion(totalRegistros, totalPaginas, inicio, fin)}
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="label">Total de Jugadores</div>
+                        <div class="value">${jugadores.length}</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+            agregarEventosPaginacion();
+        }
+
+        function generarPaginacion(totalRegistros, totalPaginas, inicio, fin) {
+            if (totalRegistros === 0) return '';
+
+            let botonesPaginas = '';
+            const maxBotones = 5;
+            
+            if (totalPaginas > 1) {
+                let inicioRango = Math.max(1, paginaActual - Math.floor(maxBotones / 2));
+                let finRango = Math.min(totalPaginas, inicioRango + maxBotones - 1);
+                
+                if (finRango - inicioRango < maxBotones - 1) {
+                    inicioRango = Math.max(1, finRango - maxBotones + 1);
+                }
+
+                if (inicioRango > 1) {
+                    botonesPaginas += `<button class="pagination-btn" data-page="1">1</button>`;
+                    if (inicioRango > 2) {
+                        botonesPaginas += `<button class="pagination-btn dots">...</button>`;
+                    }
+                }
+
+                for (let i = inicioRango; i <= finRango; i++) {
+                    const activeClass = i === paginaActual ? 'active' : '';
+                    botonesPaginas += `<button class="pagination-btn ${activeClass}" data-page="${i}">${i}</button>`;
+                }
+
+                if (finRango < totalPaginas) {
+                    if (finRango < totalPaginas - 1) {
+                        botonesPaginas += `<button class="pagination-btn dots">...</button>`;
+                    }
+                    botonesPaginas += `<button class="pagination-btn" data-page="${totalPaginas}">${totalPaginas}</button>`;
+                }
+            }
+
+            const navegacionHTML = totalPaginas > 1 ? `
+                <div class="pagination-controls">
+                    <button class="pagination-btn" id="btnPrevPage" ${paginaActual === 1 ? 'disabled' : ''}>
+                        ← Anterior
+                    </button>
+                    ${botonesPaginas}
+                    <button class="pagination-btn" id="btnNextPage" ${paginaActual === totalPaginas ? 'disabled' : ''}>
+                        Siguiente →
+                    </button>
+                </div>
+            ` : '';
+
+            const containerClass = totalPaginas <= 1 ? 'pagination-container single-page' : 'pagination-container';
+
+            return `
+                <div class="${containerClass}">
+                    <div class="page-size-selector">
+                        <label>Mostrar:</label>
+                        <select id="pageSize">
+                            <option value="5" ${registrosPorPagina === 5 ? 'selected' : ''}>5</option>
+                            <option value="10" ${registrosPorPagina === 10 ? 'selected' : ''}>10</option>
+                            <option value="15" ${registrosPorPagina === 15 ? 'selected' : ''}>15</option>
+                            <option value="25" ${registrosPorPagina === 25 ? 'selected' : ''}>25</option>
+                            <option value="50" ${registrosPorPagina === 50 ? 'selected' : ''}>50</option>
+                            <option value="${totalRegistros}">Todos</option>
+                        </select>
+                    </div>
+                    <div class="pagination-info">
+                        Mostrando ${inicio + 1} - ${Math.min(fin, totalRegistros)} de ${totalRegistros} registros
+                    </div>
+                    ${navegacionHTML}
+                </div>
+            `;
+        }
+
+        function agregarEventosPaginacion() {
+            const btnPrev = document.getElementById('btnPrevPage');
+            if (btnPrev) {
+                btnPrev.addEventListener('click', () => {
+                    if (paginaActual > 1) {
+                        paginaActual--;
+                        mostrarJugador();
+                    }
+                });
+            }
+
+            const btnNext = document.getElementById('btnNextPage');
+            if (btnNext) {
+                btnNext.addEventListener('click', () => {
+                    const totalPaginas = Math.ceil(jugadoresActuales.length / registrosPorPagina);
+                    if (paginaActual < totalPaginas) {
+                        paginaActual++;
+                        mostrarJugador();
+                    }
+                });
+            }
+
+            const botonesPagina = document.querySelectorAll('.pagination-btn[data-page]');
+            botonesPagina.forEach(boton => {
+                boton.addEventListener('click', () => {
+                    paginaActual = parseInt(boton.getAttribute('data-page'));
+                    mostrarJugador();
+                });
+            });
+
+            const pageSize = document.getElementById('pageSize');
+            if (pageSize) {
+                pageSize.addEventListener('change', (e) => {
+                    registrosPorPagina = parseInt(e.target.value);
+                    paginaActual = 1;
+                    mostrarJugador();
+                });
+            }
+        }
+
+        function mostrarError(mensaje) {
+            document.getElementById('content').innerHTML = `
+                <div class="error">
+                    ⚠️ ${mensaje}
+                </div>
+            `;
+        }
+
+    </script>
+
+    <footer class="footer">
+        <div class="footer-content">
+           
+            <div class="footer-bottom">
+                <p>&copy; 2025 Ronnie Hernandez — Sistema de Estadísticas Dominó. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botón flotante de inicio -->
+    <script>
+        (function() {
+            const boton = document.createElement('a');
+            boton.href = 'index.html';
+            boton.className = 'btn-inicio-flotante-js';
+            
+            boton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Inicio</span>
+            `;
+            
+            boton.style.cssText = `
+                position: fixed !important;
+                bottom: 30px !important;
+                right: 30px !important;
+                background: linear-gradient(135deg, #114d37 0%, #16a34a 100%) !important;
+                color: white !important;
+                padding: 14px 26px !important;
+                border-radius: 50px !important;
+                text-decoration: none !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 10px !important;
+                font-family: Arial, sans-serif !important;
+                font-size: 16px !important;
+                font-weight: 600 !important;
+                box-shadow: 0 6px 20px rgba(17, 77, 55, 0.5) !important;
+                transition: all 0.3s ease !important;
+                z-index: 999999 !important;
+                border: 3px solid #f97316 !important;
+                cursor: pointer !important;
+            `;
+            
+            boton.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px)';
+                this.style.boxShadow = '0 8px 25px rgba(17, 77, 55, 0.7)';
+                this.style.background = 'linear-gradient(135deg, #0d3d2b 0%, #15803d 100%)';
+            });
+            
+            boton.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 6px 20px rgba(17, 77, 55, 0.5)';
+                this.style.background = 'linear-gradient(135deg, #114d37 0%, #16a34a 100%)';
+            });
+            
+            document.body.appendChild(boton);
+            
+            console.log('✅ Botón flotante de inicio creado correctamente');
+        })();
+    </script>
+
+</body>
+</html>

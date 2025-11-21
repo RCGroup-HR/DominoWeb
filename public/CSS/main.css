@@ -1255,4 +1255,42 @@ tbody td {
 @media (max-width:480px){ .sponsor-overlay{padding:12px;} .sponsor-box{max-width:420px;min-height:480px;padding:12px;border-radius:12px;} .sponsor-inner{max-width:360px;border-radius:10px;} .sponsor-close-btn{width:44px;height:44px;top:10px;right:10px;} }
 @media (prefers-reduced-motion: reduce){ .sponsor-box{transition:none;animation:none;} }
 
+
+/* ========================================
+   LOGOS CLICKEABLES EN ENCABEZADO
+   ======================================== */
+
+.metodologia-logos a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.metodologia-logos img {
+    height: 60px;
+    width: auto;
+    max-width: 80px;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+}
+
+.metodologia-logos a:hover {
+    background: rgba(18, 140, 126, 0.1);
+    border-radius: 12px;
+    padding: 8px;
+}
+
+.metodologia-logos a:hover img {
+    transform: scale(1.1);
+    filter: drop-shadow(2px 2px 8px rgba(18, 140, 126, 0.4));
+}
+
+@media (max-width: 480px) {
+    .metodologia-logos a:hover {
+        padding: 5px;
+    }
+}
 }

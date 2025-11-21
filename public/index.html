@@ -29,18 +29,59 @@
         
         <!-- Carrusel de imágenes -->
         <div class="carousel-container">
-            <div id="carousel-images" class="carousel-images"></div>
+            <div class="carousel-images">
+                <!-- IMAGEN 1: Industrial Shal -->
+                <div class="carousel-image active" data-index="0">
+                    <a href="https://www.instagram.com/industrialshal_/" target="_blank" rel="noopener noreferrer" class="carousel-link">
+                        <img src="patrocinadores/logo.jpg" alt="Industrial Shal">
+                    </a>
+                </div>
+
+                <!-- IMAGEN 2: Movimiento Jugadores -->
+                <div class="carousel-image" data-index="1">
+                    <a href="https://www.instagram.com/movimientojugadores/" target="_blank" rel="noopener noreferrer" class="carousel-link">
+                        <img src="patrocinadores/logo5.png" alt="Movimiento Jugadores">
+                    </a>
+                </div>
+
+                <!-- IMAGEN 3: TJ Multiservice -->
+                <div class="carousel-image" data-index="2">
+                    <a href="https://www.instagram.com/tj.multiservice/" target="_blank" rel="noopener noreferrer" class="carousel-link">
+                        <img src="patrocinadores/logo4.jpg" alt="TJ Multiservice">
+                    </a>
+                </div>
+
+                <!-- IMAGEN 4: Brisas del Olimpo -->
+                <div class="carousel-image" data-index="3">
+                    <a href="https://www.instagram.com/brisasdelolimpo/" target="_blank" rel="noopener noreferrer" class="carousel-link">
+                        <img src="patrocinadores/logo2.jpg" alt="Brisas del Olimpo">
+                    </a>
+                </div>
+
+                <!-- IMAGEN 5: Ronnie Hdez -->
+                <div class="carousel-image" data-index="4">
+                    <a href="https://www.instagram.com/ronniehdez/" target="_blank" rel="noopener noreferrer" class="carousel-link">
+                        <img src="patrocinadores/logo3.png" alt="Ronnie Hdez">
+                    </a>
+                </div>
+            </div>
             
             <!-- Indicadores (dots) -->
-            <div class="carousel-dots" id="carousel-dots"></div>
+            <div class="carousel-dots">
+                <div class="dot active" data-index="0"></div>
+                <div class="dot" data-index="1"></div>
+                <div class="dot" data-index="2"></div>
+                <div class="dot" data-index="3"></div>
+                <div class="dot" data-index="4"></div>
+            </div>
             
             <!-- Botones de navegación -->
-            <button class="carousel-btn prev" onclick="carouselPrev()">❮</button>
-            <button class="carousel-btn next" onclick="carouselNext()">❯</button>
+            <button class="carousel-btn prev">❮</button>
+            <button class="carousel-btn next">❯</button>
         </div>
         
         <div class="popup-footer">
-            <p> - </p>
+            <p>Haz clic en las imágenes para visitar Instagram</p>
         </div>
     </div>
 </div>
@@ -155,28 +196,40 @@
     }
 
     .carousel-image {
+        position: absolute;
         width: 100%;
         height: 100%;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
         top: 0;
         left: 0;
         opacity: 0;
         transition: opacity 0.6s ease-in-out;
         background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .carousel-image.active {
         opacity: 1;
-        position: relative;
+        z-index: 10;
     }
 
-    .carousel-image img {
-        width: auto;
-        height: auto;
+    .carousel-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .carousel-link:hover {
+        background: rgba(0,0,0,0.05);
+    }
+
+    .carousel-link img {
         max-width: 95%;
         max-height: 95%;
         object-fit: contain;
@@ -224,7 +277,7 @@
         cursor: pointer;
         border-radius: 5px;
         transition: all 0.3s ease;
-        z-index: 10;
+        z-index: 100;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -258,11 +311,6 @@
         letter-spacing: 0.3px;
     }
 
-    .popup-footer strong {
-        color: #f7f8fc;
-        font-weight: 600;
-    }
-
     /* Responsive */
     @media (max-width: 768px) {
         .popup-content {
@@ -290,53 +338,25 @@
 </style>
 
 <script>
-    // ===== CONFIGURACIÓN DEL CARRUSEL =====
-    const CAROUSEL_CONFIG = {
-        images: [
-            'patrocinadores/logo.jpg',
-            'patrocinadores/logo5.png',
-            'patrocinadores/logo4.jpg',
-            'patrocinadores/logo2.jpg',
-            'patrocinadores/logo3.png'
-            // ⬆️ Agrega más imágenes aquí según necesites
-        ],
-        autoplayInterval: 2500, // 3 segundos
-        currentIndex: 0,
-        autoplayTimer: null
-    };
+    // ===== VARIABLES DEL CARRUSEL =====
+    let currentCarouselIndex = 0;
+    const totalImages = 5;
+    let autoplayTimer = null;
 
-    // ===== INICIALIZACIÓN DEL CARRUSEL =====
-    function inicializarCarrusel() {
-        const container = document.getElementById('carousel-images');
-        const dotsContainer = document.getElementById('carousel-dots');
+    // Configuración de imágenes
+    const carouselImages = [
+        { name: "Industrial Shal", url: "https://www.instagram.com/industrialshal_/" },
+        { name: "Movimiento Jugadores", url: "https://www.instagram.com/movimientojugadores/" },
+        { name: "TJ Multiservice", url: "https://www.instagram.com/tj.multiservice/" },
+        { name: "Brisas del Olimpo", url: "https://www.instagram.com/brisasdelolimpo/" },
+        { name: "Ronnie Hdez", url: "https://www.instagram.com/ronniehdez/" }
+    ];
 
-        // Crear elementos de imágenes
-        CAROUSEL_CONFIG.images.forEach((src, index) => {
-            const div = document.createElement('div');
-            div.className = `carousel-image ${index === 0 ? 'active' : ''}`;
-            div.innerHTML = `<img src="${src}" alt="Patrocinador ${index + 1}">`;
-            container.appendChild(div);
-        });
+    function updateCarousel(index) {
+        if (index < 0) index = totalImages - 1;
+        if (index >= totalImages) index = 0;
 
-        // Crear indicadores (dots)
-        CAROUSEL_CONFIG.images.forEach((_, index) => {
-            const dot = document.createElement('div');
-            dot.className = `dot ${index === 0 ? 'active' : ''}`;
-            dot.onclick = () => irAImagen(index);
-            dotsContainer.appendChild(dot);
-        });
-
-        // Iniciar autoplay
-        iniciarAutoplay();
-    }
-
-    // ===== FUNCIONES DEL CARRUSEL =====
-    function mostrarImagen(index) {
-        // Validar índice
-        if (index < 0) index = CAROUSEL_CONFIG.images.length - 1;
-        if (index >= CAROUSEL_CONFIG.images.length) index = 0;
-
-        CAROUSEL_CONFIG.currentIndex = index;
+        currentCarouselIndex = index;
 
         // Actualizar imágenes
         document.querySelectorAll('.carousel-image').forEach((img, i) => {
@@ -353,49 +373,55 @@
         iniciarAutoplay();
     }
 
-    function carouselNext() {
-        mostrarImagen(CAROUSEL_CONFIG.currentIndex + 1);
-    }
-
-    function carouselPrev() {
-        mostrarImagen(CAROUSEL_CONFIG.currentIndex - 1);
-    }
-
-    function irAImagen(index) {
-        mostrarImagen(index);
-    }
-
     function iniciarAutoplay() {
-        CAROUSEL_CONFIG.autoplayTimer = setInterval(() => {
-            carouselNext();
-        }, CAROUSEL_CONFIG.autoplayInterval);
+        autoplayTimer = setInterval(() => {
+            updateCarousel(currentCarouselIndex + 1);
+        }, 2500);
     }
 
     function detenerAutoplay() {
-        if (CAROUSEL_CONFIG.autoplayTimer) {
-            clearInterval(CAROUSEL_CONFIG.autoplayTimer);
+        if (autoplayTimer) {
+            clearInterval(autoplayTimer);
         }
     }
 
+    // Inicializar botones cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        // Botón siguiente
+        document.querySelector('.carousel-btn.next').addEventListener('click', () => {
+            updateCarousel(currentCarouselIndex + 1);
+        });
+
+        // Botón anterior
+        document.querySelector('.carousel-btn.prev').addEventListener('click', () => {
+            updateCarousel(currentCarouselIndex - 1);
+        });
+
+        // Dots
+        document.querySelectorAll('.dot').forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                const index = parseInt(e.target.dataset.index);
+                updateCarousel(index);
+            });
+        });
+    });
+
     // ===== FUNCIONES DEL POPUP =====
     function mostrarPopup() {
-        // Verificar si el popup ya fue mostrado en esta sesión
         if (sessionStorage.getItem('popupMostrado') === 'true') {
             return;
         }
         
         const modal = document.getElementById('popup-modal');
         modal.style.display = 'block';
+        iniciarAutoplay();
     }
 
     function cerrarPopup() {
         const modal = document.getElementById('popup-modal');
         modal.style.display = 'none';
         
-        // Guardar que el popup fue mostrado en esta sesión
         sessionStorage.setItem('popupMostrado', 'true');
-        
-        // Detener autoplay al cerrar
         detenerAutoplay();
     }
 
@@ -416,7 +442,6 @@
 
     // Mostrar popup cuando cargue la página
     window.addEventListener('load', function() {
-        inicializarCarrusel();
         mostrarPopup();
     });
 </script>

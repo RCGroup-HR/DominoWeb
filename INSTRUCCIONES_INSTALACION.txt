@@ -1,0 +1,149 @@
+=============================================================
+INSTRUCCIONES DE INSTALACIÓN - SISTEMA DE CARNETS
+=============================================================
+
+✅ PASO 1: EJECUTAR EL SCRIPT SQL
+=============================================================
+
+Abre tu gestor de base de datos (phpMyAdmin, MySQL Workbench, HeidiSQL, etc.)
+
+Conecta a la base de datos: sdr
+
+Ejecuta el archivo SQL:
+   C:\Users\RonnieHdez\Desktop\domino-api\database\schema.sql
+
+O copia y pega el contenido completo del archivo en tu gestor SQL.
+
+Esto creará 5 tablas nuevas:
+   - Usuarios
+   - Carnets
+   - Sesiones
+   - AuditLog
+   - Paises
+
+=============================================================
+✅ PASO 2: VERIFICAR CONFIGURACIÓN
+=============================================================
+
+El archivo .env ya está configurado con:
+   ✓ JWT_SECRET
+   ✓ JWT_EXPIRATION=24h
+   ✓ Conexión a base de datos
+
+=============================================================
+✅ PASO 3: INICIAR EL SERVIDOR
+=============================================================
+
+En la terminal, ejecuta:
+
+   npm start
+
+O en modo desarrollo:
+
+   npm run dev
+
+=============================================================
+✅ PASO 4: PROBAR EL SISTEMA
+=============================================================
+
+1. Abre tu navegador en:
+   http://localhost:3000
+
+2. Haz clic en la tarjeta verde "Sistema de Carnets 🎫"
+
+3. Inicia sesión como ADMINISTRADOR:
+   Email: admin@scoredomino.com
+   Contraseña: admin123
+
+4. Verás el Panel de Administrador con:
+   - Estadísticas generales
+   - Lista de carnets pendientes
+   - Opciones para aprobar/rechazar
+
+5. Para probar como USUARIO:
+   - Cierra sesión
+   - Haz clic en "Regístrate aquí"
+   - Crea una cuenta con tu email
+   - Inicia sesión
+   - Solicita un nuevo carnet con foto
+
+=============================================================
+🎨 ESTILOS ACTUALIZADOS
+=============================================================
+
+Todas las páginas ahora usan el estilo del proyecto original:
+   ✓ Colores verdes: #1e6b4f, #145a40
+   ✓ Fondo: #f5f7fa
+   ✓ Tipografía: -apple-system, Segoe UI
+   ✓ Cards y sombras consistentes
+
+=============================================================
+📱 PÁGINAS DISPONIBLES
+=============================================================
+
+Sistema de carnets:
+   /login.html          - Login (público)
+   /registro.html       - Registro (público)
+   /mis-carnets.html    - Panel de usuario
+   /admin-carnets.html  - Panel de administrador
+
+Sistema original:
+   /                           - Página principal
+   /ranking-general.html       - Ranking individual
+   /ranking-colectivo.html     - Ranking colectivo
+   /historico-partidas.html    - Histórico
+   /comparar-jugadores.html    - Comparar jugadores
+
+=============================================================
+🔑 CREDENCIALES POR DEFECTO
+=============================================================
+
+ADMINISTRADOR:
+   Email: admin@scoredomino.com
+   Password: admin123
+
+⚠️ IMPORTANTE: Cambia esta contraseña después del primer login
+
+=============================================================
+📝 FUNCIONALIDADES
+=============================================================
+
+✅ Sistema de autenticación con JWT
+✅ Registro de usuarios
+✅ Roles (usuario, administrador)
+✅ Solicitud de carnets con foto
+✅ Sistema de aprobación/rechazo
+✅ Filtros por país y estado
+✅ Búsqueda por nombre o carnet
+✅ Auditoría de acciones
+✅ Estadísticas en tiempo real
+✅ Subida de fotos (máx 5MB)
+✅ Responsive design
+
+=============================================================
+🐛 SOLUCIÓN DE PROBLEMAS
+=============================================================
+
+Error "Token inválido":
+   → Vuelve a iniciar sesión
+
+No puedo subir fotos:
+   → Verifica que existe: public/uploads/fotos-carnets/
+   → Crea la carpeta si no existe
+
+Base de datos no conecta:
+   → Verifica credenciales en .env
+   → Asegúrate que MySQL esté ejecutándose
+
+No aparecen los carnets:
+   → Verifica que el script SQL se ejecutó correctamente
+   → Revisa la consola del navegador (F12)
+
+=============================================================
+📚 DOCUMENTACIÓN COMPLETA
+=============================================================
+
+Lee el archivo completo de documentación:
+   SISTEMA_CARNETS_README.md
+
+=============================================================

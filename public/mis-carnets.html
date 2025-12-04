@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Carnets - ScoreDomino</title>
+    <link rel="stylesheet" href="/CSS/main.css">
+    <style>
+        /* Estilos heredados del main.css para el botón flotante */
+        .btn-inicio-flotante {
+            position: fixed !important;
+            bottom: 30px !important;
+            right: 30px !important;
+            background: linear-gradient(135deg, #114d37 0%, #16a34a 100%) !important;
+            color: white !important;
+            padding: 14px 26px !important;
+            border-radius: 50px !important;
+            text-decoration: none !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            font-family: Arial, sans-serif !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            box-shadow: 0 6px 20px rgba(17, 77, 55, 0.5) !important;
+            transition: all 0.3s ease !important;
+            z-index: 999999 !important;
+            border: 3px solid #f97316 !important;
+            cursor: pointer !important;
+        }
+
+        .btn-inicio-flotante:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(17, 77, 55, 0.7) !important;
+            background: linear-gradient(135deg, #0d3d2b 0%, #15803d 100%) !important;
+        }
+
+        @media (max-width: 768px) {
+            .btn-inicio-flotante {
+                bottom: 20px !important;
+                right: 20px !important;
+                padding: 12px 22px !important;
+                font-size: 14px !important;
+            }
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f5f5;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+        }
+
+        .navbar-user {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .navbar-user span {
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid white;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .carnets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .carnet-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .carnet-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .carnet-foto {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #f0f0f0;
+        }
+
+        .carnet-info h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .carnet-info p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .badge-pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-aprobado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-rechazado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .file-upload {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #1e6b4f;
+            background: #f8f9ff;
+        }
+
+        .file-upload.dragover {
+            border-color: #1e6b4f;
+            background: #f0f2ff;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background-color: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .alert-success {
+            background-color: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .alert-info {
+            background-color: #e7f3ff;
+            color: #0066cc;
+            border: 1px solid #b3d9ff;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #1e6b4f;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Mis Carnets</h1>
+        <div class="navbar-user">
+            <span id="userEmail"></span>
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Mis Carnets de Dominó</h2>
+                <button class="btn-primary" onclick="abrirModalNuevo()">+ Nuevo Carnet</button>
+            </div>
+
+            <div id="loading" class="loading">Cargando...</div>
+
+            <div id="carnetsContainer" style="display: none;">
+                <div class="carnets-grid" id="carnetsGrid">
+                </div>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">📋</div>
+                <h3>No tienes carnets aún</h3>
+                <p>Crea tu primer carnet haciendo clic en "Nuevo Carnet"</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Carnet -->
+    <div id="modalNuevo" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Solicitar Nuevo Carnet</h3>
+                <button class="btn-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="alertModal"></div>
+
+                <form id="formNuevoCarnet" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Número de Carnet *</label>
+                        <input type="text" id="carnet" required placeholder="Ej: DOM-12345">
+                        <small>Número único de identificación</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre Completo *</label>
+                        <input type="text" id="nombre" required placeholder="Tu nombre completo">
+                    </div>
+
+                    <div class="form-group">
+                        <label>País *</label>
+                        <select id="pais" required>
+                            <option value="">Selecciona tu país</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Unión / Federación</label>
+                        <input type="text" id="union" placeholder="Ej: Federación Dominicana de Dominó">
+                        <small>Opcional</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Foto de Perfil</label>
+                        <div class="file-upload" id="fileUpload">
+                            <p>📷 Arrastra tu foto aquí o haz clic para seleccionar</p>
+                            <small>JPG, PNG o GIF (máx. 5MB)</small>
+                            <input type="file" id="foto" accept="image/*" style="display: none;">
+                        </div>
+                        <img id="preview" class="preview-image" style="display: none;">
+                    </div>
+
+                    <div class="alert alert-info">
+                        Tu solicitud será revisada por un administrador antes de ser aprobada.
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="submitBtn" style="width: 100%;">
+                        Enviar Solicitud
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api-config.js"></script>
+    <script>
+        let token = localStorage.getItem('token');
+        let usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+
+        // Verificar autenticación
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        document.getElementById('userEmail').textContent = usuario.email;
+
+        // Cargar países
+        async function cargarPaises() {
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/carnets/paises`);
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const select = document.getElementById('pais');
+                    data.data.forEach(pais => {
+                        const option = document.createElement('option');
+                        option.value = pais.Nombre;
+                        option.textContent = pais.Nombre;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar países:', error);
+            }
+        }
+
+        // Cargar carnets del usuario
+        async function cargarCarnets() {
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('carnetsContainer');
+            const emptyState = document.getElementById('emptyState');
+            const grid = document.getElementById('carnetsGrid');
+
+            loading.style.display = 'block';
+            container.style.display = 'none';
+            emptyState.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/carnets`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                loading.style.display = 'none';
+
+                if (data.success && data.data.length > 0) {
+                    grid.innerHTML = '';
+                    data.data.forEach(carnet => {
+                        const card = document.createElement('div');
+                        card.className = 'carnet-card';
+                        card.innerHTML = `
+                            ${carnet.FotoUrl ?
+                                `<img src="${carnet.FotoUrl}" class="carnet-foto" alt="Foto">` :
+                                `<div class="carnet-foto" style="display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 48px;">📷</div>`
+                            }
+                            <div class="carnet-info">
+                                <h3>${carnet.Nombre}</h3>
+                                <p><strong>Carnet:</strong> ${carnet.Carnet}</p>
+                                <p><strong>País:</strong> ${carnet.Pais}</p>
+                                ${carnet.Union_Federacion ? `<p><strong>Federación:</strong> ${carnet.Union_Federacion}</p>` : ''}
+                                <span class="badge badge-${carnet.Estatus}">${carnet.Estatus}</span>
+                                ${carnet.Comentarios ? `<p style="margin-top: 10px; font-size: 13px; color: #999;"><em>${carnet.Comentarios}</em></p>` : ''}
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                    container.style.display = 'block';
+                } else {
+                    emptyState.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al cargar carnets:', error);
+                loading.style.display = 'none';
+                emptyState.style.display = 'block';
+            }
+        }
+
+        // Manejo de subida de archivo
+        const fileUpload = document.getElementById('fileUpload');
+        const fileInput = document.getElementById('foto');
+        const preview = document.getElementById('preview');
+
+        fileUpload.addEventListener('click', () => fileInput.click());
+
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('dragover');
+        });
+
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                mostrarPreview(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                mostrarPreview(e.target.files[0]);
+            }
+        });
+
+        function mostrarPreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Enviar formulario
+        document.getElementById('formNuevoCarnet').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const alertModal = document.getElementById('alertModal');
+            alertModal.innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('carnet', document.getElementById('carnet').value);
+            formData.append('nombre', document.getElementById('nombre').value);
+            formData.append('pais', document.getElementById('pais').value);
+            formData.append('union_federacion', document.getElementById('union').value);
+
+            if (fileInput.files[0]) {
+                formData.append('foto', fileInput.files[0]);
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando...';
+
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/carnets`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alertModal.innerHTML = '<div class="alert alert-success">¡Solicitud enviada! Pendiente de aprobación.</div>';
+                    document.getElementById('formNuevoCarnet').reset();
+                    preview.style.display = 'none';
+
+                    setTimeout(() => {
+                        cerrarModal();
+                        cargarCarnets();
+                    }, 2000);
+                } else {
+                    alertModal.innerHTML = `<div class="alert alert-error">${data.message}</div>`;
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Enviar Solicitud';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alertModal.innerHTML = '<div class="alert alert-error">Error al enviar solicitud</div>';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Enviar Solicitud';
+            }
+        });
+
+        function abrirModalNuevo() {
+            document.getElementById('modalNuevo').classList.add('show');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalNuevo').classList.remove('show');
+            document.getElementById('formNuevoCarnet').reset();
+            document.getElementById('alertModal').innerHTML = '';
+            preview.style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            window.location.href = '/login.html';
+        }
+
+        // Cargar datos iniciales
+        cargarPaises();
+        cargarCarnets();
+    </script>
+
+    <!-- Botón flotante de inicio -->
+    <a href="/" class="btn-inicio-flotante">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Inicio</span>
+    </a>
+</body>
+</html>

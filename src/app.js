@@ -9,6 +9,8 @@ const historicoRoutes = require('./routes/historicoRoutes');
 const compararRoutes = require('./routes/compararRoutes');
 const colectivoRoutes = require('./routes/colectivoRoutes');
 const youtubeRoutes = require('./routes/youtube');
+const authRoutes = require('./routes/authRoutes');
+const carnetsRoutes = require('./routes/carnetsRoutes');
 
 const app = express();
 
@@ -22,10 +24,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/', configRoutes);
 app.use('/api/youtube', youtubeRoutes); // ← MOVER AQUÍ (antes del requireApiKey)
 
-// 2. Luego aplicar protección a TODAS las rutas /api/*
+// 2. Rutas de autenticación y carnets (con su propia protección JWT)
+app.use('/api/auth', authRoutes);
+app.use('/api/carnets', carnetsRoutes);
+
+// 3. Luego aplicar protección a TODAS las rutas /api/* restantes
 app.use('/api', requireApiKey);
 
-// 3. Finalmente las rutas protegidas
+// 4. Finalmente las rutas protegidas con API Key
 app.use('/api/torneos', torneoRoutes);
 app.use('/api/ranking', rankingRoutes);
 app.use('/api/historico', historicoRoutes);

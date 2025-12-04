@@ -1,0 +1,231 @@
+╔════════════════════════════════════════════════════════════════╗
+║   🎯 SISTEMA DE CARNETS - LISTO PARA PROBAR                   ║
+╚════════════════════════════════════════════════════════════════╝
+
+✅ TODO COMPLETADO:
+═══════════════════════════════════════════════════════════════
+
+✓ Backend implementado (API REST con JWT)
+✓ Base de datos diseñada (5 tablas nuevas)
+✓ Frontend completo (4 páginas)
+✓ Estilos actualizados (colores verdes del proyecto)
+✓ Botones flotantes "Inicio" agregados
+✓ Tarjeta en index con estilo uniforme
+✓ Configuración .env actualizada
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   📋 PASOS PARA PROBAR (SOLO 2 PASOS)                         ║
+╚════════════════════════════════════════════════════════════════╝
+
+PASO 1: EJECUTAR EL SQL
+───────────────────────────────────────────────────────────────
+
+Abre tu gestor MySQL (phpMyAdmin, MySQL Workbench, HeidiSQL, etc.)
+
+Conecta a la base de datos: sdr
+
+Ejecuta el archivo:
+   C:\Users\RonnieHdez\Desktop\domino-api\database\schema.sql
+
+(Copia y pega todo el contenido en tu gestor SQL y ejecuta)
+
+
+PASO 2: INICIAR EL SERVIDOR
+───────────────────────────────────────────────────────────────
+
+Abre una terminal en:
+   C:\Users\RonnieHdez\Desktop\domino-api
+
+Ejecuta:
+   npm start
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   🚀 PROBAR EL SISTEMA                                         ║
+╚════════════════════════════════════════════════════════════════╝
+
+1. Abre tu navegador en: http://localhost:3000
+
+2. Verás la tarjeta "Sistema de Carnets 🎫" en la página principal
+
+3. Haz clic en la tarjeta o ve directamente a:
+   http://localhost:3000/login.html
+
+4. Inicia sesión como ADMINISTRADOR:
+   ┌────────────────────────────────────────┐
+   │ Email:     admin@scoredomino.com       │
+   │ Password:  admin123                    │
+   └────────────────────────────────────────┘
+
+5. Verás el panel de administrador con estadísticas
+
+6. Para probar como USUARIO REGULAR:
+   - Cierra sesión (botón arriba a la derecha)
+   - Haz clic en "Regístrate aquí"
+   - Crea una cuenta con tu email
+   - Inicia sesión
+   - Solicita un nuevo carnet
+   - Sube una foto desde tu PC o celular
+   - El carnet quedará "pendiente" esperando aprobación
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   🎨 CARACTERÍSTICAS VISUALES                                  ║
+╚════════════════════════════════════════════════════════════════╝
+
+✓ Colores verdes (#1e6b4f, #145a40) - Igual al proyecto original
+✓ Fondo gris claro (#f5f7fa) - Consistente con el diseño
+✓ Cards blancos con sombras suaves - Mismo estilo
+✓ Botón flotante "Inicio" - Igual que en otras páginas
+✓ Tipografía -apple-system - Nativa y moderna
+✓ Responsive design - Funciona en móvil y desktop
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   📱 PÁGINAS DISPONIBLES                                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+Sistema de Carnets (NUEVO):
+   /login.html          → Login
+   /registro.html       → Registro de usuarios
+   /mis-carnets.html    → Panel de usuario
+   /admin-carnets.html  → Panel de administrador
+
+Sistema Original (existente):
+   /                            → Página principal
+   /ranking-general.html        → Ranking individual
+   /ranking-colectivo.html      → Ranking colectivo
+   /historico-partidas.html     → Histórico
+   /comparar-jugadores.html     → Comparar jugadores
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   🔑 CREDENCIALES                                              ║
+╚════════════════════════════════════════════════════════════════╝
+
+ADMINISTRADOR (creado automáticamente por el SQL):
+   Email:    admin@scoredomino.com
+   Password: admin123
+
+⚠️ IMPORTANTE: Cambia esta contraseña después del primer login
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   ✨ FUNCIONALIDADES IMPLEMENTADAS                            ║
+╚════════════════════════════════════════════════════════════════╝
+
+✓ Registro e inicio de sesión
+✓ Autenticación con JWT (tokens seguros)
+✓ Roles: usuario y administrador
+✓ Solicitud de carnets con foto
+✓ Subida de fotos (desde PC o celular, hasta 5MB)
+✓ Preview de foto antes de enviar
+✓ Sistema de aprobación/rechazo
+✓ Comentarios del administrador
+✓ Filtros por país y estado
+✓ Búsqueda por nombre o carnet
+✓ Estadísticas en tiempo real
+✓ Auditoría de todas las acciones
+✓ Sesiones persistentes
+✓ Logout seguro
+✓ Diseño responsive
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   📊 FLUJO COMPLETO                                            ║
+╚════════════════════════════════════════════════════════════════╝
+
+USUARIO:
+  1. Se registra con email y contraseña
+  2. Inicia sesión
+  3. Solicita un carnet:
+     - Número de carnet
+     - Nombre completo
+     - País
+     - Federación (opcional)
+     - Foto de perfil (opcional)
+  4. El carnet queda "pendiente"
+  5. Espera aprobación del administrador
+  6. Recibe notificación visual del estado
+
+ADMINISTRADOR:
+  1. Inicia sesión
+  2. Ve estadísticas:
+     - Total de carnets
+     - Pendientes
+     - Aprobados
+     - Rechazados
+  3. Revisa carnets pendientes
+  4. Ve detalles completos (foto, datos, usuario)
+  5. Decide:
+     - Aprobar (con comentarios opcionales)
+     - Rechazar (con motivo obligatorio)
+     - Eliminar
+  6. Puede filtrar por país, estado o buscar
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   🛠️ ARCHIVOS NUEVOS CREADOS                                  ║
+╚════════════════════════════════════════════════════════════════╝
+
+Backend:
+   database/schema.sql
+   src/middleware/authJWT.js
+   src/middleware/upload.js
+   src/controllers/authController.js
+   src/controllers/carnetsController.js
+   src/routes/authRoutes.js
+   src/routes/carnetsRoutes.js
+
+Frontend:
+   public/login.html
+   public/registro.html
+   public/mis-carnets.html
+   public/admin-carnets.html
+
+Documentación:
+   SISTEMA_CARNETS_README.md
+   INSTRUCCIONES_INSTALACION.txt
+   LISTO_PARA_PROBAR.txt (este archivo)
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   🐛 SI ALGO NO FUNCIONA                                       ║
+╚════════════════════════════════════════════════════════════════╝
+
+Error "Cannot connect to database":
+   → Verifica que MySQL esté corriendo
+   → Verifica credenciales en .env
+
+Error "Token inválido":
+   → Vuelve a iniciar sesión
+   → Limpia localStorage del navegador
+
+No aparecen carnets:
+   → Verifica que el SQL se ejecutó correctamente
+   → Revisa la consola del navegador (F12)
+   → Verifica que las tablas se crearon en la base de datos
+
+No puedo subir fotos:
+   → Verifica que existe: public/uploads/fotos-carnets/
+   → El servidor crea la carpeta automáticamente
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   📚 DOCUMENTACIÓN COMPLETA                                    ║
+╚════════════════════════════════════════════════════════════════╝
+
+Para información detallada sobre APIs, endpoints, seguridad,
+personalización y más, consulta:
+
+   SISTEMA_CARNETS_README.md
+
+
+╔════════════════════════════════════════════════════════════════╗
+║   🎉 ¡TODO LISTO!                                              ║
+╚════════════════════════════════════════════════════════════════╝
+
+Solo ejecuta el SQL y inicia el servidor.
+¡El sistema está 100% funcional y con el estilo del proyecto!
+

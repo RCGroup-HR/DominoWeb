@@ -66,6 +66,7 @@ ecosystem.config.js
 .eslintcache
 
 # Opcional: Backups de base de datos (si generas backups)
-*.sql
+# *.sql  # Comentado para permitir schema-carnets.sql
 *.dump
-backups/.env 
+backups/
+backup*.sql 

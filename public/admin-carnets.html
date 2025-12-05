@@ -391,6 +391,155 @@
             padding: 40px;
             color: #1e6b4f;
         }
+
+        /* Carnet Preview Styles */
+        .carnet-preview-container {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .carnet-preview {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 320px;
+            padding: 25px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        .carnet-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #f97316;
+            padding-bottom: 15px;
+        }
+
+        .carnet-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            border: 3px solid #f97316;
+        }
+
+        .carnet-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e6b4f;
+            margin: 0;
+        }
+
+        .carnet-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+
+        .carnet-photo-container {
+            width: 150px;
+            height: 180px;
+            margin: 0 auto 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid #1e6b4f;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carnet-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carnet-placeholder-photo {
+            font-size: 48px;
+            color: #ccc;
+        }
+
+        .carnet-info-section {
+            margin-bottom: 12px;
+        }
+
+        .carnet-info-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #999;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .carnet-info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+            word-wrap: break-word;
+        }
+
+        .carnet-id {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .carnet-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .carnet-footer-text {
+            font-size: 10px;
+            color: #999;
+            margin: 0;
+        }
+
+        .carnet-status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .badge-status-aprobado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-status-pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-status-rechazado {
+            background: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -488,6 +637,7 @@
         let currentTab = 'pendiente';
         let token = localStorage.getItem('token');
         let usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        let configuracion = {}; // Almacenar configuración del sistema
 
         // Verificar autenticación
         if (!token || usuario.rol !== 'administrador') {
@@ -495,6 +645,28 @@
         }
 
         document.getElementById('userEmail').textContent = usuario.email;
+
+        // Cargar configuración del sistema
+        async function cargarConfiguracion() {
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/carnets/config`);
+                const data = await response.json();
+
+                if (data.success) {
+                    configuracion = data.data;
+                }
+            } catch (error) {
+                console.error('Error al cargar configuración:', error);
+                // Usar valores por defecto si falla
+                configuracion = {
+                    logo_entidad_url: '/img/default-logo.png',
+                    nombre_entidad: 'ScoreDomino',
+                    titulo_carnet: 'CARNET OFICIAL',
+                    subtitulo_carnet: 'Dominó Internacional',
+                    emoji_logo: '🎲'
+                };
+            }
+        }
 
         // Cargar estadísticas
         async function cargarEstadisticas() {
@@ -622,54 +794,95 @@
                     const carnet = data.data;
                     const modalBody = document.getElementById('modalBody');
 
+                    const statusClass = `badge-status-${carnet.Estatus}`;
+                    const statusText = carnet.Estatus.toUpperCase();
+
+                    // Preparar el logo
+                    let logoHtml = '';
+                    if (configuracion.logo_entidad_url && !configuracion.logo_entidad_url.includes('default-logo')) {
+                        logoHtml = `<img src="${configuracion.logo_entidad_url}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">`;
+                    } else {
+                        logoHtml = configuracion.emoji_logo || '🎲';
+                    }
+
                     modalBody.innerHTML = `
-                        ${carnet.FotoUrl ? `<img src="${carnet.FotoUrl}" alt="Foto del carnet">` : ''}
-                        <div class="detail-row">
-                            <label>Carnet:</label>
-                            <span>${carnet.Carnet}</span>
+                        <div style="display: flex; justify-content: center; margin-bottom: 30px;">
+                            <div class="carnet-preview-container">
+                                <div class="carnet-preview">
+                                    <!-- Header -->
+                                    <div class="carnet-header">
+                                        <div class="carnet-logo">${logoHtml}</div>
+                                        <h3 class="carnet-title">${configuracion.titulo_carnet || 'CARNET OFICIAL'}</h3>
+                                        <p class="carnet-subtitle">${configuracion.subtitulo_carnet || 'Dominó Internacional'}</p>
+                                    </div>
+
+                                    <!-- Foto -->
+                                    <div class="carnet-photo-container">
+                                        ${carnet.FotoUrl ?
+                                            `<img src="${carnet.FotoUrl}" class="carnet-photo" alt="Foto">` :
+                                            `<div class="carnet-placeholder-photo">📷</div>`
+                                        }
+                                    </div>
+
+                                    <!-- Número de Carnet -->
+                                    <div class="carnet-id">${carnet.Carnet}</div>
+
+                                    <!-- Información -->
+                                    <div class="carnet-info-section">
+                                        <div class="carnet-info-label">Nombre Completo</div>
+                                        <div class="carnet-info-value">${carnet.Nombre}</div>
+                                    </div>
+
+                                    <div class="carnet-info-section">
+                                        <div class="carnet-info-label">País</div>
+                                        <div class="carnet-info-value">${carnet.Pais}</div>
+                                    </div>
+
+                                    ${carnet.Union_Federacion ? `
+                                    <div class="carnet-info-section">
+                                        <div class="carnet-info-label">Unión / Federación</div>
+                                        <div class="carnet-info-value">${carnet.Union_Federacion}</div>
+                                    </div>
+                                    ` : ''}
+
+                                    <!-- Footer -->
+                                    <div class="carnet-footer">
+                                        <p class="carnet-footer-text">${configuracion.nombre_entidad || 'ScoreDomino'}</p>
+                                        <div class="carnet-status-badge ${statusClass}">${statusText}</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="detail-row">
-                            <label>Nombre:</label>
-                            <span>${carnet.Nombre}</span>
+
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                            <h4 style="margin-top: 0;">Información Adicional</h4>
+                            <div class="detail-row">
+                                <label>Usuario:</label>
+                                <span>${carnet.UsuarioEmail || '-'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <label>Fecha Creación:</label>
+                                <span>${new Date(carnet.FechaCreacion).toLocaleString()}</span>
+                            </div>
+                            ${carnet.FechaAprobacion ? `
+                            <div class="detail-row">
+                                <label>Fecha Aprobación:</label>
+                                <span>${new Date(carnet.FechaAprobacion).toLocaleString()}</span>
+                            </div>
+                            ` : ''}
+                            ${carnet.AprobadorEmail ? `
+                            <div class="detail-row">
+                                <label>Aprobado por:</label>
+                                <span>${carnet.AprobadorEmail}</span>
+                            </div>
+                            ` : ''}
+                            ${carnet.Comentarios ? `
+                            <div class="detail-row">
+                                <label>Comentarios:</label>
+                                <span>${carnet.Comentarios}</span>
+                            </div>
+                            ` : ''}
                         </div>
-                        <div class="detail-row">
-                            <label>País:</label>
-                            <span>${carnet.Pais}</span>
-                        </div>
-                        <div class="detail-row">
-                            <label>Unión/Federación:</label>
-                            <span>${carnet.Union_Federacion || '-'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <label>Estado:</label>
-                            <span class="badge badge-${carnet.Estatus}">${carnet.Estatus}</span>
-                        </div>
-                        <div class="detail-row">
-                            <label>Usuario:</label>
-                            <span>${carnet.UsuarioEmail || '-'}</span>
-                        </div>
-                        <div class="detail-row">
-                            <label>Fecha Creación:</label>
-                            <span>${new Date(carnet.FechaCreacion).toLocaleString()}</span>
-                        </div>
-                        ${carnet.FechaAprobacion ? `
-                        <div class="detail-row">
-                            <label>Fecha Aprobación:</label>
-                            <span>${new Date(carnet.FechaAprobacion).toLocaleString()}</span>
-                        </div>
-                        ` : ''}
-                        ${carnet.AprobadorEmail ? `
-                        <div class="detail-row">
-                            <label>Aprobado por:</label>
-                            <span>${carnet.AprobadorEmail}</span>
-                        </div>
-                        ` : ''}
-                        ${carnet.Comentarios ? `
-                        <div class="detail-row">
-                            <label>Comentarios:</label>
-                            <span>${carnet.Comentarios}</span>
-                        </div>
-                        ` : ''}
                     `;
 
                     document.getElementById('modalDetalles').classList.add('show');
@@ -801,6 +1014,7 @@
         });
 
         // Cargar datos iniciales
+        cargarConfiguracion();
         cargarEstadisticas();
         cargarPaises();
         cargarCarnets();

@@ -11,6 +11,7 @@ const colectivoRoutes = require('./routes/colectivoRoutes');
 const youtubeRoutes = require('./routes/youtube');
 const authRoutes = require('./routes/authRoutes');
 const carnetsRoutes = require('./routes/carnetsRoutes');
+const carnetConfigRoutes = require('./routes/carnetConfigRoutes');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/youtube', youtubeRoutes); // ← MOVER AQUÍ (antes del requireApi
 // 2. Rutas de autenticación y carnets (con su propia protección JWT)
 app.use('/api/auth', authRoutes);
 app.use('/api/carnets', carnetsRoutes);
+app.use('/api/carnets/config', carnetConfigRoutes);
 
 // 3. Luego aplicar protección a TODAS las rutas /api/* restantes
 app.use('/api', requireApiKey);

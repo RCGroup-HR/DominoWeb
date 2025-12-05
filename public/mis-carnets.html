@@ -219,10 +219,165 @@
             background: white;
             padding: 30px;
             border-radius: 12px;
-            max-width: 600px;
+            max-width: 1000px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
+        }
+
+        .modal-two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .modal-two-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .preview-section h4 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Carnet Preview Styles */
+        .carnet-preview-container {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .carnet-preview {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 320px;
+            padding: 25px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        .carnet-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #f97316;
+            padding-bottom: 15px;
+        }
+
+        .carnet-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            border: 3px solid #f97316;
+        }
+
+        .carnet-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e6b4f;
+            margin: 0;
+        }
+
+        .carnet-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+
+        .carnet-photo-container {
+            width: 150px;
+            height: 180px;
+            margin: 0 auto 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid #1e6b4f;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carnet-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carnet-placeholder-photo {
+            font-size: 48px;
+            color: #ccc;
+        }
+
+        .carnet-info-section {
+            margin-bottom: 12px;
+        }
+
+        .carnet-info-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #999;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .carnet-info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+            word-wrap: break-word;
+        }
+
+        .carnet-id {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .carnet-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .carnet-footer-text {
+            font-size: 10px;
+            color: #999;
+            margin: 0;
+        }
+
+        .carnet-status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 10px;
+            background: #fff3cd;
+            color: #856404;
         }
 
         .modal-header {
@@ -382,49 +537,100 @@
             <div class="modal-body">
                 <div id="alertModal"></div>
 
-                <form id="formNuevoCarnet" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label>Número de Carnet *</label>
-                        <input type="text" id="carnet" required placeholder="Ej: DOM-12345">
-                        <small>Número único de identificación</small>
+                <div class="modal-two-columns">
+                    <!-- Columna del Formulario -->
+                    <div class="form-section">
+                        <form id="formNuevoCarnet" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label>Número de Carnet *</label>
+                                <input type="text" id="carnet" required placeholder="Ej: DOM-12345">
+                                <small>Número único de identificación</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nombre Completo *</label>
+                                <input type="text" id="nombre" required placeholder="Tu nombre completo">
+                            </div>
+
+                            <div class="form-group">
+                                <label>País *</label>
+                                <select id="pais" required>
+                                    <option value="">Selecciona tu país</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Unión / Federación</label>
+                                <input type="text" id="union" placeholder="Ej: Federación Dominicana de Dominó">
+                                <small>Opcional</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Foto de Perfil</label>
+                                <div class="file-upload" id="fileUpload">
+                                    <p>📷 Arrastra tu foto aquí o haz clic para seleccionar</p>
+                                    <small>JPG, PNG o GIF (máx. 5MB)</small>
+                                    <input type="file" id="foto" accept="image/*" style="display: none;">
+                                </div>
+                                <img id="preview" class="preview-image" style="display: none;">
+                            </div>
+
+                            <div class="alert alert-info">
+                                Tu solicitud será revisada por un administrador antes de ser aprobada.
+                            </div>
+
+                            <button type="submit" class="btn-primary" id="submitBtn" style="width: 100%;">
+                                Enviar Solicitud
+                            </button>
+                        </form>
                     </div>
 
-                    <div class="form-group">
-                        <label>Nombre Completo *</label>
-                        <input type="text" id="nombre" required placeholder="Tu nombre completo">
-                    </div>
+                    <!-- Columna de Vista Previa -->
+                    <div class="preview-section">
+                        <h4>Vista Previa del Carnet</h4>
+                        <div class="carnet-preview-container">
+                            <div class="carnet-preview">
+                                <!-- Header -->
+                                <div class="carnet-header">
+                                    <div class="carnet-logo" id="previewLogo">🎲</div>
+                                    <h3 class="carnet-title">CARNET OFICIAL</h3>
+                                    <p class="carnet-subtitle">Dominó Internacional</p>
+                                </div>
 
-                    <div class="form-group">
-                        <label>País *</label>
-                        <select id="pais" required>
-                            <option value="">Selecciona tu país</option>
-                        </select>
-                    </div>
+                                <!-- Foto -->
+                                <div class="carnet-photo-container">
+                                    <img id="previewPhoto" class="carnet-photo" style="display: none;">
+                                    <div id="previewPhotoPlaceholder" class="carnet-placeholder-photo">📷</div>
+                                </div>
 
-                    <div class="form-group">
-                        <label>Unión / Federación</label>
-                        <input type="text" id="union" placeholder="Ej: Federación Dominicana de Dominó">
-                        <small>Opcional</small>
-                    </div>
+                                <!-- Número de Carnet -->
+                                <div class="carnet-id" id="previewCarnetNum">---</div>
 
-                    <div class="form-group">
-                        <label>Foto de Perfil</label>
-                        <div class="file-upload" id="fileUpload">
-                            <p>📷 Arrastra tu foto aquí o haz clic para seleccionar</p>
-                            <small>JPG, PNG o GIF (máx. 5MB)</small>
-                            <input type="file" id="foto" accept="image/*" style="display: none;">
+                                <!-- Información -->
+                                <div class="carnet-info-section">
+                                    <div class="carnet-info-label">Nombre Completo</div>
+                                    <div class="carnet-info-value" id="previewNombre">---</div>
+                                </div>
+
+                                <div class="carnet-info-section">
+                                    <div class="carnet-info-label">País</div>
+                                    <div class="carnet-info-value" id="previewPais">---</div>
+                                </div>
+
+                                <div class="carnet-info-section" id="previewFederacionSection" style="display: none;">
+                                    <div class="carnet-info-label">Unión / Federación</div>
+                                    <div class="carnet-info-value" id="previewFederacion">---</div>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class="carnet-footer">
+                                    <p class="carnet-footer-text">ScoreDomino</p>
+                                    <div class="carnet-status-badge">PENDIENTE DE APROBACIÓN</div>
+                                </div>
+                            </div>
                         </div>
-                        <img id="preview" class="preview-image" style="display: none;">
                     </div>
-
-                    <div class="alert alert-info">
-                        Tu solicitud será revisada por un administrador antes de ser aprobada.
-                    </div>
-
-                    <button type="submit" class="btn-primary" id="submitBtn" style="width: 100%;">
-                        Enviar Solicitud
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -433,6 +639,7 @@
     <script>
         let token = localStorage.getItem('token');
         let usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        let configuracion = {}; // Almacenar configuración del sistema
 
         // Verificar autenticación
         if (!token) {
@@ -440,6 +647,49 @@
         }
 
         document.getElementById('userEmail').textContent = usuario.email;
+
+        // Cargar configuración del sistema
+        async function cargarConfiguracion() {
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/carnets/config`);
+                const data = await response.json();
+
+                if (data.success) {
+                    configuracion = data.data;
+                    actualizarLogoYTextos();
+                }
+            } catch (error) {
+                console.error('Error al cargar configuración:', error);
+                // Usar valores por defecto si falla
+                configuracion = {
+                    logo_entidad_url: '/img/default-logo.png',
+                    nombre_entidad: 'ScoreDomino',
+                    titulo_carnet: 'CARNET OFICIAL',
+                    subtitulo_carnet: 'Dominó Internacional',
+                    emoji_logo: '🎲'
+                };
+                actualizarLogoYTextos();
+            }
+        }
+
+        // Actualizar logo y textos en la vista previa
+        function actualizarLogoYTextos() {
+            const previewLogo = document.getElementById('previewLogo');
+            const tituloCarnet = document.querySelector('.carnet-title');
+            const subtituloCarnet = document.querySelector('.carnet-subtitle');
+            const footerText = document.querySelector('.carnet-footer-text');
+
+            // Si hay una URL de logo personalizado (no es emoji)
+            if (configuracion.logo_entidad_url && !configuracion.logo_entidad_url.includes('default-logo')) {
+                previewLogo.innerHTML = `<img src="${configuracion.logo_entidad_url}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">`;
+            } else {
+                previewLogo.textContent = configuracion.emoji_logo || '🎲';
+            }
+
+            if (tituloCarnet) tituloCarnet.textContent = configuracion.titulo_carnet || 'CARNET OFICIAL';
+            if (subtituloCarnet) subtituloCarnet.textContent = configuracion.subtitulo_carnet || 'Dominó Internacional';
+            if (footerText) footerText.textContent = configuracion.nombre_entidad || 'ScoreDomino';
+        }
 
         // Cargar países
         async function cargarPaises() {
@@ -552,9 +802,42 @@
             reader.onload = (e) => {
                 preview.src = e.target.result;
                 preview.style.display = 'block';
+
+                // Actualizar vista previa del carnet
+                const previewPhoto = document.getElementById('previewPhoto');
+                const previewPhotoPlaceholder = document.getElementById('previewPhotoPlaceholder');
+                previewPhoto.src = e.target.result;
+                previewPhoto.style.display = 'block';
+                previewPhotoPlaceholder.style.display = 'none';
             };
             reader.readAsDataURL(file);
         }
+
+        // Función para actualizar la vista previa del carnet en tiempo real
+        function actualizarVistaPrevia() {
+            const carnetNum = document.getElementById('carnet').value || '---';
+            const nombre = document.getElementById('nombre').value || '---';
+            const pais = document.getElementById('pais').value || '---';
+            const federacion = document.getElementById('union').value;
+
+            document.getElementById('previewCarnetNum').textContent = carnetNum;
+            document.getElementById('previewNombre').textContent = nombre;
+            document.getElementById('previewPais').textContent = pais;
+
+            const federacionSection = document.getElementById('previewFederacionSection');
+            if (federacion) {
+                document.getElementById('previewFederacion').textContent = federacion;
+                federacionSection.style.display = 'block';
+            } else {
+                federacionSection.style.display = 'none';
+            }
+        }
+
+        // Event listeners para actualización en tiempo real
+        document.getElementById('carnet').addEventListener('input', actualizarVistaPrevia);
+        document.getElementById('nombre').addEventListener('input', actualizarVistaPrevia);
+        document.getElementById('pais').addEventListener('change', actualizarVistaPrevia);
+        document.getElementById('union').addEventListener('input', actualizarVistaPrevia);
 
         // Enviar formulario
         document.getElementById('formNuevoCarnet').addEventListener('submit', async (e) => {
@@ -619,6 +902,15 @@
             document.getElementById('formNuevoCarnet').reset();
             document.getElementById('alertModal').innerHTML = '';
             preview.style.display = 'none';
+
+            // Resetear vista previa del carnet
+            document.getElementById('previewCarnetNum').textContent = '---';
+            document.getElementById('previewNombre').textContent = '---';
+            document.getElementById('previewPais').textContent = '---';
+            document.getElementById('previewFederacion').textContent = '---';
+            document.getElementById('previewFederacionSection').style.display = 'none';
+            document.getElementById('previewPhoto').style.display = 'none';
+            document.getElementById('previewPhotoPlaceholder').style.display = 'block';
         }
 
         function logout() {
@@ -628,6 +920,7 @@
         }
 
         // Cargar datos iniciales
+        cargarConfiguracion();
         cargarPaises();
         cargarCarnets();
     </script>

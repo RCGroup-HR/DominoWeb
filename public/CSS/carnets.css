@@ -4,22 +4,18 @@
 
 /* Reset básico para la página de carnets */
 .carnets-wrapper {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+    background: white;
+    padding: 30px 20px;
 }
 
 .carnets-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 40px;
-    max-width: 1200px;
+    max-width: 1400px;
     width: 100%;
-    margin-bottom: 30px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 @media (max-width: 1024px) {
@@ -35,9 +31,10 @@
 
 .form-section {
     background: white;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
 }
 
 .form-section h1 {
@@ -187,7 +184,7 @@ button {
 }
 
 .preview-title {
-    color: white;
+    color: #1e6b4f;
     margin-bottom: 30px;
     text-align: center;
     font-size: 24px;
@@ -453,27 +450,25 @@ button {
 
 .back-button-container {
     text-align: center;
-    margin-top: 20px;
+    margin: 30px 0;
 }
 
 .btn-back {
     display: inline-block;
     padding: 12px 30px;
-    background: white;
-    color: #1e6b4f;
-    border: 2px solid white;
+    background: #1e6b4f;
+    color: white;
+    border: 2px solid #1e6b4f;
     border-radius: 8px;
     text-decoration: none;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .btn-back:hover {
-    background: #1e6b4f;
-    color: white;
+    background: #145a40;
+    border-color: #145a40;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* ==========================================

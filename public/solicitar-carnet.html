@@ -9,15 +9,21 @@
     <link rel="stylesheet" href="css/carnets.css">
 </head>
 <body>
-    <div class="carnets-wrapper">
-        <div class="carnets-container">
+    <div class="container">
+        <div class="header">
+            <h1>🎫 Solicitar Carnet</h1>
+            <p>Sistema de carnets para jugadores de dominó</p>
+        </div>
+
+        <div class="carnets-wrapper">
+            <div class="carnets-container">
             <!-- Sección de Formulario -->
             <div class="form-section">
                 <h1>Generar Carnet</h1>
                 <form id="carnetForm">
                     <div class="form-group">
                         <label for="nombre">Nombre Completo *</label>
-                        <input type="text" id="nombre" name="nombre" placeholder="Ej: Raymond Ysabel" required>
+                        <input type="text" id="nombre" name="nombre" placeholder="Ej: Juan Pérez" required>
                         <div class="error-message"></div>
                     </div>
 
@@ -124,11 +130,20 @@
             </div>
         </div>
 
-        <!-- Botón volver al inicio -->
-        <div class="back-button-container">
-            <a href="index.html" class="btn-back">← Volver al Inicio</a>
+            <!-- Botón volver al inicio -->
+            <div class="back-button-container">
+                <a href="index.html" class="btn-back">← Volver al Inicio</a>
+            </div>
         </div>
     </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-bottom">
+                <p>&copy; 2025 ScoreDomino — Sistema de Carnets. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="/js/api-config.js"></script>
     <script src="js/carnets-generator.js"></script>

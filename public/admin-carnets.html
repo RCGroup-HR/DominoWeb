@@ -126,6 +126,34 @@
             color: #1e6b4f;
         }
 
+        .stat-card.create-card {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card.create-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(30, 107, 79, 0.4);
+        }
+
+        .stat-card.create-card h3 {
+            color: white;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .stat-card.create-card p {
+            color: rgba(255,255,255,0.9);
+            font-size: 13px;
+            margin: 0;
+        }
+
         .card {
             background: white;
             border-radius: 12px;
@@ -419,6 +447,10 @@
             <div class="stat-card">
                 <h3>Rechazados</h3>
                 <div class="number" id="statRechazados" style="color: #f44336;">-</div>
+            </div>
+            <div class="stat-card create-card" onclick="window.location.href='/solicitar-carnet.html'">
+                <h3>➕ Crear Carnet</h3>
+                <p>Nueva solicitud</p>
             </div>
         </div>
 

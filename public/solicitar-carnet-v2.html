@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitar Carnet - ScoreDomino</title>
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        .carnets-page {
+            background: white;
+            padding: 30px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .carnets-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .carnets-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #1e6b4f;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1e6b4f;
+        }
+
+        .photo-upload {
+            border: 2px dashed #1e6b4f;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f9fafb;
+        }
+
+        .photo-upload:hover {
+            background: #f3f4f6;
+        }
+
+        .photo-preview {
+            margin-top: 10px;
+        }
+
+        .photo-preview img {
+            max-width: 120px;
+            border-radius: 8px;
+            border: 2px solid #1e6b4f;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .preview-card {
+            text-align: center;
+        }
+
+        .carnet-preview {
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .carnet-header {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .carnet-body {
+            padding: 20px;
+        }
+
+        .carnet-photo {
+            width: 80px;
+            height: 100px;
+            border-radius: 8px;
+            border: 2px solid #1e6b4f;
+            object-fit: cover;
+            margin: 0 auto 10px;
+            display: block;
+            background: #f3f4f6;
+        }
+
+        .carnet-name {
+            font-weight: bold;
+            color: #1e3a8a;
+            margin: 10px 0;
+        }
+
+        .carnet-badge {
+            display: inline-block;
+            background: #1e6b4f;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 11px;
+            margin: 3px;
+        }
+
+        .carnet-footer {
+            background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
+            color: white;
+            padding: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎫 Solicitar Carnet</h1>
+            <p>Sistema de carnets para jugadores de dominó</p>
+        </div>
+
+        <div class="carnets-page">
+            <div class="carnets-grid">
+                <!-- Formulario -->
+                <div class="card">
+                    <h2>Datos del Carnet</h2>
+                    <form id="carnetForm">
+                        <div class="form-group">
+                            <label>Nombre Completo *</label>
+                            <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>País *</label>
+                            <select id="pais" required>
+                                <option value="">Seleccione...</option>
+                                <option value="DO">República Dominicana</option>
+                                <option value="US">Estados Unidos</option>
+                                <option value="MX">México</option>
+                                <option value="PR">Puerto Rico</option>
+                                <option value="CO">Colombia</option>
+                                <option value="VE">Venezuela</option>
+                                <option value="ES">España</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Género *</label>
+                            <select id="genero" required>
+                                <option value="">Seleccione...</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Cédula / ID *</label>
+                            <input type="text" id="cedula" placeholder="Ej: 402-1234567-8" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Foto *</label>
+                            <div class="photo-upload" onclick="document.getElementById('foto').click()">
+                                <div>📷 Haz clic para subir foto</div>
+                                <div class="photo-preview" id="photoPreview"></div>
+                            </div>
+                            <input type="file" id="foto" accept="image/*" style="display:none" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="btnEnviar">Enviar Solicitud</button>
+                        <button type="reset" class="btn btn-secondary">Limpiar</button>
+
+                        <div class="message success" id="successMsg"></div>
+                        <div class="message error" id="errorMsg"></div>
+                    </form>
+                </div>
+
+                <!-- Preview -->
+                <div class="card preview-card">
+                    <h2>Vista Previa</h2>
+                    <div class="carnet-preview">
+                        <div class="carnet-header">CARNET OFICIAL</div>
+                        <div class="carnet-body">
+                            <img class="carnet-photo" id="previewPhoto" src="">
+                            <div class="carnet-name" id="previewNombre">Nombre</div>
+                            <div>
+                                <span class="carnet-badge" id="previewPais">🌍 País</span>
+                                <span class="carnet-badge" id="previewGenero">👤 Género</span>
+                            </div>
+                        </div>
+                        <div class="carnet-footer">PENDIENTE DE APROBACIÓN</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="index.html" class="btn-primary" style="display: inline-block; padding: 12px 30px; text-decoration: none; border-radius: 8px;">← Volver al Inicio</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-bottom">
+                <p>&copy; 2025 ScoreDomino. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/api-config.js"></script>
+    <script>
+        // Verificar autenticación
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login.html';
+
+        const countries = {
+            'DO': '🇩🇴', 'US': '🇺🇸', 'MX': '🇲🇽', 'PR': '🇵🇷',
+            'CO': '🇨🇴', 'VE': '🇻🇪', 'ES': '🇪🇸'
+        };
+
+        // Preview en tiempo real
+        document.getElementById('nombre').addEventListener('input', e => {
+            document.getElementById('previewNombre').textContent = e.target.value || 'Nombre';
+        });
+
+        document.getElementById('pais').addEventListener('change', e => {
+            const code = e.target.value;
+            const name = e.target.options[e.target.selectedIndex].text;
+            document.getElementById('previewPais').textContent = (countries[code] || '🌍') + ' ' + name;
+        });
+
+        document.getElementById('genero').addEventListener('change', e => {
+            const icon = e.target.value === 'M' ? '♂️' : e.target.value === 'F' ? '♀️' : '👤';
+            document.getElementById('previewGenero').textContent = icon + ' ' + e.target.options[e.target.selectedIndex].text;
+        });
+
+        document.getElementById('foto').addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = event => {
+                    document.getElementById('previewPhoto').src = event.target.result;
+                    document.getElementById('photoPreview').innerHTML = `<img src="${event.target.result}" style="max-width:100px; margin-top:10px; border-radius:8px;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Enviar formulario
+        document.getElementById('carnetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btnEnviar = document.getElementById('btnEnviar');
+            btnEnviar.disabled = true;
+            btnEnviar.textContent = 'Enviando...';
+
+            const fotoBase64 = document.getElementById('previewPhoto').src;
+
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/carnets/solicitudes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        nombre: document.getElementById('nombre').value,
+                        pais: document.getElementById('pais').value,
+                        genero: document.getElementById('genero').value,
+                        cedula: document.getElementById('cedula').value,
+                        fotoBase64: fotoBase64
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const successMsg = document.getElementById('successMsg');
+                    successMsg.innerHTML = `✅ Solicitud enviada correctamente.<br>ID: #${data.solicitudId || data.data?.id}<br><small>Tu solicitud está en revisión.</small>`;
+                    successMsg.style.display = 'block';
+                    document.getElementById('carnetForm').reset();
+                } else {
+                    throw new Error(data.message || 'Error al enviar solicitud');
+                }
+            } catch (error) {
+                const errorMsg = document.getElementById('errorMsg');
+                errorMsg.textContent = '❌ ' + error.message;
+                errorMsg.style.display = 'block';
+            } finally {
+                btnEnviar.disabled = false;
+                btnEnviar.textContent = 'Enviar Solicitud';
+            }
+        });
+    </script>
+</body>
+</html>

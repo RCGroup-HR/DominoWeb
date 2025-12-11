@@ -7,7 +7,6 @@ const token = localStorage.getItem('token');
 const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
 
 if (!token) {
-    alert('Debes iniciar sesión para solicitar un carnet');
     window.location.href = '/login.html';
 }
 

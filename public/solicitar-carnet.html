@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Carnets - ScoreDomino</title>
+    <script>
+        // Verificar autenticación ANTES de cargar la página
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/carnets.css">
@@ -146,6 +153,19 @@
     </footer>
 
     <script src="/js/api-config.js"></script>
-    <script src="js/carnets-generator.js"></script>
+    <script>
+        // Esperar a que el DOM esté completamente cargado
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadScript);
+        } else {
+            loadScript();
+        }
+
+        function loadScript() {
+            const script = document.createElement('script');
+            script.src = 'js/carnets-generator.js';
+            document.body.appendChild(script);
+        }
+    </script>
 </body>
 </html>

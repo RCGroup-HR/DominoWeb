@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Carnets - ScoreDomino</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/carnets.css">
+</head>
+<body>
+    <div class="carnets-wrapper">
+        <div class="carnets-container">
+            <!-- Sección de Formulario -->
+            <div class="form-section">
+                <h1>Generar Carnet</h1>
+                <form id="carnetForm">
+                    <div class="form-group">
+                        <label for="nombre">Nombre Completo *</label>
+                        <input type="text" id="nombre" name="nombre" placeholder="Ej: Raymond Ysabel" required>
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pais">País *</label>
+                        <select id="pais" name="pais" required>
+                            <option value="">Selecciona un país</option>
+                            <option value="US">Estados Unidos</option>
+                            <option value="DO">República Dominicana</option>
+                            <option value="MX">México</option>
+                            <option value="PR">Puerto Rico</option>
+                            <option value="CO">Colombia</option>
+                            <option value="VE">Venezuela</option>
+                            <option value="CU">Cuba</option>
+                            <option value="ES">España</option>
+                            <option value="AR">Argentina</option>
+                            <option value="PE">Perú</option>
+                            <option value="OTHER">Otro</option>
+                        </select>
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="genero">Género *</label>
+                        <select id="genero" name="genero" required>
+                            <option value="">Selecciona un género</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                            <option value="O">Otro</option>
+                        </select>
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cedula">Cédula / ID *</label>
+                        <input type="text" id="cedula" name="cedula" placeholder="Ej: 123-456789-0" required>
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="photo-upload">
+                        <label>Foto *</label>
+                        <label class="photo-upload-btn" for="foto">
+                            📷 Haz clic para subir foto
+                        </label>
+                        <input type="file" id="foto" name="foto" accept="image/*" required>
+                        <div class="photo-preview" id="photoPreview"></div>
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="buttons-group">
+                        <button type="submit" class="btn-generate" id="btnGenerar">Enviar Solicitud</button>
+                        <button type="reset" class="btn-reset" id="btnReset">Limpiar</button>
+                    </div>
+
+                    <div class="success-message" id="successMessage">
+                        ✓ ¡Solicitud enviada correctamente!
+                    </div>
+
+                    <div class="warning-message" id="warningMessage">
+                        ⏳ Tu solicitud está en revisión
+                    </div>
+
+                    <div class="status-container" id="statusContainer">
+                        <div class="status-info" id="statusInfo"></div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sección de Preview -->
+            <div class="preview-section">
+                <h2 class="preview-title">Vista Previa</h2>
+                <div class="carnet-container">
+                    <div id="carnet">
+                        <div class="carnet-header-section">
+                            <div class="carnet-header">Carnet Oficial</div>
+                        </div>
+                        <div class="carnet-body">
+                            <img class="carnet-photo" id="carnetPhoto" src="" alt="Foto">
+                            <div class="carnet-name" id="carnetName">Nombre</div>
+                            <div class="carnet-info">
+                                <div class="carnet-badge-row">
+                                    <div class="carnet-badge">
+                                        <div class="badge-content">
+                                            <span class="badge-icon" id="carnetFlag">🌍</span>
+                                            <span id="carnetPais">País</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carnet-badge-row">
+                                    <div class="carnet-badge">
+                                        <div class="badge-content">
+                                            <span class="badge-icon" id="generoIcon">👤</span>
+                                            <span id="carnetGenero">Género</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carnet-footer">
+                            <div class="carnet-number" id="carnetNumber">PENDIENTE DE APROBACIÓN</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón volver al inicio -->
+        <div class="back-button-container">
+            <a href="index.html" class="btn-back">← Volver al Inicio</a>
+        </div>
+    </div>
+
+    <script src="/js/api-config.js"></script>
+    <script src="js/carnets-generator.js"></script>
+</body>
+</html>

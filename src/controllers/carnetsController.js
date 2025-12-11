@@ -13,6 +13,35 @@ const registrarAuditoria = async (usuarioId, accion, entidad, entidadId, detalle
     }
 };
 
+// Función para guardar imagen base64
+const guardarImagenBase64 = async (base64String) => {
+    const fs = require('fs').promises;
+    const path = require('path');
+
+    // Extraer el tipo de imagen y los datos
+    const matches = base64String.match(/^data:image\/([a-zA-Z]*);base64,(.*)$/);
+    if (!matches || matches.length !== 3) {
+        throw new Error('Formato de imagen base64 inválido');
+    }
+
+    const imageType = matches[1];
+    const imageData = matches[2];
+    const buffer = Buffer.from(imageData, 'base64');
+
+    // Generar nombre único para el archivo
+    const filename = `carnet-${Date.now()}-${Math.random().toString(36).substring(7)}.${imageType}`;
+    const uploadDir = path.join(__dirname, '../../public/uploads/fotos-carnets');
+    const filepath = path.join(uploadDir, filename);
+
+    // Crear directorio si no existe
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    // Guardar archivo
+    await fs.writeFile(filepath, buffer);
+
+    return `/uploads/fotos-carnets/${filename}`;
+};
+
 // Crear solicitud de carnet (usuarios autenticados)
 exports.crearSolicitudCarnet = async (req, res) => {
     const connection = await db.getConnection();
@@ -585,5 +614,127 @@ exports.listarPaises = async (req, res) => {
             message: 'Error al listar países',
             error: error.message
         });
+    }
+};
+
+// Crear solicitud de carnet con foto en base64 (usuarios autenticados)
+exports.crearSolicitudCarnetBase64 = async (req, res) => {
+    const connection = await db.getConnection();
+    let fotoUrl = null;
+
+    try {
+        await connection.beginTransaction();
+
+        const { nombre, pais, genero, cedula, fotoBase64 } = req.body;
+        const usuarioId = req.usuario.Id;
+
+        // Validaciones
+        if (!nombre || !pais || !cedula) {
+            return res.status(400).json({
+                success: false,
+                message: 'Nombre, país y cédula son requeridos'
+            });
+        }
+
+        if (!fotoBase64) {
+            return res.status(400).json({
+                success: false,
+                message: 'La foto es requerida'
+            });
+        }
+
+        // Generar número de carnet único
+        const carnetNumero = `CARD-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
+        // Verificar si el carnet ya existe (por si acaso)
+        const [carnetsExistentes] = await connection.query(
+            'SELECT Id FROM Carnets WHERE Carnet = ?',
+            [carnetNumero]
+        );
+
+        if (carnetsExistentes.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Error al generar número de carnet único'
+            });
+        }
+
+        // Guardar foto desde base64
+        try {
+            fotoUrl = await guardarImagenBase64(fotoBase64);
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: 'Error al procesar la imagen: ' + error.message
+            });
+        }
+
+        // Obtener bandera según país
+        const paisEmojis = {
+            'US': '🇺🇸',
+            'DO': '🇩🇴',
+            'MX': '🇲🇽',
+            'PR': '🇵🇷',
+            'CO': '🇨🇴',
+            'VE': '🇻🇪',
+            'CU': '🇨🇺',
+            'ES': '🇪🇸',
+            'AR': '🇦🇷',
+            'PE': '🇵🇪',
+            'OTHER': '🌍'
+        };
+
+        const bandera = paisEmojis[pais] || '🌍';
+
+        // Insertar carnet con estatus 'pendiente'
+        const [resultado] = await connection.query(
+            `INSERT INTO Carnets (Carnet, Nombre, Pais, Bandera, Union_Federacion, FotoUrl, Estatus, UsuarioId)
+             VALUES (?, ?, ?, ?, ?, ?, 'pendiente', ?)`,
+            [carnetNumero, nombre, pais, bandera, genero || null, fotoUrl, usuarioId]
+        );
+
+        const carnetId = resultado.insertId;
+
+        // Registrar auditoría
+        await registrarAuditoria(
+            usuarioId,
+            'CREAR_SOLICITUD_CARNET_BASE64',
+            'Carnets',
+            carnetId,
+            { carnet: carnetNumero, nombre, pais, cedula },
+            req.ip
+        );
+
+        await connection.commit();
+
+        res.status(201).json({
+            success: true,
+            message: 'Solicitud de carnet creada exitosamente. Pendiente de aprobación',
+            solicitudId: carnetId,
+            data: {
+                id: carnetId,
+                carnet: carnetNumero,
+                nombre,
+                pais,
+                fotoUrl,
+                estatus: 'pendiente'
+            }
+        });
+    } catch (error) {
+        await connection.rollback();
+
+        // Si hubo error y se guardó una foto, eliminarla
+        if (fotoUrl) {
+            eliminarArchivo(fotoUrl);
+        }
+
+        console.error('Error al crear solicitud de carnet:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al crear solicitud de carnet',
+            error: error.message
+        });
+    } finally {
+        connection.release();
     }
 };

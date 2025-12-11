@@ -16,6 +16,13 @@ router.post(
     carnetsController.crearSolicitudCarnet
 );
 
+// Ruta para solicitudes con foto en base64
+router.post(
+    '/solicitudes',
+    verificarToken,
+    carnetsController.crearSolicitudCarnetBase64
+);
+
 router.get('/', verificarToken, carnetsController.listarCarnets);
 router.get('/:id', verificarToken, carnetsController.obtenerCarnet);
 

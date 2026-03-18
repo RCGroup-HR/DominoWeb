@@ -2,71 +2,958 @@
 <html lang="es">
 <head>
 
-    <!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-VFG529YRBN"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-VFG529YRBN');
 </script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Estadísticas Dominó</title>
-    <link rel="stylesheet" href="css/main.css">
-    
-</head>
+    <meta name="description" content="ScoreDomino — Plataforma oficial de estadísticas, rankings y torneos de dominó internacional.">
+    <title>ScoreDomino — Ranking Oficial de Dominó</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-<!-- POPUP MODAL CON CARRUSEL -->
+<style>
+/* =========================================================
+   RESET & BASE
+   ========================================================= */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --green-dark:   #0a3d1f;
+    --green-mid:    #0f5c30;
+    --green-base:   #16a34a;
+    --green-light:  #22c55e;
+    --gold:         #f59e0b;
+    --orange:       #f97316;
+    --white:        #ffffff;
+    --gray-50:      #f8fafc;
+    --gray-100:     #f1f5f9;
+    --gray-200:     #e2e8f0;
+    --gray-500:     #64748b;
+    --gray-700:     #334155;
+    --gray-900:     #0f172a;
+    --font:         'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: var(--font);
+    background: var(--gray-50);
+    color: var(--gray-900);
+    overflow-x: hidden;
+}
+
+/* =========================================================
+   NAV
+   ========================================================= */
+.nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 14px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10, 61, 31, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.3s;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.nav-brand-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--green-base), var(--green-light));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(22,163,74,0.4);
+}
+
+.nav-brand-text {
+    font-size: 1.25em;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.5px;
+}
+
+.nav-brand-text span { color: var(--green-light); }
+
+.nav-links {
+    display: flex;
+    gap: 4px;
+    list-style: none;
+}
+
+.nav-links a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 0.875em;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.nav-links a:hover {
+    color: var(--white);
+    background: rgba(255,255,255,0.1);
+}
+
+.nav-cta {
+    background: linear-gradient(135deg, var(--green-base), var(--green-light)) !important;
+    color: var(--white) !important;
+    box-shadow: 0 4px 12px rgba(22,163,74,0.35) !important;
+}
+
+.nav-cta:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+.hero {
+    min-height: 100vh;
+    background:
+        radial-gradient(ellipse 70% 60% at 65% 40%, rgba(22,163,74,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 20% 70%, rgba(15,92,48,0.28) 0%, transparent 60%),
+        linear-gradient(160deg, #061410 0%, #0a3d1f 50%, #0d4e28 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 110px 30px 70px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle 1.5px at 1.5px 1.5px, rgba(255,255,255,0.04) 0%, transparent 100%);
+    background-size: 28px 28px;
+    pointer-events: none;
+}
+
+.hero-blob-1 {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(22,163,74,0.12) 0%, transparent 70%);
+    top: -150px; right: -150px;
+    pointer-events: none;
+    animation: floatBlob 9s ease-in-out infinite;
+}
+
+.hero-blob-2 {
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(245,158,11,0.07) 0%, transparent 70%);
+    bottom: 0; left: -100px;
+    pointer-events: none;
+    animation: floatBlob 12s ease-in-out infinite reverse;
+}
+
+@keyframes floatBlob {
+    0%, 100% { transform: translate(0,0); }
+    50%       { transform: translate(25px, -35px); }
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: var(--green-light);
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 9px 20px;
+    border-radius: 50px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(8px);
+    animation: fadeUp 0.6s ease both;
+}
+
+.hero-badge-dot {
+    width: 8px; height: 8px;
+    background: var(--green-light);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--green-light);
+    animation: blink 2s ease infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+.hero-title {
+    font-size: clamp(2.6em, 5.5vw, 4.8em);
+    font-weight: 900;
+    color: var(--white);
+    text-align: center;
+    line-height: 1.06;
+    letter-spacing: -2px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.7s 0.1s ease both;
+    max-width: 920px;
+}
+
+.hero-title .highlight {
+    background: linear-gradient(135deg, var(--green-light) 0%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: clamp(0.95em, 1.6vw, 1.15em);
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    max-width: 580px;
+    line-height: 1.75;
+    margin-bottom: 42px;
+    font-weight: 400;
+    animation: fadeUp 0.7s 0.2s ease both;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 64px;
+    animation: fadeUp 0.7s 0.3s ease both;
+}
+
+.btn-primary {
+    padding: 16px 38px;
+    background: linear-gradient(135deg, var(--green-base) 0%, var(--green-light) 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.95em;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 30px rgba(22,163,74,0.45);
+    transition: all 0.3s;
+    letter-spacing: 0.2px;
+    font-family: var(--font);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 38px rgba(22,163,74,0.55);
+}
+
+.btn-secondary {
+    padding: 16px 38px;
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.88);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-radius: 50px;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s;
+    font-family: var(--font);
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.14);
+    border-color: rgba(255,255,255,0.32);
+    transform: translateY(-2px);
+}
+
+/* Stats bar */
+.hero-stats {
+    display: flex;
+    gap: 0;
+    background: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(14px);
+    padding: 26px 44px;
+    animation: fadeUp 0.7s 0.4s ease both;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.hero-stat {
+    text-align: center;
+    padding: 0 40px;
+    position: relative;
+}
+
+.hero-stat:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 15%; height: 70%;
+    width: 1px;
+    background: rgba(255,255,255,0.1);
+}
+
+.hero-stat-num {
+    font-size: 2.3em;
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 7px;
+    letter-spacing: -1px;
+}
+
+.hero-stat-num sup {
+    font-size: 0.45em;
+    color: var(--green-light);
+    font-weight: 700;
+    vertical-align: super;
+}
+
+.hero-stat-lbl {
+    font-size: 0.72em;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+/* Scroll indicator */
+.hero-scroll {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.3);
+    font-size: 0.65em;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    animation: fadeUp 1s 0.8s ease both;
+}
+
+.scroll-arrow {
+    animation: bounceDown 2s ease infinite;
+}
+
+@keyframes bounceDown {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(8px); }
+}
+
+/* =========================================================
+   VIDEO SECTION
+   ========================================================= */
+.section-video {
+    background: linear-gradient(180deg, #071610 0%, #0a1f14 100%);
+    padding: 90px 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-video::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(22,163,74,0.07) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.section-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.section-eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.eyebrow-line { width: 36px; height: 1px; background: var(--green-base); }
+
+.eyebrow-text {
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--green-light);
+}
+
+.section-h2 {
+    text-align: center;
+    font-size: clamp(1.6em, 3vw, 2.3em);
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+}
+
+.section-sub {
+    text-align: center;
+    color: rgba(255,255,255,0.45);
+    font-size: 0.95em;
+    margin-bottom: 38px;
+    line-height: 1.6;
+}
+
+.video-frame {
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.07);
+    position: relative;
+}
+
+.video-frame::before { content: ''; display: block; padding-bottom: 50%; }
+
+.video-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    border: none;
+}
+
+.video-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.btn-live-red {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #ff0844, #ff6b6b);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.88em;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(255,8,68,0.4);
+    transition: all 0.3s;
+    font-family: var(--font);
+}
+
+.btn-live-red.show { display: inline-flex; }
+.btn-live-red:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255,8,68,0.5); }
+
+.btn-back-vid {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: rgba(255,255,255,0.09);
+    color: rgba(255,255,255,0.82);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-radius: 50px;
+    font-size: 0.88em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    backdrop-filter: blur(8px);
+    font-family: var(--font);
+}
+
+.btn-back-vid.show { display: inline-flex; }
+.btn-back-vid:hover { background: rgba(255,255,255,0.16); }
+
+.video-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50px;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.78em;
+    font-weight: 500;
+}
+
+/* =========================================================
+   FEATURES
+   ========================================================= */
+.section-features {
+    padding: 100px 30px;
+    background: var(--gray-50);
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 58px;
+}
+
+.section-tag {
+    display: inline-block;
+    background: rgba(22,163,74,0.1);
+    color: #0f6b35;
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 50px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(22,163,74,0.2);
+}
+
+.section-title-dark {
+    font-size: clamp(1.8em, 3.5vw, 2.8em);
+    font-weight: 800;
+    color: var(--gray-900);
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin-bottom: 16px;
+}
+
+.section-desc-gray {
+    font-size: 1.05em;
+    color: var(--gray-500);
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.75;
+}
+
+/* Grid */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.fcard {
+    background: white;
+    border-radius: 18px;
+    padding: 34px 28px;
+    border: 1px solid var(--gray-200);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.fcard::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green-base), var(--green-light));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s ease;
+}
+
+.fcard:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 22px 52px rgba(0,0,0,0.1);
+    border-color: rgba(22,163,74,0.25);
+}
+
+.fcard:hover::after { transform: scaleX(1); }
+
+.fcard-icon {
+    width: 54px; height: 54px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5em;
+    flex-shrink: 0;
+}
+
+.ic-gold   { background: linear-gradient(135deg,#fef3c7,#fde68a); }
+.ic-green  { background: linear-gradient(135deg,#d1fae5,#a7f3d0); }
+.ic-blue   { background: linear-gradient(135deg,#dbeafe,#bfdbfe); }
+.ic-red    { background: linear-gradient(135deg,#fee2e2,#fecaca); }
+.ic-purple { background: linear-gradient(135deg,#ede9fe,#ddd6fe); }
+.ic-teal   { background: linear-gradient(135deg,#ccfbf1,#99f6e4); }
+
+.fcard-title {
+    font-size: 1.08em;
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1.3;
+}
+
+.fcard-desc {
+    font-size: 0.88em;
+    color: var(--gray-500);
+    line-height: 1.7;
+    flex: 1;
+}
+
+.fcard-arrow {
+    align-self: flex-start;
+    width: 30px; height: 30px;
+    background: var(--gray-100);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85em;
+    color: var(--gray-500);
+    transition: all 0.3s;
+    margin-top: 4px;
+}
+
+.fcard:hover .fcard-arrow {
+    background: var(--green-base);
+    color: white;
+    transform: translateX(4px);
+}
+
+/* =========================================================
+   SPONSORS STRIP
+   ========================================================= */
+.section-sponsors {
+    background: linear-gradient(135deg, #071a0e 0%, #0a3d1f 100%);
+    padding: 56px 30px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-sponsors::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 100% at 50% 50%, rgba(22,163,74,0.08) 0%, transparent 70%);
+}
+
+.sponsors-label {
+    font-size: 0.7em;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 22px;
+    position: relative;
+}
+
+.sponsors-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 34px;
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-radius: 50px;
+    color: white;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    backdrop-filter: blur(8px);
+    position: relative;
+    font-family: var(--font);
+    letter-spacing: 0.3px;
+}
+
+.sponsors-cta:hover {
+    background: rgba(255,255,255,0.14);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+.site-footer {
+    background: var(--gray-900);
+    padding: 44px 30px;
+    text-align: center;
+}
+
+.footer-logo {
+    font-size: 1.35em;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.footer-logo span { color: var(--green-light); }
+
+.footer-tagline {
+    color: rgba(255,255,255,0.38);
+    font-size: 0.83em;
+    margin-bottom: 26px;
+}
+
+.footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 28px;
+}
+
+.footer-nav a {
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    font-size: 0.83em;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.footer-nav a:hover {
+    color: var(--green-light);
+    background: rgba(255,255,255,0.06);
+}
+
+.footer-sep {
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+    max-width: 360px;
+    margin: 0 auto 20px;
+}
+
+.footer-copy {
+    color: rgba(255,255,255,0.22);
+    font-size: 0.76em;
+}
+
+/* =========================================================
+   POPUP (Sponsors carousel — logic unchanged)
+   ========================================================= */
+.popup-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    inset: 0;
+    background: rgba(0,0,0,0.72);
+    backdrop-filter: blur(6px);
+    animation: fadeIn2 0.3s ease;
+}
+
+@keyframes fadeIn2 { from { opacity:0; } to { opacity:1; } }
+
+.popup-content {
+    background: #fff;
+    border-radius: 18px;
+    width: 90%; max-width: 580px;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+    overflow: hidden;
+    animation: slideIn2 0.4s ease;
+}
+
+@keyframes slideIn2 {
+    from { transform: translate(-50%,-60%); opacity:0; }
+    to   { transform: translate(-50%,-50%); opacity:1; }
+}
+
+.popup-close {
+    position: absolute; right: -14px; top: -14px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white; border: none; border-radius: 50%;
+    width: 40px; height: 40px; font-size: 18px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(239,68,68,0.4); transition: all 0.2s; z-index: 10;
+}
+.popup-close:hover { transform: scale(1.1); }
+
+.popup-header {
+    background: linear-gradient(135deg, var(--green-mid), var(--green-dark));
+    color: white; padding: 18px 24px; text-align: center;
+}
+.popup-header h3 { margin:0; font-size:1.05em; font-weight:700; }
+
+.carousel-container { position:relative; width:100%; overflow:hidden; }
+
+.carousel-images {
+    display:flex; width:100%; height:420px;
+    position:relative; background:#f8f9fa;
+}
+
+.carousel-image {
+    position:absolute; inset:0; opacity:0;
+    transition:opacity 0.5s ease;
+    display:flex; align-items:center; justify-content:center;
+}
+.carousel-image.active { opacity:1; z-index:2; }
+
+.carousel-link {
+    display:flex; align-items:center; justify-content:center;
+    width:100%; height:100%; text-decoration:none; cursor:pointer;
+}
+.carousel-link img { max-width:92%; max-height:92%; object-fit:contain; display:block; transition:transform 0.3s; }
+.carousel-link:hover img { transform:scale(1.03); }
+
+.carousel-dots { display:flex; justify-content:center; gap:8px; padding:14px; background:#f5f5f5; }
+
+.dot {
+    width:10px; height:10px; border-radius:50%;
+    background:#ccc; cursor:pointer; transition:all 0.3s;
+}
+.dot.active { background: var(--green-base); transform:scale(1.3); }
+
+.carousel-btn {
+    position:absolute; top:50%; transform:translateY(-50%);
+    background:rgba(0,0,0,0.35); color:white; border:none;
+    font-size:20px; padding:10px 14px; cursor:pointer;
+    border-radius:8px; transition:all 0.2s; z-index:10;
+}
+.carousel-btn:hover { background:rgba(0,0,0,0.65); }
+.carousel-btn.prev { left:10px; }
+.carousel-btn.next { right:10px; }
+
+.popup-footer {
+    background:#f8f9fa; padding:16px; text-align:center;
+    border-top:1px solid #e9ecef; color:#6b7280; font-size:0.88em; font-weight:500;
+}
+
+/* =========================================================
+   WHATSAPP
+   ========================================================= */
+.wa-float {
+    position:fixed; bottom:28px; right:28px;
+    width:58px; height:58px;
+    background:linear-gradient(135deg,#25D366,#128C7E);
+    color:white; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 22px rgba(37,211,102,0.45);
+    cursor:pointer; transition:all 0.3s; z-index:900; text-decoration:none;
+}
+.wa-float:hover { transform:scale(1.1) translateY(-4px); box-shadow:0 12px 32px rgba(37,211,102,0.6); }
+.wa-icon { width:32px; height:32px; animation:blink 2.5s infinite; }
+
+.wa-float::before {
+    content:"¿Necesitas ayuda?";
+    position:absolute; right:68px;
+    background:#128C7E; color:white;
+    padding:7px 14px; border-radius:8px;
+    font-size:13px; white-space:nowrap;
+    opacity:0; pointer-events:none; transition:opacity 0.3s;
+    font-family:var(--font); font-weight:500;
+}
+.wa-float:hover::before { opacity:1; }
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(26px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width:1100px) {
+    .features-grid { grid-template-columns:repeat(2,1fr); }
+}
+
+@media (max-width:768px) {
+    .nav-links { display:none; }
+    .hero { padding:90px 20px 60px; }
+    .hero-stats { padding:20px 26px; }
+    .hero-stat { padding:0 22px; }
+    .hero-stat-num { font-size:1.8em; }
+    .features-grid { grid-template-columns:1fr; gap:16px; }
+    .section-features { padding:70px 20px; }
+    .section-video { padding:70px 20px; }
+    .video-frame::before { padding-bottom:56%; }
+    .hero-actions { flex-direction:column; align-items:center; }
+    .btn-primary, .btn-secondary { width:100%; max-width:320px; justify-content:center; }
+    .carousel-images { height:300px; }
+    .wa-float::before { display:none; }
+}
+
+@media (max-width:480px) {
+    .hero-title { font-size:2.2em; letter-spacing:-1px; }
+    .hero-stats { flex-direction:column; gap:10px; padding:20px; }
+    .hero-stat:not(:last-child)::after { display:none; }
+    .hero-stat { padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.07); }
+    .hero-stat:last-child { border-bottom:none; }
+}
+</style>
+
+</head>
+<body>
+
+<!-- ===== POPUP SPONSORS ===== -->
 <div id="popup-modal" class="popup-modal">
     <div class="popup-content">
         <div class="popup-header">
-            <h3>Patrocinadores de ScoreDomino.com</h3>
+            <h3>🏆 Patrocinadores de ScoreDomino.com</h3>
         </div>
         <button class="popup-close" onclick="cerrarPopup()">✕</button>
-        
-        <!-- Carrusel de imágenes -->
+
         <div class="carousel-container">
             <div class="carousel-images">
-                <!-- IMAGEN 1: Industrial Shal -->
                 <div class="carousel-image active" data-index="0">
                     <a href="https://www.instagram.com/industrialshal_/" target="_blank" rel="noopener noreferrer" class="carousel-link">
                         <img src="patrocinadores/logo.jpg" alt="Industrial Shal">
                     </a>
                 </div>
-
-                <!-- IMAGEN 2: Movimiento Jugadores -->
                 <div class="carousel-image" data-index="1">
                     <a href="https://www.instagram.com/movimientojugadores/" target="_blank" rel="noopener noreferrer" class="carousel-link">
                         <img src="patrocinadores/logo5.png" alt="Movimiento Jugadores">
                     </a>
                 </div>
-
-                <!-- IMAGEN 3: TJ Multiservice -->
                 <div class="carousel-image" data-index="2">
                     <a href="https://www.instagram.com/tj.multiservice/" target="_blank" rel="noopener noreferrer" class="carousel-link">
                         <img src="patrocinadores/logo4.jpg" alt="TJ Multiservice">
                     </a>
                 </div>
-
-                <!-- IMAGEN 4: Brisas del Olimpo -->
                 <div class="carousel-image" data-index="3">
                     <a href="https://www.instagram.com/brisasdelolimpo/" target="_blank" rel="noopener noreferrer" class="carousel-link">
                         <img src="patrocinadores/logo2.jpg" alt="Brisas del Olimpo">
                     </a>
                 </div>
-
-                <!-- IMAGEN 5: Ronnie Hdez -->
                 <div class="carousel-image" data-index="4">
                     <a href="https://www.instagram.com/ronniehdez/" target="_blank" rel="noopener noreferrer" class="carousel-link">
                         <img src="patrocinadores/logo3.png" alt="Ronnie Hdez">
                     </a>
                 </div>
             </div>
-            
-            <!-- Indicadores (dots) -->
             <div class="carousel-dots">
                 <div class="dot active" data-index="0"></div>
                 <div class="dot" data-index="1"></div>
@@ -74,733 +961,327 @@
                 <div class="dot" data-index="3"></div>
                 <div class="dot" data-index="4"></div>
             </div>
-            
-            <!-- Botones de navegación -->
             <button class="carousel-btn prev">❮</button>
             <button class="carousel-btn next">❯</button>
         </div>
-        
         <div class="popup-footer">
             <p>Haz clic en las imágenes para visitar Instagram</p>
         </div>
     </div>
 </div>
 
-<style>
-    /* Estilos del Popup Modal */
-    .popup-modal {
-        display: none;
-        position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-        animation: fadeIn 0.3s ease;
-    }
+<!-- ===== NAV ===== -->
+<nav class="nav" id="mainNav">
+    <a href="#" class="nav-brand">
+        <div class="nav-brand-icon">🎲</div>
+        <span class="nav-brand-text">Score<span>Domino</span></span>
+    </a>
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
-    }
+    <ul class="nav-links">
+        <li><a href="ranking-general.html">Individual</a></li>
+        <li><a href="ranking-colectivo.html">Colectivo</a></li>
+        <li><a href="historico-partidas.html">Histórico</a></li>
+        <li><a href="comparar-jugadores.html">Comparar</a></li>
+        <li><a href="metodologia-scoredomino.html">Metodología</a></li>
+        <li><a href="solicitar-carnet.html" class="nav-cta">🎫 Carnet</a></li>
+    </ul>
+</nav>
 
-    .popup-content {
-        background-color: #fefefe;
-        margin: auto;
-        padding: 0;
-        border-radius: 15px;
-        width: 90%;
-        max-width: 600px;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
-        animation: slideIn 0.4s ease;
-    }
+<!-- ===== HERO ===== -->
+<section class="hero" id="inicio">
+    <div class="hero-blob-1"></div>
+    <div class="hero-blob-2"></div>
 
-    @keyframes slideIn {
-        from {
-            transform: translate(-50%, -60%);
-            opacity: 0;
-        }
-        to {
-            transform: translate(-50%, -50%);
-            opacity: 1;
-        }
-    }
+    <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        Plataforma Oficial · Temporada 2025
+    </div>
 
-    .popup-close {
-        position: absolute;
-        right: -15px;
-        top: -15px;
-        background: #a9240c;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        font-size: 24px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        z-index: 2001;
-    }
+    <h1 class="hero-title">
+        El ranking de dominó<br>
+        <span class="highlight">más completo</span> del mundo
+    </h1>
 
-    .popup-close:hover {
-        background: #128C7E;
-        transform: scale(1.1);
-    }
+    <p class="hero-subtitle">
+        Estadísticas en tiempo real, clasificaciones oficiales, comparativas de jugadores y torneos internacionales — todo en un solo lugar.
+    </p>
 
-    .popup-close:active {
-        transform: scale(0.95);
-    }
+    <div class="hero-actions">
+        <a href="ranking-general.html" class="btn-primary">
+            🏆 Ver Ranking Individual
+        </a>
+        <a href="ranking-colectivo.html" class="btn-secondary">
+            👥 Ranking por Equipos
+        </a>
+    </div>
 
-    .popup-header {
-        background: linear-gradient(135deg, #0a903b 0%, #128C7E 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 15px 15px 0 0;
-        text-align: center;
-        margin: 0;
-    }
-
-    .popup-header h3 {
-        margin: 0;
-        font-size: 1.2em;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-    }
-
-    /* ===== ESTILOS DEL CARRUSEL ===== */
-    .carousel-container {
-        position: relative;
-        width: 100%;
-        overflow: hidden;
-        border-radius: 0 0 0px 0px;
-    }
-
-    .carousel-images {
-        display: flex;
-        width: 100%;
-        height: 450px;
-        position: relative;
-        background: #f8f9fa;
-    }
-
-    .carousel-image {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        opacity: 0;
-        transition: opacity 0.6s ease-in-out;
-        background: #f8f9fa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .carousel-image.active {
-        opacity: 1;
-        z-index: 10;
-    }
-
-    .carousel-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-        text-decoration: none;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-
-    .carousel-link:hover {
-        background: rgba(0,0,0,0.05);
-    }
-
-    .carousel-link img {
-        max-width: 95%;
-        max-height: 95%;
-        object-fit: contain;
-        display: block;
-    }
-
-    /* Indicadores (dots) */
-    .carousel-dots {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        padding: 12px 0;
-        background: #f5f5f5;
-    }
-
-    .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: #ccc;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-
-    .dot.active {
-        background: #128C7E;
-        transform: scale(1.3);
-    }
-
-    .dot:hover {
-        background: #128C7E;
-    }
-
-    /* Botones de navegación */
-    .carousel-btn {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(0, 0, 0, 0.4);
-        color: white;
-        border: none;
-        font-size: 24px;
-        padding: 10px 15px;
-        cursor: pointer;
-        border-radius: 5px;
-        transition: all 0.3s ease;
-        z-index: 100;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .carousel-btn:hover {
-        background: rgba(0, 0, 0, 0.7);
-    }
-
-    .carousel-btn.prev {
-        left: 10px;
-    }
-
-    .carousel-btn.next {
-        right: 10px;
-    }
-
-    .popup-footer {
-        background: #eceef0;
-        padding: 20px;
-        text-align: center;
-        border-radius: 0 0 15px 15px;
-        border-top: 1px solid #e9ecef;
-    }
-
-    .popup-footer p {
-        margin: 0;
-        color: #495057;
-        font-size: 0.95em;
-        font-weight: 500;
-        letter-spacing: 0.3px;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .popup-content {
-            width: 95%;
-            max-width: 90vw;
-        }
-
-        .popup-close {
-            right: -10px;
-            top: -10px;
-            width: 35px;
-            height: 35px;
-            font-size: 20px;
-        }
-
-        .carousel-image {
-            height: 300px;
-        }
-
-        .carousel-btn {
-            font-size: 18px;
-            padding: 8px 12px;
-        }
-    }
-</style>
-
-<script>
-    // ===== VARIABLES DEL CARRUSEL =====
-    let currentCarouselIndex = 0;
-    const totalImages = 5;
-    let autoplayTimer = null;
-
-    // Configuración de imágenes
-    const carouselImages = [
-        { name: "Industrial Shal", url: "https://www.instagram.com/industrialshal_/" },
-        { name: "Movimiento Jugadores", url: "https://www.instagram.com/movimientojugadores/" },
-        { name: "TJ Multiservice", url: "https://www.instagram.com/tj.multiservice/" },
-        { name: "Brisas del Olimpo", url: "https://www.instagram.com/brisasdelolimpo/" },
-        { name: "Ronnie Hdez", url: "https://www.instagram.com/ronniehdez/" }
-    ];
-
-    function updateCarousel(index) {
-        if (index < 0) index = totalImages - 1;
-        if (index >= totalImages) index = 0;
-
-        currentCarouselIndex = index;
-
-        // Actualizar imágenes
-        document.querySelectorAll('.carousel-image').forEach((img, i) => {
-            img.classList.toggle('active', i === index);
-        });
-
-        // Actualizar dots
-        document.querySelectorAll('.dot').forEach((dot, i) => {
-            dot.classList.toggle('active', i === index);
-        });
-
-        // Reiniciar autoplay
-        detenerAutoplay();
-        iniciarAutoplay();
-    }
-
-    function iniciarAutoplay() {
-        autoplayTimer = setInterval(() => {
-            updateCarousel(currentCarouselIndex + 1);
-        }, 2500);
-    }
-
-    function detenerAutoplay() {
-        if (autoplayTimer) {
-            clearInterval(autoplayTimer);
-        }
-    }
-
-    // Inicializar botones cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', function() {
-        // Botón siguiente
-        document.querySelector('.carousel-btn.next').addEventListener('click', () => {
-            updateCarousel(currentCarouselIndex + 1);
-        });
-
-        // Botón anterior
-        document.querySelector('.carousel-btn.prev').addEventListener('click', () => {
-            updateCarousel(currentCarouselIndex - 1);
-        });
-
-        // Dots
-        document.querySelectorAll('.dot').forEach(dot => {
-            dot.addEventListener('click', (e) => {
-                const index = parseInt(e.target.dataset.index);
-                updateCarousel(index);
-            });
-        });
-    });
-
-    // ===== FUNCIONES DEL POPUP =====
-    function mostrarPopup() {
-        if (sessionStorage.getItem('popupMostrado') === 'true') {
-            return;
-        }
-        
-        const modal = document.getElementById('popup-modal');
-        modal.style.display = 'block';
-        iniciarAutoplay();
-    }
-
-    function cerrarPopup() {
-        const modal = document.getElementById('popup-modal');
-        modal.style.display = 'none';
-        
-        sessionStorage.setItem('popupMostrado', 'true');
-        detenerAutoplay();
-    }
-
-    // Cerrar popup al hacer click fuera
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('popup-modal');
-        if (event.target === modal) {
-            cerrarPopup();
-        }
-    });
-
-    // Cerrar popup con tecla ESC
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            cerrarPopup();
-        }
-    });
-
-    // Mostrar popup cuando cargue la página
-    window.addEventListener('load', function() {
-        mostrarPopup();
-    });
-</script>
-
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🎲 Sistema de Estadísticas Dominó</h1>
-            <p>     Gestión y análisis de datos de torneos</p>
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <div class="hero-stat-num">32<sup>+</sup></div>
+            <div class="hero-stat-lbl">Países</div>
         </div>
-
-        <div class="hero-section">
-            <h2>Bienvenido</h2>
-            <p>Plataforma completa para consultar estadísticas, rankings y eventos en vivo.</p>
-            
-            <!-- Contenedor del video de YouTube -->
-            <div class="video-container">
-                <iframe 
-                    id="youtube-player"
-                    src="" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-
-            <!-- Botones de control (inline styles mínimos para funcionalidad) -->
-            <div style="text-align: center; margin-top: 15px;">
-                <button id="btn-live" onclick="verificarYCambiarLive()" 
-                    style="display: none; padding: 12px 24px; background: linear-gradient(135deg, #ff0844 0%, #ff6b6b 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1em; box-shadow: 0 4px 12px rgba(255, 8, 68, 0.3); transition: all 0.3s;">
-                    🔴 Cambiar a Modo En Vivo
-                </button>
-
-                <button id="btn-volver" onclick="volverVideo()" 
-                    style="display: none; padding: 12px 24px; background: white; color: #667eea; border: 2px solid #667eea; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1em; transition: all 0.3s;">
-                    📹 Volver al Video
-                </button>
-            </div>
-
-            <p class="video-note">
-                <span id="video-status">🎥 Cargando video...</span>
-            </p>
+        <div class="hero-stat">
+            <div class="hero-stat-num">100<sup>+</sup></div>
+            <div class="hero-stat-lbl">Jugadores</div>
         </div>
-
-        <!-- Script ACTUALIZADO con API protegida en backend -->
-        <script>
-            // ============================================
-            // CONFIGURACIÓN
-            // ============================================
-            
-            const CONFIG = {
-                // ✅ API protegida en backend (NO más API Keys expuestas)
-                API_BASE_URL: '/api/youtube',
-                
-                // ID del canal (Alofoke Radio Show)
-                //CHANNEL_ID: 'UCvDvBAOuJIHKWK59duvM0JQ', // Alofoke
-                // ID Canal RonnieHdez
-                CHANNEL_ID: 'UCEzJUQ76-ftC6DmcfDaDC7A', // RonnieHdez
-                
-                // Video por defecto
-                DEFAULT_VIDEO_ID: 'Mt5X-K7TMos',
-                
-                // Configuración del video
-                AUTOPLAY: true,
-                MUTE: true
-            };
-
-            // ============================================
-            // VARIABLES GLOBALES
-            // ============================================
-            
-            let modoActual = 'video'; // 'video' o 'live'
-            let liveVideoIdActual = null;
-            
-            const player = document.getElementById('youtube-player');
-            const statusText = document.getElementById('video-status');
-            const btnLive = document.getElementById('btn-live');
-            const btnVolver = document.getElementById('btn-volver');
-
-            // ============================================
-            // DETECCIÓN DE LIVE CON BACKEND PROXY
-            // ============================================
-            
-            async function detectarLive() {
-                try {
-                    console.log('🔍 Verificando si hay live activo...');
-                    
-                    // ✅ Llamar al backend proxy (NO expone API Keys)
-                    const url = `${CONFIG.API_BASE_URL}/check-live?channelId=${CONFIG.CHANNEL_ID}`;
-                    
-                    const response = await fetch(url);
-                    
-                    if (!response.ok) {
-                        console.error('❌ Error en la respuesta del servidor:', response.status);
-                        return null;
-                    }
-                    
-                    const data = await response.json();
-
-                    if (data.error) {
-                        console.error('❌ Error del servidor:', data.error);
-                        return null;
-                    }
-
-                    if (data.isLive && data.videoId) {
-                        console.log('✅ Live encontrado:', data.videoId);
-                        return data.videoId;
-                    }
-
-                    console.log('ℹ️ No hay live activo');
-                    return false;
-                    
-                } catch (error) {
-                    console.error('❌ Error al verificar:', error);
-                    return null;
-                }
-            }
-
-            // ============================================
-            // FUNCIONES DE VISUALIZACIÓN
-            // ============================================
-            
-            function mostrarVideoDestacado() {
-                console.log('🎥 Mostrando video destacado');
-                
-                const params = [];
-                if (CONFIG.AUTOPLAY) params.push('autoplay=1');
-                if (CONFIG.MUTE) params.push('mute=1');
-                
-                player.src = `https://www.youtube.com/embed/${CONFIG.DEFAULT_VIDEO_ID}?${params.join('&')}`;
-                statusText.innerHTML = '🎥 Video destacado';
-                modoActual = 'video';
-                
-                // Mostrar botón "Modo En Vivo", ocultar "Volver"
-                btnLive.style.display = 'inline-block';
-                btnVolver.style.display = 'none';
-            }
-
-            function mostrarLive(videoId) {
-                console.log('🔴 Mostrando live:', videoId);
-                
-                // Live con autoplay activado (sin mute para escuchar audio)
-                player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`;
-                statusText.innerHTML = '🔴 Transmisión en vivo';
-                modoActual = 'live';
-                liveVideoIdActual = videoId;
-                
-                // Ocultar botón "Modo En Vivo", mostrar "Volver"
-                btnLive.style.display = 'none';
-                btnVolver.style.display = 'inline-block';
-            }
-
-            // ============================================
-            // FUNCIONES PÚBLICAS (BOTONES)
-            // ============================================
-            
-            // Botón "Cambiar a Modo En Vivo"
-            async function verificarYCambiarLive() {
-                // Deshabilitar botón mientras verifica
-                btnLive.disabled = true;
-                btnLive.innerHTML = '⏳ Verificando...';
-                
-                const liveId = await detectarLive();
-                
-                if (liveId && liveId !== false) {
-                    // HAY LIVE - Cambiar al live
-                    mostrarLive(liveId);
-                } else {
-                    // NO HAY LIVE - Mantener video destacado
-                    console.log('ℹ️ No hay live, manteniendo video destacado');
-                    alert('No hay transmisión en vivo en este momento.\nEl video destacado continuará reproduciéndose.');
-                }
-                
-                // Rehabilitar botón
-                btnLive.disabled = false;
-                btnLive.innerHTML = '🔴 Cambiar a Modo En Vivo';
-            }
-
-            // Botón "Volver al Video"
-            function volverVideo() {
-                mostrarVideoDestacado();
-            }
-
-            // ============================================
-            // INICIALIZACIÓN
-            // ============================================
-            
-            async function init() {
-                console.log('🚀 Sistema iniciado');
-                console.log('📺 Canal:', CONFIG.CHANNEL_ID);
-                console.log('🎥 Video destacado:', CONFIG.DEFAULT_VIDEO_ID);
-                console.log('🔒 API Keys protegidas en backend');
-                
-                // VERIFICACIÓN INICIAL (solo al cargar)
-                console.log('🔄 Verificación inicial al cargar...');
-                const liveId = await detectarLive();
-                
-                if (liveId && liveId !== false) {
-                    // HAY LIVE - Mostrarlo directamente
-                    console.log('✅ Live detectado al cargar, mostrando live');
-                    mostrarLive(liveId);
-                } else {
-                    // NO HAY LIVE - Mostrar video destacado
-                    console.log('ℹ️ No hay live, mostrando video destacado');
-                    mostrarVideoDestacado();
-                }
-            }
-
-            // Iniciar cuando cargue la página
-            window.addEventListener('load', init);
-        </script>
-
-        <div class="features">
-
-            <a href="ranking-general.html" class="feature-card">
-                <div class="icon">🏆</div>
-                <h3>Ranking Individual</h3>
-                <p>Visualiza la clasificación completa de jugadores ordenados por rendimiento y efectividad.</p>
-            </a>
-
-            <a href="ranking-colectivo.html" class="feature-card">
-                <div class="icon">🏆🏆🏆</div>
-                <h3>Ranking Colectivo</h3>
-                <p>Visualiza la clasificación completa por equipos por rendimiento y efectividad.</p>
-            </a>
-
-            
-            <a href="historico-partidas.html" class="feature-card">
-                <div class="icon">📊</div>
-                <h3>Histórico de Jugadores</h3>
-                <p>Consulta el historial completo de partidas de cualquier jugador por torneo con estadísticas resumindas.</p>
-            </a>
-
-            <a href="comparar-jugadores.html" class="feature-card">
-                <div class="icon">🥊vs🥊</div>
-                <h3>Comparar</h3>
-                <p>Muestra el rendimiento entre dos jugadores.</p>
-            </a>
-
-            <a href="metodologia-scoredomino.html" class="feature-card">
-                <div class="icon">📋</div>
-                <h3>Metodología de Juego</h3>
-                <p>Enfrentamiento de equipos.</p>
-            </a>
-
-            <a href="solicitar-carnet.html" class="feature-card">
-                <div class="icon">🎫</div>
-                <h3>Generar Carnet</h3>
-                <p>Solicita tu carnet oficial de jugador con foto de perfil en tiempo real.</p>
-            </a>
-
+        <div class="hero-stat">
+            <div class="hero-stat-num">500<sup>+</sup></div>
+            <div class="hero-stat-lbl">Partidas</div>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-num">🔴</div>
+            <div class="hero-stat-lbl">En Vivo</div>
         </div>
     </div>
 
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-bottom">
-                <p>&copy; 2025 Ronnie Hernández — Sistema de Estadísticas Dominó. Todos los derechos reservados.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Botón flotante de WhatsApp -->
-    <a href="https://wa.me/18299610267?text=Hola,%20me%20interesa%20obtener%20información%20sobre%20eventos%20y%20contrataciones" 
-       class="whatsapp-float" 
-       target="_blank"
-       rel="noopener noreferrer"
-       aria-label="Contactar por WhatsApp">
-        <svg viewBox="0 0 32 32" class="whatsapp-icon">
-            <path fill="currentColor" d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.737 5.607 2.137 8.048l-2.137 7.952 7.933-2.127c2.42 1.37 5.173 2.127 8.067 2.127 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.467c-2.482 0-4.908-0.646-7.07-1.87l-0.507-0.292-5.252 1.408 1.408-5.245-0.292-0.508c-1.207-2.100-1.847-4.507-1.847-6.96 0-7.443 6.057-13.5 13.5-13.5s13.5 6.057 13.5 13.5-6.057 13.467-13.44 13.467zM21.305 18.305c-0.352-0.177-2.085-1.030-2.408-1.147-0.323-0.117-0.558-0.177-0.793 0.177s-0.912 1.147-1.117 1.383c-0.205 0.235-0.41 0.265-0.763 0.088s-1.487-0.548-2.833-1.748c-1.048-0.935-1.755-2.090-1.96-2.443s-0.022-0.543 0.155-0.72c0.158-0.158 0.352-0.41 0.528-0.615s0.235-0.352 0.352-0.587c0.117-0.235 0.058-0.44-0.030-0.615s-0.793-1.913-1.088-2.618c-0.287-0.687-0.578-0.593-0.793-0.605-0.205-0.010-0.44-0.012-0.675-0.012s-0.615 0.087-0.937 0.44c-0.323 0.352-1.235 1.208-1.235 2.943s1.265 3.413 1.44 3.648c0.177 0.235 2.473 3.775 5.99 5.292 0.837 0.362 1.492 0.577 2.002 0.738 0.84 0.267 1.605 0.230 2.21 0.140 0.675-0.100 2.085-0.852 2.38-1.675s0.295-1.528 0.205-1.675c-0.087-0.147-0.323-0.235-0.675-0.413z"/>
+    <a href="#video" class="hero-scroll">
+        <span>Explorar</span>
+        <svg class="scroll-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
     </a>
+</section>
 
-    <style>
-        /* Estilos del botón flotante de WhatsApp */
-        .whatsapp-float {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            text-decoration: none;
-        }
+<!-- ===== VIDEO SECTION ===== -->
+<section class="section-video" id="video">
+    <div class="section-inner">
+        <div class="section-eyebrow">
+            <div class="eyebrow-line"></div>
+            <span class="eyebrow-text">Canal Oficial</span>
+            <div class="eyebrow-line"></div>
+        </div>
+        <h2 class="section-h2">Torneos en Vivo</h2>
+        <p class="section-sub">Transmisiones de torneos, análisis y contenido exclusivo del dominó internacional</p>
 
-        .whatsapp-float:hover {
-            transform: scale(1.1) translateY(-5px);
-            box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
-        }
+        <div class="video-frame">
+            <iframe
+                id="youtube-player"
+                src=""
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+            </iframe>
+        </div>
 
-        .whatsapp-float:active {
-            transform: scale(0.95);
-        }
+        <div class="video-controls">
+            <button id="btn-live" class="btn-live-red" onclick="verificarYCambiarLive()">
+                🔴 Cambiar a Modo En Vivo
+            </button>
+            <button id="btn-volver" class="btn-back-vid" onclick="volverVideo()">
+                📹 Volver al Video
+            </button>
+            <div class="video-badge">
+                <span id="video-status">🎥 Cargando...</span>
+            </div>
+        </div>
+    </div>
+</section>
 
-        .whatsapp-icon {
-            width: 35px;
-            height: 35px;
-            animation: pulse 2s infinite;
-        }
+<!-- ===== FEATURES ===== -->
+<section class="section-features" id="secciones">
+    <div class="section-header">
+        <div class="section-tag">Herramientas</div>
+        <h2 class="section-title-dark">Todo lo que necesitas<br>para el dominó competitivo</h2>
+        <p class="section-desc-gray">
+            Accede a estadísticas detalladas, historiales completos y análisis comparativos de todos los torneos.
+        </p>
+    </div>
 
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
-        }
+    <div class="features-grid">
+        <a href="ranking-general.html" class="fcard">
+            <div class="fcard-icon ic-gold">🏆</div>
+            <div class="fcard-title">Ranking Individual</div>
+            <div class="fcard-desc">Clasificación completa de jugadores ordenada por rendimiento, efectividad y puntos totales del torneo.</div>
+            <div class="fcard-arrow">→</div>
+        </a>
 
-        /* Responsivo para móviles */
-        @media (max-width: 768px) {
-            .whatsapp-float {
-                width: 55px;
-                height: 55px;
-                bottom: 20px;
-                right: 20px;
-            }
-            
-            .whatsapp-icon {
-                width: 30px;
-                height: 30px;
-            }
-        }
+        <a href="ranking-colectivo.html" class="fcard">
+            <div class="fcard-icon ic-green">🏅</div>
+            <div class="fcard-title">Ranking Colectivo</div>
+            <div class="fcard-desc">Clasificación de equipos con detalle expandible de cada integrante y sus estadísticas individuales.</div>
+            <div class="fcard-arrow">→</div>
+        </a>
 
-        /* Efecto de tooltip opcional */
-        .whatsapp-float::before {
-            content: "¿Necesitas ayuda?";
-            position: absolute;
-            right: 70px;
-            background: #128C7E;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
+        <a href="historico-partidas.html" class="fcard">
+            <div class="fcard-icon ic-blue">📊</div>
+            <div class="fcard-title">Histórico de Jugadores</div>
+            <div class="fcard-desc">Consulta el historial completo de partidas de cualquier jugador con estadísticas por torneo.</div>
+            <div class="fcard-arrow">→</div>
+        </a>
 
-        .whatsapp-float:hover::before {
-            opacity: 1;
-        }
+        <a href="comparar-jugadores.html" class="fcard">
+            <div class="fcard-icon ic-red">🥊</div>
+            <div class="fcard-title">Comparar Jugadores</div>
+            <div class="fcard-desc">Enfrenta cara a cara el rendimiento de dos jugadores con métricas detalladas y visuales comparativos.</div>
+            <div class="fcard-arrow">→</div>
+        </a>
 
-        @media (max-width: 768px) {
-            .whatsapp-float::before {
-                display: none;
-            }
-        }
-    </style>
+        <a href="metodologia-scoredomino.html" class="fcard">
+            <div class="fcard-icon ic-purple">📋</div>
+            <div class="fcard-title">Metodología de Juego</div>
+            <div class="fcard-desc">Sistema oficial de puntuación y enfrentamiento de equipos utilizado en los torneos ScoreDomino.</div>
+            <div class="fcard-arrow">→</div>
+        </a>
+
+        <a href="solicitar-carnet.html" class="fcard">
+            <div class="fcard-icon ic-teal">🎫</div>
+            <div class="fcard-title">Carnet de Jugador</div>
+            <div class="fcard-desc">Solicita tu carnet oficial con foto de perfil en tiempo real. Verificación por administrador incluida.</div>
+            <div class="fcard-arrow">→</div>
+        </a>
+    </div>
+</section>
+
+<!-- ===== SPONSORS ===== -->
+<section class="section-sponsors">
+    <div class="sponsors-label">Nuestros patrocinadores</div>
+    <button class="sponsors-cta" onclick="mostrarPopup()">
+        ✨ Ver Patrocinadores Oficiales
+    </button>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+    <div class="footer-logo">Score<span>Domino</span></div>
+    <div class="footer-tagline">Sistema de Estadísticas de Dominó Internacional</div>
+
+    <nav class="footer-nav">
+        <a href="ranking-general.html">Ranking Individual</a>
+        <a href="ranking-colectivo.html">Ranking Colectivo</a>
+        <a href="historico-partidas.html">Histórico</a>
+        <a href="comparar-jugadores.html">Comparar</a>
+        <a href="metodologia-scoredomino.html">Metodología</a>
+        <a href="solicitar-carnet.html">Carnet</a>
+    </nav>
+
+    <div class="footer-sep"></div>
+    <div class="footer-copy">&copy; 2025 Ronnie Hernández — Todos los derechos reservados.</div>
+</footer>
+
+<!-- ===== WHATSAPP ===== -->
+<a href="https://wa.me/18299610267?text=Hola,%20me%20interesa%20obtener%20información%20sobre%20eventos%20y%20contrataciones"
+   class="wa-float"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="WhatsApp">
+    <svg viewBox="0 0 32 32" class="wa-icon">
+        <path fill="currentColor" d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.737 5.607 2.137 8.048l-2.137 7.952 7.933-2.127c2.42 1.37 5.173 2.127 8.067 2.127 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.467c-2.482 0-4.908-0.646-7.07-1.87l-0.507-0.292-5.252 1.408 1.408-5.245-0.292-0.508c-1.207-2.100-1.847-4.507-1.847-6.96 0-7.443 6.057-13.5 13.5-13.5s13.5 6.057 13.5 13.5-6.057 13.467-13.44 13.467zM21.305 18.305c-0.352-0.177-2.085-1.030-2.408-1.147-0.323-0.117-0.558-0.177-0.793 0.177s-0.912 1.147-1.117 1.383c-0.205 0.235-0.41 0.265-0.763 0.088s-1.487-0.548-2.833-1.748c-1.048-0.935-1.755-2.090-1.96-2.443s-0.022-0.543 0.155-0.72c0.158-0.158 0.352-0.41 0.528-0.615s0.235-0.352 0.352-0.587c0.117-0.235 0.058-0.44-0.030-0.615s-0.793-1.913-1.088-2.618c-0.287-0.687-0.578-0.593-0.793-0.605-0.205-0.010-0.44-0.012-0.675-0.012s-0.615 0.087-0.937 0.44c-0.323 0.352-1.235 1.208-1.235 2.943s1.265 3.413 1.44 3.648c0.177 0.235 2.473 3.775 5.99 5.292 0.837 0.362 1.492 0.577 2.002 0.738 0.84 0.267 1.605 0.230 2.21 0.140 0.675-0.100 2.085-0.852 2.38-1.675s0.295-1.528 0.205-1.675c-0.087-0.147-0.323-0.235-0.675-0.413z"/>
+    </svg>
+</a>
+
+<!-- ===== SCRIPTS ===== -->
+<script>
+// ── YouTube ─────────────────────────────────────────────────
+const CONFIG = {
+    API_BASE_URL:     '/api/youtube',
+    CHANNEL_ID:       'UCEzJUQ76-ftC6DmcfDaDC7A',
+    DEFAULT_VIDEO_ID: 'Mt5X-K7TMos',
+    AUTOPLAY: true,
+    MUTE: true
+};
+
+let modoActual = 'video';
+const player    = document.getElementById('youtube-player');
+const statusEl  = document.getElementById('video-status');
+const btnLive   = document.getElementById('btn-live');
+const btnVolver = document.getElementById('btn-volver');
+
+async function detectarLive() {
+    try {
+        const resp = await fetch(`${CONFIG.API_BASE_URL}/check-live?channelId=${CONFIG.CHANNEL_ID}`);
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        return (data.isLive && data.videoId) ? data.videoId : false;
+    } catch { return null; }
+}
+
+function mostrarVideoDestacado() {
+    const p = [];
+    if (CONFIG.AUTOPLAY) p.push('autoplay=1');
+    if (CONFIG.MUTE) p.push('mute=1');
+    player.src = `https://www.youtube.com/embed/${CONFIG.DEFAULT_VIDEO_ID}?${p.join('&')}`;
+    statusEl.innerHTML = '🎥 Video destacado';
+    modoActual = 'video';
+    btnLive.classList.add('show');
+    btnVolver.classList.remove('show');
+}
+
+function mostrarLive(videoId) {
+    player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`;
+    statusEl.innerHTML = '🔴 Transmisión en vivo';
+    modoActual = 'live';
+    btnLive.classList.remove('show');
+    btnVolver.classList.add('show');
+}
+
+async function verificarYCambiarLive() {
+    btnLive.disabled = true;
+    btnLive.innerHTML = '⏳ Verificando...';
+    const liveId = await detectarLive();
+    if (liveId && liveId !== false) {
+        mostrarLive(liveId);
+    } else {
+        alert('No hay transmisión en vivo en este momento.');
+    }
+    btnLive.disabled = false;
+    btnLive.innerHTML = '🔴 Cambiar a Modo En Vivo';
+}
+
+function volverVideo() { mostrarVideoDestacado(); }
+
+async function init() {
+    const liveId = await detectarLive();
+    if (liveId && liveId !== false) { mostrarLive(liveId); }
+    else { mostrarVideoDestacado(); }
+}
+
+window.addEventListener('load', init);
+
+// ── Carousel ────────────────────────────────────────────────
+let currentIdx = 0;
+const total = 5;
+let autoTimer = null;
+
+function updateCarousel(idx) {
+    if (idx < 0) idx = total - 1;
+    if (idx >= total) idx = 0;
+    currentIdx = idx;
+    document.querySelectorAll('.carousel-image').forEach((el, i) => el.classList.toggle('active', i === idx));
+    document.querySelectorAll('.dot').forEach((el, i) => el.classList.toggle('active', i === idx));
+    clearInterval(autoTimer);
+    autoTimer = setInterval(() => updateCarousel(currentIdx + 1), 2800);
+}
+
+function mostrarPopup() {
+    if (sessionStorage.getItem('popupMostrado') === 'true') return;
+    document.getElementById('popup-modal').style.display = 'block';
+    autoTimer = setInterval(() => updateCarousel(currentIdx + 1), 2800);
+}
+
+function cerrarPopup() {
+    document.getElementById('popup-modal').style.display = 'none';
+    sessionStorage.setItem('popupMostrado', 'true');
+    clearInterval(autoTimer);
+}
+
+window.addEventListener('click', e => { if (e.target === document.getElementById('popup-modal')) cerrarPopup(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarPopup(); });
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('.carousel-btn.next').addEventListener('click', () => updateCarousel(currentIdx + 1));
+    document.querySelector('.carousel-btn.prev').addEventListener('click', () => updateCarousel(currentIdx - 1));
+    document.querySelectorAll('.dot').forEach(d => d.addEventListener('click', e => updateCarousel(+e.target.dataset.index)));
+});
+
+window.addEventListener('load', () => mostrarPopup());
+
+// ── Nav glass effect ─────────────────────────────────────────
+window.addEventListener('scroll', () => {
+    document.getElementById('mainNav').style.background =
+        window.scrollY > 50
+            ? 'rgba(10, 61, 31, 0.98)'
+            : 'rgba(10, 61, 31, 0.92)';
+});
+</script>
+
 </body>
 </html>

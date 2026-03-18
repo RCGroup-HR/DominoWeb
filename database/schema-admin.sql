@@ -8,7 +8,7 @@
 CREATE TABLE IF NOT EXISTS Configuracion (
     Id          INT AUTO_INCREMENT PRIMARY KEY,
     Clave       VARCHAR(100) NOT NULL UNIQUE,
-    Valor       TEXT         NOT NULL DEFAULT '',
+    Valor       VARCHAR(2000) NOT NULL DEFAULT '',
     Tipo        ENUM('texto','numero','booleano','json','color','url','password') DEFAULT 'texto',
     Grupo       VARCHAR(50)  NOT NULL DEFAULT 'general',
     Descripcion TEXT         NULL,

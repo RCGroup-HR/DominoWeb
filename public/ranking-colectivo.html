@@ -361,36 +361,24 @@
                 const bandera = j.Siglas ? `<img src="pais/${escapeHtml(j.Siglas)}.png" class="flag" alt="${escapeHtml(j.Siglas)}" style="width:22px;height:auto;">` : '-';
                 return `
                     <tr>
+                        <td></td>
+                        <td></td>
                         <td>${escapeHtml(j.NJugador || '-')}</td>
                         <td>${bandera}</td>
                         <td>${escapeHtml(j.Pais || '-')}</td>
-                        <td>${j.Partidas || 0}</td>
-                        <td>${j.Victorias || 0}</td>
-                        <td>${j.Derrotas || 0}</td>
-                        <td>${j.PtsObtenidos || 0}</td>
-                        <td>${j.PtsPermitidos || 0}</td>
-                        <td class="${efClass}">${j.Efectividad || 0}</td>
-                        <td><strong>${j.PtsObtenidos || 0}</strong></td>
+                        <td class="centrado">${j.Partidas || 0}</td>
+                        <td class="centrado">${j.Victorias || 0}</td>
+                        <td class="centrado">${j.Derrotas || 0}</td>
+                        <td class="centrado">${j.PtsObtenidos || 0}</td>
+                        <td class="centrado">${j.PtsPermitidos || 0}</td>
+                        <td class="centrado ${efClass}">${j.Efectividad || 0}</td>
+                        <td class="centrado"><strong>${j.PtsObtenidos || 0}</strong></td>
                     </tr>
                 `;
             }).join('');
 
             container.innerHTML = `
                 <table class="members-table">
-                    <thead>
-                        <tr>
-                            <th>Equipo</th>
-                            <th>Flag</th>
-                            <th>País</th>
-                            <th class="centrado">Partidas</th>
-                            <th class="centrado">Victorias</th>
-                            <th class="centrado">Derrotas</th>
-                            <th class="centrado">Pts Obtenidos</th>
-                            <th class="centrado">Pts Permitidos</th>
-                            <th class="centrado">Efectividad</th>
-                            <th class="centrado">Total Pts</th>
-                        </tr>
-                    </thead>
                     <tbody>${filas}</tbody>
                 </table>
             `;

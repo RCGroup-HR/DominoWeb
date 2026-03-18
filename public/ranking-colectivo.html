@@ -360,19 +360,19 @@
 
             const filas = jugadores.map(j => {
                 const efClass = (j.Efectividad || 0) < 0 ? 'efect-neg' : 'efect-pos';
-                const bandera = j.Bandera ? `<img src="pais/${escapeHtml(j.Bandera)}.png" class="flag" alt="${escapeHtml(j.Bandera)}" style="width:22px;height:auto;">` : '-';
+                const bandera = j.Siglas ? `<img src="pais/${escapeHtml(j.Siglas)}.png" class="flag" alt="${escapeHtml(j.Siglas)}" style="width:22px;height:auto;">` : '-';
                 return `
                     <tr>
-                        <td>${escapeHtml(j.Jugador || '-')}</td>
+                        <td>${escapeHtml(j.NJugador || '-')}</td>
                         <td>${bandera}</td>
                         <td>${escapeHtml(j.Pais || '-')}</td>
                         <td>${j.Partidas || 0}</td>
                         <td>${j.Victorias || 0}</td>
                         <td>${j.Derrotas || 0}</td>
-                        <td>${j.PuntosOb || 0}</td>
-                        <td>${j.PuntosPer || 0}</td>
+                        <td>${j.PtsObtenidos || 0}</td>
+                        <td>${j.PtsPermitidos || 0}</td>
                         <td class="${efClass}">${j.Efectividad || 0}</td>
-                        <td><strong>${j.TotalPts || 0}</strong></td>
+                        <td><strong>${j.PtsObtenidos || 0}</strong></td>
                     </tr>
                 `;
             }).join('');
@@ -394,7 +394,7 @@
                             <th>Pts Ob.</th>
                             <th>Pts Per.</th>
                             <th>Efectividad</th>
-                            <th>Total Pts</th>
+                            <th>Pts Obtenidos</th>
                         </tr>
                     </thead>
                     <tbody>${filas}</tbody>

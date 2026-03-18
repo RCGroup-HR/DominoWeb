@@ -36,21 +36,20 @@ const colectivoController = {
 
       const [rows] = await pool.query(`
         SELECT
-          ID,
-          Jugador,
-          NEquipo,
+          ID_Jugador,
+          NJugador,
+          Equipo,
           Partidas,
           Victorias,
           Derrotas,
-          PuntosOb,
-          PuntosPer,
+          PtsObtenidos,
+          PtsPermitidos,
           Efectividad,
-          TotalPts,
-          Bandera,
+          Siglas,
           Pais
         FROM RIndividual
-        WHERE NEquipo = ?
-        ORDER BY TotalPts DESC, Efectividad DESC
+        WHERE Equipo = ?
+        ORDER BY PtsObtenidos DESC, Efectividad DESC
       `, [nombre]);
 
       res.json({

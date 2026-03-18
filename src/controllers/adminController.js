@@ -30,7 +30,7 @@ exports.getDashboard = async (req, res) => {
                 SUM(Estatus = 'pendiente')  AS pendientes,
                 SUM(Estatus = 'aprobado')   AS aprobados,
                 SUM(Estatus = 'rechazado')  AS rechazados
-            FROM Carnets
+            FROM carnets
         `);
         // Sesiones activas
         const [[sesiones]] = await db.query(
@@ -50,7 +50,7 @@ exports.getDashboard = async (req, res) => {
         // Carnets pendientes más recientes
         const [carnetsPendientes] = await db.query(`
             SELECT Id, Carnet, Nombre, Pais, FechaCreacion
-            FROM Carnets WHERE Estatus = 'pendiente'
+            FROM carnets WHERE Estatus = 'pendiente'
             ORDER BY FechaCreacion ASC LIMIT 5
         `);
         // Registros por día (últimos 7 días)
@@ -235,7 +235,7 @@ exports.getUsuarios = async (req, res) => {
 
         const [usuarios] = await db.query(
             `SELECT u.Id, u.Email, u.Rol, u.Pais, u.Activo, u.FechaCreacion,
-                    (SELECT COUNT(*) FROM Carnets WHERE UsuarioId = u.Id) AS totalCarnets,
+                    (SELECT COUNT(*) FROM carnets WHERE UsuarioId = u.Id) AS totalCarnets,
                     (SELECT COUNT(*) FROM Sesiones WHERE UsuarioId = u.Id AND FechaExpiracion > NOW()) AS sesionesActivas
              FROM Usuarios u ${where}
              ORDER BY u.FechaCreacion DESC LIMIT ? OFFSET ?`,
@@ -264,7 +264,7 @@ exports.getUsuario = async (req, res) => {
         if (usuarios.length === 0) return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
 
         const [carnets] = await db.query(
-            'SELECT Id, Carnet, Nombre, Estatus, FechaCreacion FROM Carnets WHERE UsuarioId = ? ORDER BY FechaCreacion DESC',
+            'SELECT Id, Carnet, Nombre, Estatus, FechaCreacion FROM carnets WHERE UsuarioId = ? ORDER BY FechaCreacion DESC',
             [id]
         );
         const [logs] = await db.query(
@@ -340,7 +340,7 @@ exports.revocarTodasSesiones = async (req, res) => {
 exports.getPaises = async (req, res) => {
     try {
         const { activo } = req.query;
-        let query  = 'SELECT p.*, (SELECT COUNT(*) FROM Carnets WHERE Pais = p.Codigo) AS totalCarnets FROM Paises p';
+        let query  = 'SELECT p.*, (SELECT COUNT(*) FROM carnets WHERE Pais = p.Codigo) AS totalCarnets FROM Paises p';
         const params = [];
         if (activo !== undefined) { query += ' WHERE p.Activo = ?'; params.push(activo === 'true' ? 1 : 0); }
         query += ' ORDER BY p.Nombre';

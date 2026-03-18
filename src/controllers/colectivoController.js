@@ -25,6 +25,49 @@ const colectivoController = {
     }
   },
 
+  // Obtener integrantes de un equipo con su récord individual
+  getIntegrantesByEquipo: async (req, res) => {
+    try {
+      const { nombre } = req.params;
+
+      if (!nombre) {
+        return res.status(400).json({ success: false, message: 'Nombre de equipo requerido' });
+      }
+
+      const [rows] = await pool.query(`
+        SELECT
+          ID,
+          Jugador,
+          NEquipo,
+          Partidas,
+          Victorias,
+          Derrotas,
+          PuntosOb,
+          PuntosPer,
+          Efectividad,
+          TotalPts,
+          Bandera,
+          Pais
+        FROM RIndividual
+        WHERE NEquipo = ?
+        ORDER BY TotalPts DESC, Efectividad DESC
+      `, [nombre]);
+
+      res.json({
+        success: true,
+        equipo: nombre,
+        data: rows
+      });
+    } catch (error) {
+      console.error('Error al obtener integrantes del equipo:', error);
+      res.status(510).json({
+        success: false,
+        message: 'Error al obtener los integrantes del equipo',
+        error: error.message
+      });
+    }
+  },
+
   // Obtener ranking colectivo por torneo
   getRankingByTorneo: async (req, res) => {
     try {      

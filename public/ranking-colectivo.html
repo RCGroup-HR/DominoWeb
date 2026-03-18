@@ -15,16 +15,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ranking Colectivo</title>
     <link rel="stylesheet" href="css/main.css">
-    
+
     <!-- ✅ Script de configuración de API (protegida) -->
     <script src="js/api-config.js"></script>
+
+    <style>
+        /* ── Expand button ── */
+        .btn-expand {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #16a34a;
+            transition: background 0.2s, transform 0.25s;
+            line-height: 1;
+        }
+        .btn-expand:hover {
+            background: rgba(22, 163, 74, 0.1);
+        }
+        .btn-expand.expanded {
+            transform: rotate(90deg);
+            color: #0d6b30;
+        }
+
+        /* ── Fila de detalle (integrantes) ── */
+        .detail-row td {
+            padding: 0 !important;
+            background: #f8fdf9;
+            border-bottom: 2px solid #16a34a;
+        }
+        .detail-inner {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.38s ease, padding 0.2s;
+        }
+        .detail-inner.open {
+            max-height: 1200px;
+        }
+        .detail-content {
+            padding: 14px 20px 18px 20px;
+        }
+
+        /* ── Mini-tabla de integrantes ── */
+        .members-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88em;
+        }
+        .members-table th {
+            background: #16a34a;
+            color: #fff;
+            padding: 7px 10px;
+            text-align: center;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .members-table th:first-child { text-align: left; }
+        .members-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #e2f0e9;
+            text-align: center;
+            color: #374151;
+        }
+        .members-table td:first-child { text-align: left; font-weight: 500; }
+        .members-table tr:last-child td { border-bottom: none; }
+        .members-table tr:hover td { background: #edfaf2; }
+        .members-table .efect-neg { color: #dc2626; }
+        .members-table .efect-pos { color: #16a34a; }
+
+        /* ── Fila del equipo cuando está expandida ── */
+        tr.row-expanded td {
+            background: #edfaf2 !important;
+            font-weight: 600;
+        }
+
+        /* ── Spinner dentro del detail ── */
+        .members-loading {
+            text-align: center;
+            padding: 16px;
+            color: #6b7280;
+            font-style: italic;
+        }
+        .members-error {
+            text-align: center;
+            padding: 12px;
+            color: #dc2626;
+        }
+
+        /* ── Encabezado de la sección de miembros ── */
+        .members-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .members-header h4 {
+            margin: 0;
+            color: #114d37;
+            font-size: 0.95em;
+        }
+        .members-badge {
+            background: #16a34a;
+            color: #fff;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 0.78em;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container">
         <div class="header">
-            <h1>Ranking Colectivo <span id="TituloTorneo">Cargando...</span></h1>            
-        </div>  
+            <h1>Ranking Colectivo <span id="TituloTorneo">Cargando...</span></h1>
+        </div>
 
         <div class="controls">
             <div class="form-row">
@@ -45,15 +152,18 @@
         // ============================================
         // ✅ CÓDIGO PROTEGIDO - RANKING COLECTIVO
         // ============================================
-        
+
         let equiposActuales = [];
         let todosEquiposActuales = [];
         let filaTotalActual = null;
-        
+
         // Variables de paginación
         let paginaActual = 1;
         let registrosPorPagina = 10;
-        
+
+        // Cache de integrantes ya cargados { equipoNombre: [...] }
+        const cacheIntegrantes = {};
+
         // ✅ Esperar a que la API se inicialice
         window.addEventListener('load', () => {
             setTimeout(() => {
@@ -70,20 +180,10 @@
 
         async function buscaTorneo() {
             try {
-                console.log('📡 Llamando a /colectivo (nombre del torneo)...');
-                
                 const data = await API.get('/colectivo');
-                console.log('✅ Respuesta recibida:', data);
-                
                 if (data && data.success && data.data && data.data.length > 0) {
-                    const Torneo = data.data[0];
-                    console.log('🎯 Torneo:', Torneo);
-                    
-                    const nombreTorneo = Torneo.Nombre || 'Torneo Sin Nombre';
-                    document.getElementById('TituloTorneo').textContent = nombreTorneo;
-                    console.log('✅ Título actualizado a:', nombreTorneo);
+                    document.getElementById('TituloTorneo').textContent = data.data[0].Nombre || 'Torneo Sin Nombre';
                 } else {
-                    console.warn('⚠️ No hay datos de torneo');
                     document.getElementById('TituloTorneo').textContent = 'Torneo No Disponible';
                 }
             } catch (error) {
@@ -97,30 +197,22 @@
             content.innerHTML = '<div class="loading">Cargando equipos...</div>';
 
             try {
-                console.log('📡 Llamando a /colectivo/torneo (ranking)...');
-                
                 const data = await API.get('/colectivo/torneo');
-                console.log('✅ Respuesta recibida:', data);
-                
+
                 if (data && data.success && data.data && data.data.length > 0) {
                     const filaTotal = data.data.find(e => e.isTotal);
                     const equiposNormales = data.data.filter(e => !e.isTotal);
-                    
-                    console.log('🎯 Equipos encontrados:', equiposNormales.length);
-                    console.log('📋 Primer equipo:', equiposNormales[0]);
-                    
+
                     if (equiposNormales.length > 0) {
                         equiposActuales = equiposNormales;
                         todosEquiposActuales = equiposNormales;
                         filaTotalActual = filaTotal;
                         paginaActual = 1;
-                        
                         mostrarEquipos();
                     } else {
                         mostrarError('No hay datos de equipos en este torneo');
                     }
                 } else {
-                    console.error('❌ Respuesta inválida:', data);
                     mostrarError('No hay datos de ranking colectivo para este torneo');
                 }
             } catch (error) {
@@ -131,9 +223,6 @@
 
         function mostrarEquipos() {
             const equipos = equiposActuales;
-            const todosEquipos = todosEquiposActuales;
-
-            console.log('📋 Equipos a mostrar:', equipos);
 
             const totalRegistros = equipos.length;
             const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
@@ -142,10 +231,14 @@
             const equiposPaginados = equipos.slice(inicio, fin);
 
             let filas = equiposPaginados.map(equipo => {
+                const equipoId = 'eq-' + encodeURIComponent(equipo.Equipo || equipo.ID || Math.random()).replace(/[^a-zA-Z0-9]/g, '_');
                 return `
-                    <tr>
+                    <tr id="row-${equipoId}" data-equipo="${escapeHtml(equipo.Equipo)}" data-id="${equipoId}">
+                        <td class="centrado">
+                            <button class="btn-expand" id="btn-${equipoId}" onclick="toggleIntegrantes('${equipoId}', '${escapeHtml(equipo.Equipo)}')" title="Ver integrantes">▶</button>
+                        </td>
                         <td class="centrado"><strong>${equipo.Ranking || '-'}</strong></td>
-                        <td><strong>${equipo.Equipo || '-'}</strong></td>     
+                        <td><strong>${equipo.Equipo || '-'}</strong></td>
                         <td>${equipo.Siglas ? `<img src="pais/${equipo.Siglas}.png" class="flag" alt="${equipo.Siglas}">` : '-'}</td>
                         <td>${equipo.Pais || '-'}</td>
                         <td class="centrado">${equipo.Partidas || 0}</td>
@@ -156,6 +249,15 @@
                         <td class="efectividad centrado ${(equipo.Efectividad || 0) < 0 ? 'negativa' : ''}">${equipo.Efectividad || 0}</td>
                         <td class="centrado">${equipo.TotalPts || 0}</td>
                     </tr>
+                    <tr class="detail-row" id="detail-${equipoId}">
+                        <td colspan="12">
+                            <div class="detail-inner" id="inner-${equipoId}">
+                                <div class="detail-content" id="content-${equipoId}">
+                                    <div class="members-loading">Cargando integrantes...</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
                 `;
             }).join('');
 
@@ -164,6 +266,7 @@
                     <table>
                         <thead>
                             <tr>
+                                <th style="width:40px"></th>
                                 <th>Rank</th>
                                 <th>Equipo</th>
                                 <th>Flag</th>
@@ -193,16 +296,134 @@
             agregarEventosPaginacion();
         }
 
+        // ── Toggle integrantes (accordion) ──────────────────────────
+        async function toggleIntegrantes(equipoId, equipoNombre) {
+            const inner   = document.getElementById('inner-' + equipoId);
+            const btn     = document.getElementById('btn-' + equipoId);
+            const row     = document.getElementById('row-' + equipoId);
+            const content = document.getElementById('content-' + equipoId);
+
+            const isOpen = inner.classList.contains('open');
+
+            if (isOpen) {
+                // Cerrar
+                inner.classList.remove('open');
+                btn.classList.remove('expanded');
+                row.classList.remove('row-expanded');
+                return;
+            }
+
+            // Abrir
+            inner.classList.add('open');
+            btn.classList.add('expanded');
+            row.classList.add('row-expanded');
+
+            // Scroll suave hacia la fila
+            setTimeout(() => {
+                row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 50);
+
+            // Si ya tenemos los datos en caché, solo renderizar
+            if (cacheIntegrantes[equipoNombre]) {
+                renderIntegrantes(content, equipoNombre, cacheIntegrantes[equipoNombre]);
+                return;
+            }
+
+            // Mostrar spinner mientras carga
+            content.innerHTML = '<div class="members-loading">⏳ Cargando integrantes de <strong>' + escapeHtml(equipoNombre) + '</strong>...</div>';
+
+            try {
+                const data = await API.get('/colectivo/equipo/' + encodeURIComponent(equipoNombre));
+                if (data && data.success) {
+                    cacheIntegrantes[equipoNombre] = data.data || [];
+                    renderIntegrantes(content, equipoNombre, cacheIntegrantes[equipoNombre]);
+                } else {
+                    content.innerHTML = '<div class="members-error">⚠️ No se pudieron cargar los integrantes.</div>';
+                }
+            } catch (err) {
+                console.error('Error cargando integrantes:', err);
+                content.innerHTML = '<div class="members-error">⚠️ Error al cargar integrantes: ' + escapeHtml(err.message) + '</div>';
+            }
+        }
+
+        function renderIntegrantes(container, equipoNombre, jugadores) {
+            if (!jugadores || jugadores.length === 0) {
+                container.innerHTML = `
+                    <div class="members-header">
+                        <h4>👥 ${escapeHtml(equipoNombre)}</h4>
+                        <span class="members-badge">0 jugadores</span>
+                    </div>
+                    <p style="color:#6b7280;font-style:italic;margin:0">Sin datos de integrantes para este equipo.</p>
+                `;
+                return;
+            }
+
+            const filas = jugadores.map(j => {
+                const efClass = (j.Efectividad || 0) < 0 ? 'efect-neg' : 'efect-pos';
+                const bandera = j.Bandera ? `<img src="pais/${escapeHtml(j.Bandera)}.png" class="flag" alt="${escapeHtml(j.Bandera)}" style="width:22px;height:auto;">` : '-';
+                return `
+                    <tr>
+                        <td>${escapeHtml(j.Jugador || '-')}</td>
+                        <td>${bandera}</td>
+                        <td>${escapeHtml(j.Pais || '-')}</td>
+                        <td>${j.Partidas || 0}</td>
+                        <td>${j.Victorias || 0}</td>
+                        <td>${j.Derrotas || 0}</td>
+                        <td>${j.PuntosOb || 0}</td>
+                        <td>${j.PuntosPer || 0}</td>
+                        <td class="${efClass}">${j.Efectividad || 0}</td>
+                        <td><strong>${j.TotalPts || 0}</strong></td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="members-header">
+                    <h4>👥 Integrantes de ${escapeHtml(equipoNombre)}</h4>
+                    <span class="members-badge">${jugadores.length} jugador${jugadores.length !== 1 ? 'es' : ''}</span>
+                </div>
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th>Jugador</th>
+                            <th>Flag</th>
+                            <th>País</th>
+                            <th>Partidas</th>
+                            <th>Victorias</th>
+                            <th>Derrotas</th>
+                            <th>Pts Ob.</th>
+                            <th>Pts Per.</th>
+                            <th>Efectividad</th>
+                            <th>Total Pts</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                </table>
+            `;
+        }
+
+        // ── Helpers ─────────────────────────────────────────────────
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ── Paginación ───────────────────────────────────────────────
         function generarPaginacion(totalRegistros, totalPaginas, inicio, fin) {
             if (totalRegistros === 0) return '';
 
             let botonesPaginas = '';
             const maxBotones = 5;
-            
+
             if (totalPaginas > 1) {
                 let inicioRango = Math.max(1, paginaActual - Math.floor(maxBotones / 2));
                 let finRango = Math.min(totalPaginas, inicioRango + maxBotones - 1);
-                
+
                 if (finRango - inicioRango < maxBotones - 1) {
                     inicioRango = Math.max(1, finRango - maxBotones + 1);
                 }
@@ -326,7 +547,7 @@
                 <p>Visualiza la clasificación completa por equipos por rendimiento y efectividad.</p>
             </a>
 
-            
+
             <a href="historico-partidas.html" class="feature-card">
                 <div class="icon">📊</div>
                 <h3>Histórico de Jugadores</h3>
@@ -344,7 +565,7 @@
 
     <footer class="footer">
         <div class="footer-content">
-           
+
             <div class="footer-bottom">
                 <p>&copy; 2025 Ronnie Hernández — Sistema de Estadísticas Dominó. Todos los derechos reservados.</p>
             </div>
@@ -357,7 +578,7 @@
             const boton = document.createElement('a');
             boton.href = 'index.html';
             boton.className = 'btn-inicio-flotante-js';
-            
+
             boton.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -365,7 +586,7 @@
                 </svg>
                 <span>Inicio</span>
             `;
-            
+
             boton.style.cssText = `
                 position: fixed !important;
                 bottom: 30px !important;
@@ -387,22 +608,20 @@
                 border: 3px solid #f97316 !important;
                 cursor: pointer !important;
             `;
-            
+
             boton.addEventListener('mouseenter', function() {
                 this.style.transform = 'translateY(-3px)';
                 this.style.boxShadow = '0 8px 25px rgba(17, 77, 55, 0.7)';
                 this.style.background = 'linear-gradient(135deg, #0d3d2b 0%, #15803d 100%)';
             });
-            
+
             boton.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0)';
                 this.style.boxShadow = '0 6px 20px rgba(17, 77, 55, 0.5)';
                 this.style.background = 'linear-gradient(135deg, #114d37 0%, #16a34a 100%)';
             });
-            
+
             document.body.appendChild(boton);
-            
-            console.log('✅ Botón flotante de inicio creado correctamente');
         })();
     </script>
 

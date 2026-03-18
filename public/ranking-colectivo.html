@@ -55,7 +55,7 @@
             max-height: 1200px;
         }
         .detail-content {
-            padding: 14px 20px 18px 20px;
+            padding: 0;
         }
 
         /* ── Mini-tabla de integrantes ── */
@@ -65,21 +65,25 @@
             font-size: 0.88em;
         }
         .members-table th {
-            background: #16a34a;
+            background: #1e6b4f;
             color: #fff;
-            padding: 7px 10px;
-            text-align: center;
+            padding: 10px 16px;
+            text-align: left;
             font-weight: 600;
             white-space: nowrap;
+            font-size: 0.72em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .members-table th:first-child { text-align: left; }
+        .members-table th.centrado { text-align: center; }
         .members-table td {
-            padding: 6px 10px;
-            border-bottom: 1px solid #e2f0e9;
-            text-align: center;
+            padding: 11px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: left;
             color: #374151;
         }
-        .members-table td:first-child { text-align: left; font-weight: 500; }
+        .members-table td:first-child { font-weight: 500; }
+        .members-table .centrado { text-align: center; }
         .members-table tr:last-child td { border-bottom: none; }
         .members-table tr:hover td { background: #edfaf2; }
         .members-table .efect-neg { color: #dc2626; }
@@ -348,13 +352,7 @@
 
         function renderIntegrantes(container, equipoNombre, jugadores) {
             if (!jugadores || jugadores.length === 0) {
-                container.innerHTML = `
-                    <div class="members-header">
-                        <h4>👥 ${escapeHtml(equipoNombre)}</h4>
-                        <span class="members-badge">0 jugadores</span>
-                    </div>
-                    <p style="color:#6b7280;font-style:italic;margin:0">Sin datos de integrantes para este equipo.</p>
-                `;
+                container.innerHTML = `<p style="color:#6b7280;font-style:italic;margin:8px 0;padding:0 4px">Sin datos de integrantes para este equipo.</p>`;
                 return;
             }
 
@@ -378,23 +376,19 @@
             }).join('');
 
             container.innerHTML = `
-                <div class="members-header">
-                    <h4>👥 Integrantes de ${escapeHtml(equipoNombre)}</h4>
-                    <span class="members-badge">${jugadores.length} jugador${jugadores.length !== 1 ? 'es' : ''}</span>
-                </div>
                 <table class="members-table">
                     <thead>
                         <tr>
-                            <th>Jugador</th>
+                            <th>Equipo</th>
                             <th>Flag</th>
                             <th>País</th>
-                            <th>Partidas</th>
-                            <th>Victorias</th>
-                            <th>Derrotas</th>
-                            <th>Pts Ob.</th>
-                            <th>Pts Per.</th>
-                            <th>Efectividad</th>
-                            <th>Pts Obtenidos</th>
+                            <th class="centrado">Partidas</th>
+                            <th class="centrado">Victorias</th>
+                            <th class="centrado">Derrotas</th>
+                            <th class="centrado">Pts Obtenidos</th>
+                            <th class="centrado">Pts Permitidos</th>
+                            <th class="centrado">Efectividad</th>
+                            <th class="centrado">Total Pts</th>
                         </tr>
                     </thead>
                     <tbody>${filas}</tbody>

@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+const jwt    = require('jsonwebtoken');
+const db     = require('../config/database');
+const { registerFailedLogin, resetLoginAttempts } = require('../middleware/security');
 
 // Función auxiliar para registrar auditoría
 const registrarAuditoria = async (usuarioId, accion, entidad, entidadId, detalles, ipAddress) => {
@@ -147,11 +148,15 @@ exports.login = async (req, res) => {
         const passwordValida = await bcrypt.compare(password, usuario.Password);
 
         if (!passwordValida) {
+            registerFailedLogin(req); // ← registrar intento fallido
             return res.status(401).json({
                 success: false,
                 message: 'Credenciales inválidas'
             });
         }
+
+        // Login exitoso → limpiar conteo de intentos
+        resetLoginAttempts(req);
 
         // Generar token JWT
         const token = jwt.sign(

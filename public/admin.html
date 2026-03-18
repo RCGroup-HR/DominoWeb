@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <title>Panel Administrativo – ScoreDomino</title>
+  <style>
+    /* ══════════════════════════════════════
+       RESET & VARIABLES
+    ══════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-w: 260px;
+      --header-h:  62px;
+      --bg:        #f0f2f5;
+      --card:      #ffffff;
+      --text:      #1a1a2e;
+      --text-2:    #64748b;
+      --border:    #e2e8f0;
+      --primary:   #667eea;
+      --primary-d: #5a6fd6;
+      --secondary: #764ba2;
+      --success:   #22c55e;
+      --warning:   #f59e0b;
+      --danger:    #ef4444;
+      --info:      #3b82f6;
+      --sidebar-bg:#1e1e2e;
+      --sidebar-t: #a8b3cf;
+      --sidebar-a: #ffffff;
+      --shadow:    0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.05);
+      --radius:    10px;
+      --transition:.2s ease;
+    }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+           background: var(--bg); color: var(--text); display: flex;
+           min-height: 100vh; overflow-x: hidden; }
+
+    /* ══════════════════════════════════════
+       SIDEBAR
+    ══════════════════════════════════════ */
+    #sidebar {
+      width: var(--sidebar-w); background: var(--sidebar-bg);
+      display: flex; flex-direction: column; position: fixed;
+      top: 0; left: 0; height: 100vh; z-index: 100;
+      transition: transform var(--transition);
+    }
+    #sidebar.collapsed { transform: translateX(calc(-1 * var(--sidebar-w))); }
+
+    .sb-brand { padding: 22px 20px 16px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-bottom: 1px solid rgba(255,255,255,.08); }
+    .sb-brand h2 { color: #fff; font-size: 20px; font-weight: 700; }
+    .sb-brand p  { color: rgba(255,255,255,.7); font-size: 12px; margin-top: 2px; }
+
+    .sb-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+    .sb-nav::-webkit-scrollbar { width: 4px; }
+    .sb-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
+
+    .sb-group { padding: 8px 16px 4px; font-size: 10px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase; color: rgba(168,179,207,.5); }
+
+    .sb-item { display: flex; align-items: center; gap: 12px;
+      padding: 10px 20px; cursor: pointer; border-radius: 0;
+      transition: background var(--transition), color var(--transition);
+      color: var(--sidebar-t); font-size: 14px; font-weight: 500;
+      border-left: 3px solid transparent; }
+    .sb-item:hover  { background: rgba(255,255,255,.06); color: var(--sidebar-a); }
+    .sb-item.active { background: rgba(102,126,234,.2); color: var(--primary);
+                      border-left-color: var(--primary); }
+    .sb-item .icon  { width: 20px; text-align: center; font-size: 16px; flex-shrink: 0; }
+    .sb-badge { margin-left: auto; background: var(--danger); color: #fff;
+      font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; }
+
+    .sb-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.08); }
+    .sb-user  { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .sb-avatar{ width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0; }
+    .sb-user-info { flex: 1; min-width: 0; }
+    .sb-user-email{ font-size: 12px; color: var(--sidebar-a); font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-user-role { font-size: 10px; color: var(--sidebar-t); }
+    .btn-logout { width: 100%; background: rgba(239,68,68,.15); color: #f87171;
+      border: 1px solid rgba(239,68,68,.3); padding: 7px; border-radius: 7px;
+      cursor: pointer; font-size: 13px; transition: all var(--transition); }
+    .btn-logout:hover { background: rgba(239,68,68,.3); }
+
+    /* ══════════════════════════════════════
+       MAIN LAYOUT
+    ══════════════════════════════════════ */
+    #main { margin-left: var(--sidebar-w); flex: 1; display: flex;
+      flex-direction: column; transition: margin var(--transition); min-width: 0; }
+    #main.expanded { margin-left: 0; }
+
+    /* TOPBAR */
+    #topbar { height: var(--header-h); background: var(--card);
+      border-bottom: 1px solid var(--border); display: flex; align-items: center;
+      padding: 0 24px; gap: 14px; position: sticky; top: 0; z-index: 50;
+      box-shadow: var(--shadow); }
+    #btn-toggle-sidebar { background: none; border: none; cursor: pointer;
+      font-size: 20px; color: var(--text-2); padding: 6px; border-radius: 6px;
+      transition: background var(--transition); }
+    #btn-toggle-sidebar:hover { background: var(--bg); }
+    #page-title { font-size: 18px; font-weight: 700; flex: 1; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .topbar-time  { font-size: 12px; color: var(--text-2); }
+    .status-dot   { width: 8px; height: 8px; border-radius: 50%;
+      background: var(--success); box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
+
+    /* CONTENT */
+    #content { flex: 1; padding: 24px; overflow-y: auto; }
+
+    /* ══════════════════════════════════════
+       SECTIONS
+    ══════════════════════════════════════ */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ══════════════════════════════════════
+       CARDS & GRIDS
+    ══════════════════════════════════════ */
+    .card { background: var(--card); border-radius: var(--radius);
+      box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; }
+    .card-title  { font-size: 15px; font-weight: 700; }
+    .card-body   { padding: 20px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card  { background: var(--card); border-radius: var(--radius);
+      padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border);
+      display: flex; align-items: center; gap: 16px; }
+    .stat-icon  { width: 52px; height: 52px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+      flex-shrink: 0; }
+    .stat-icon.blue   { background: rgba(59,130,246,.15); }
+    .stat-icon.green  { background: rgba(34,197,94,.15);  }
+    .stat-icon.yellow { background: rgba(245,158,11,.15); }
+    .stat-icon.red    { background: rgba(239,68,68,.15);  }
+    .stat-icon.purple { background: rgba(118,75,162,.15); }
+    .stat-value { font-size: 28px; font-weight: 800; line-height: 1; }
+    .stat-label { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+    .stat-sub   { font-size: 12px; color: var(--text-2); margin-top: 6px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ══════════════════════════════════════
+       TABLA GENERAL
+    ══════════════════════════════════════ */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    thead th { background: var(--bg); padding: 10px 14px; text-align: left;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; color: var(--text-2); border-bottom: 1px solid var(--border); }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background var(--transition); }
+    tbody tr:hover { background: #f8fafc; }
+    tbody td { padding: 10px 14px; vertical-align: middle; }
+    tbody tr:last-child { border-bottom: none; }
+
+    /* ══════════════════════════════════════
+       BADGES / PILLS
+    ══════════════════════════════════════ */
+    .badge { display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-pending  { background: rgba(245,158,11,.15); color: #d97706; }
+    .badge-approved { background: rgba(34,197,94,.15);  color: #16a34a; }
+    .badge-rejected { background: rgba(239,68,68,.15);  color: #dc2626; }
+    .badge-admin    { background: rgba(102,126,234,.15);color: #4f46e5; }
+    .badge-user     { background: rgba(100,116,139,.15);color: #475569; }
+    .badge-active   { background: rgba(34,197,94,.15);  color: #16a34a; }
+    .badge-inactive { background: rgba(239,68,68,.15);  color: #dc2626; }
+
+    /* ══════════════════════════════════════
+       BOTONES
+    ══════════════════════════════════════ */
+    .btn { display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 8px; border: none;
+      cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all var(--transition); text-decoration: none; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-primary  { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-d); }
+    .btn-success  { background: var(--success); color: #fff; }
+    .btn-success:hover:not(:disabled) { background: #16a34a; }
+    .btn-danger   { background: var(--danger); color: #fff; }
+    .btn-danger:hover:not(:disabled) { background: #dc2626; }
+    .btn-warning  { background: var(--warning); color: #fff; }
+    .btn-warning:hover:not(:disabled) { background: #d97706; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-2); }
+    .btn-ghost:hover { background: var(--bg); }
+    .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* ══════════════════════════════════════
+       FORMULARIOS
+    ══════════════════════════════════════ */
+    .form-row   { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--text-2);
+      text-transform: uppercase; letter-spacing: .5px; }
+    .form-control { padding: 9px 12px; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 14px; outline: none; width: 100%;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      background: #fff; color: var(--text); }
+    .form-control:focus { border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(102,126,234,.15); }
+    .form-control[type="color"] { padding: 4px 8px; height: 38px; cursor: pointer; }
+    .form-hint  { font-size: 11px; color: var(--text-2); }
+
+    /* Toggle switch */
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+    .toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 24px; cursor: pointer;
+      transition: .3s; }
+    .slider:before { content: ''; position: absolute; height: 18px; width: 18px;
+      left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+    input:checked + .slider { background: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* ══════════════════════════════════════
+       CONFIG SECTION
+    ══════════════════════════════════════ */
+    .config-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 20px;
+      background: var(--card); padding: 6px; border-radius: var(--radius);
+      box-shadow: var(--shadow); }
+    .config-tab { padding: 8px 16px; border-radius: 7px; cursor: pointer;
+      font-size: 13px; font-weight: 600; color: var(--text-2);
+      transition: all var(--transition); border: none; background: none; }
+    .config-tab:hover  { background: var(--bg); color: var(--text); }
+    .config-tab.active { background: var(--primary); color: #fff; }
+
+    .config-group { display: none; }
+    .config-group.active { display: block; }
+    .config-item { display: flex; align-items: flex-start; gap: 16px; padding: 16px 0;
+      border-bottom: 1px solid var(--border); }
+    .config-item:last-child { border-bottom: none; }
+    .config-meta { flex: 1; min-width: 0; }
+    .config-key  { font-weight: 700; font-size: 13px; font-family: monospace; color: var(--primary); }
+    .config-desc { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+    .config-input{ flex: 0 0 260px; }
+    .config-save { background: var(--primary); color: #fff; border: none; padding: 7px 14px;
+      border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 600;
+      transition: all var(--transition); margin-top: 6px; }
+    .config-save:hover { background: var(--primary-d); }
+    .config-save.saved { background: var(--success); }
+
+    /* ══════════════════════════════════════
+       SEARCH & FILTERS
+    ══════════════════════════════════════ */
+    .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .search-input { flex: 1; min-width: 200px; padding: 9px 12px 9px 36px;
+      border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px;
+      outline: none; transition: border-color var(--transition);
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.3-4.3'%3E%3C/path%3E%3C/svg%3E") no-repeat 10px center;
+      background-color: #fff; }
+    .search-input:focus { border-color: var(--primary); }
+    .filter-select { padding: 9px 12px; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 13px; outline: none; background: #fff;
+      cursor: pointer; transition: border-color var(--transition); }
+    .filter-select:focus { border-color: var(--primary); }
+
+    /* ══════════════════════════════════════
+       PAGINATION
+    ══════════════════════════════════════ */
+    .pagination { display: flex; align-items: center; gap: 8px; justify-content: center; padding-top: 16px; }
+    .page-btn { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--card); cursor: pointer; font-size: 13px;
+      transition: all var(--transition); }
+    .page-btn:hover:not(:disabled) { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .page-btn.current { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .page-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .page-info { font-size: 13px; color: var(--text-2); padding: 0 8px; }
+
+    /* ══════════════════════════════════════
+       MODAL
+    ══════════════════════════════════════ */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      z-index: 200; display: none; align-items: center; justify-content: center;
+      padding: 20px; backdrop-filter: blur(2px); }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--card); border-radius: 14px; width: 100%;
+      max-width: 560px; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0,0,0,.25); animation: slideUp .2s ease; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; }
+    .modal-title  { font-size: 17px; font-weight: 700; }
+    .modal-close  { background: none; border: none; font-size: 22px; cursor: pointer;
+      color: var(--text-2); line-height: 1; padding: 2px; }
+    .modal-body   { padding: 20px 24px; }
+    .modal-footer { padding: 16px 24px 20px; display: flex; gap: 10px; justify-content: flex-end;
+      border-top: 1px solid var(--border); }
+
+    /* ══════════════════════════════════════
+       ALERTS / TOAST
+    ══════════════════════════════════════ */
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    .toast { min-width: 280px; max-width: 380px; padding: 12px 16px; border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15); display: flex; align-items: center;
+      gap: 10px; font-size: 14px; font-weight: 500; pointer-events: all;
+      animation: slideIn .3s ease; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .toast-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .toast-error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .toast-info    { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+    .toast-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+
+    /* ══════════════════════════════════════
+       LOGIN OVERLAY
+    ══════════════════════════════════════ */
+    #login-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, #1e1e2e 0%, #16213e 50%, #0f3460 100%);
+      z-index: 999; display: flex; align-items: center; justify-content: center; }
+    .login-box { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px; padding: 40px; width: 100%; max-width: 400px;
+      backdrop-filter: blur(10px); }
+    .login-box h2 { color: #fff; font-size: 24px; text-align: center; margin-bottom: 6px; }
+    .login-box p  { color: rgba(255,255,255,.6); text-align: center; font-size: 14px; margin-bottom: 28px; }
+    .login-input  { width: 100%; padding: 12px 14px; background: rgba(255,255,255,.1);
+      border: 1.5px solid rgba(255,255,255,.2); border-radius: 10px; color: #fff;
+      font-size: 14px; outline: none; margin-bottom: 12px;
+      transition: border-color var(--transition); }
+    .login-input::placeholder { color: rgba(255,255,255,.4); }
+    .login-input:focus { border-color: var(--primary); background: rgba(255,255,255,.15); }
+    .login-btn { width: 100%; padding: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff; border: none; border-radius: 10px; font-size: 15px;
+      font-weight: 700; cursor: pointer; margin-top: 4px;
+      transition: opacity var(--transition); }
+    .login-btn:hover { opacity: .9; }
+    .login-err { background: rgba(239,68,68,.2); color: #fca5a5; border: 1px solid rgba(239,68,68,.3);
+      border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-top: 10px; display: none; }
+
+    /* ══════════════════════════════════════
+       SYSTEM INFO
+    ══════════════════════════════════════ */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .info-item { background: var(--bg); border-radius: 8px; padding: 12px 16px; }
+    .info-label{ font-size: 11px; color: var(--text-2); text-transform: uppercase;
+      letter-spacing: .6px; font-weight: 700; }
+    .info-value{ font-size: 16px; font-weight: 700; margin-top: 4px; }
+
+    /* ══════════════════════════════════════
+       LOADING
+    ══════════════════════════════════════ */
+    .loading { display: flex; align-items: center; justify-content: center;
+      padding: 40px; color: var(--text-2); gap: 12px; }
+    .spinner  { width: 24px; height: 24px; border: 3px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════ */
+    @media (max-width: 768px) {
+      #sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
+      #sidebar.open { transform: translateX(0); }
+      #main { margin-left: 0; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .config-item { flex-direction: column; }
+      .config-input { flex: none; width: 100%; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      #content { padding: 16px; }
+    }
+
+    /* ══════════════════════════════════════
+       MISC
+    ══════════════════════════════════════ */
+    .empty-state { text-align: center; padding: 50px 20px; color: var(--text-2); }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; }
+    .text-muted { color: var(--text-2); font-size: 12px; }
+    .mt-4 { margin-top: 16px; }
+    .mb-4 { margin-bottom: 16px; }
+    .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+    .fw-bold { font-weight: 700; }
+    .text-danger { color: var(--danger); }
+    .text-success { color: var(--success); }
+    hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     LOGIN OVERLAY
+════════════════════════════════════════ -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h2>🎯 ScoreDomino</h2>
+    <p>Panel Administrativo — Acceso restringido</p>
+    <input id="l-email" class="login-input" type="email" placeholder="Email administrador" autocomplete="email"/>
+    <input id="l-pass"  class="login-input" type="password" placeholder="Contraseña" autocomplete="current-password"/>
+    <button id="btn-login" class="login-btn">Ingresar al Panel</button>
+    <div id="login-error" class="login-err"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════ -->
+<aside id="sidebar">
+  <div class="sb-brand">
+    <h2>🎯 ScoreDomino</h2>
+    <p>Panel Administrativo v2.0</p>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group">Principal</div>
+    <div class="sb-item active" data-section="dashboard">
+      <span class="icon">📊</span> Dashboard
+    </div>
+    <div class="sb-group">Gestión</div>
+    <div class="sb-item" data-section="usuarios">
+      <span class="icon">👥</span> Usuarios
+    </div>
+    <div class="sb-item" data-section="carnets">
+      <span class="icon">🪪</span> Carnets
+      <span class="sb-badge" id="badge-pendientes" style="display:none">0</span>
+    </div>
+    <div class="sb-item" data-section="paises">
+      <span class="icon">🌍</span> Países
+    </div>
+    <div class="sb-item" data-section="sesiones">
+      <span class="icon">🔐</span> Sesiones Activas
+    </div>
+    <div class="sb-group">Sistema</div>
+    <div class="sb-item" data-section="configuracion">
+      <span class="icon">⚙️</span> Configuración
+    </div>
+    <div class="sb-item" data-section="auditoria">
+      <span class="icon">📋</span> Auditoría
+    </div>
+    <div class="sb-item" data-section="sistema">
+      <span class="icon">🖥️</span> Info del Sistema
+    </div>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="sb-avatar">👤</div>
+      <div class="sb-user-info">
+        <div class="sb-user-email" id="sb-email">cargando…</div>
+        <div class="sb-user-role">Administrador</div>
+      </div>
+    </div>
+    <button class="btn-logout" id="btn-logout">⇠ Cerrar Sesión</button>
+  </div>
+</aside>
+
+<!-- ════════════════════════════════════════
+     MAIN
+════════════════════════════════════════ -->
+<div id="main">
+  <!-- TOPBAR -->
+  <header id="topbar">
+    <button id="btn-toggle-sidebar" title="Colapsar menú">☰</button>
+    <span id="page-title">Dashboard</span>
+    <div class="topbar-right">
+      <span class="topbar-time" id="clock"></span>
+      <div class="status-dot" title="API en línea"></div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- ─── DASHBOARD ─────────────────────── -->
+    <section id="sec-dashboard" class="section active">
+      <div class="stats-grid" id="dash-stats">
+        <div class="loading"><div class="spinner"></div> Cargando métricas…</div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">⏳ Carnets Pendientes</span>
+            <button class="btn btn-primary btn-sm" onclick="navTo('carnets')">Ver todos</button>
+          </div>
+          <div class="card-body">
+            <div id="dash-carnets-pendientes"><div class="loading"><div class="spinner"></div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🕐 Actividad Reciente</span></div>
+          <div class="card-body">
+            <div id="dash-actividad"><div class="loading"><div class="spinner"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── USUARIOS ──────────────────────── -->
+    <section id="sec-usuarios" class="section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">👥 Gestión de Usuarios</span>
+          <span id="usuarios-total" class="text-muted"></span>
+        </div>
+        <div class="card-body">
+          <div class="filter-bar">
+            <input type="text" id="usr-search" class="search-input" placeholder="Buscar por email o país…"/>
+            <select id="usr-rol" class="filter-select">
+              <option value="">Todos los roles</option>
+              <option value="administrador">Administrador</option>
+              <option value="usuario">Usuario</option>
+            </select>
+            <select id="usr-activo" class="filter-select">
+              <option value="">Todos los estados</option>
+              <option value="true">Activos</option>
+              <option value="false">Inactivos</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="loadUsuarios(1)">🔍 Filtrar</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Email</th><th>Rol</th><th>País</th>
+                <th>Carnets</th><th>Estado</th><th>Registro</th><th>Acciones</th>
+              </tr></thead>
+              <tbody id="tb-usuarios"><tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+          <div id="usr-pagination" class="pagination"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── CARNETS ───────────────────────── -->
+    <section id="sec-carnets" class="section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🪪 Gestión de Carnets</span>
+          <span id="carnets-total" class="text-muted"></span>
+        </div>
+        <div class="card-body">
+          <div class="filter-bar">
+            <input type="text" id="crt-search" class="search-input" placeholder="Buscar por nombre o número…"/>
+            <select id="crt-estatus" class="filter-select">
+              <option value="">Todos los estados</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobado">Aprobado</option>
+              <option value="rechazado">Rechazado</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="loadCarnets(1)">🔍 Filtrar</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Número</th><th>Nombre</th><th>País</th>
+                <th>Estado</th><th>Solicitado</th><th>Acciones</th>
+              </tr></thead>
+              <tbody id="tb-carnets"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+          <div id="crt-pagination" class="pagination"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PAÍSES ────────────────────────── -->
+    <section id="sec-paises" class="section">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🌍 Lista de Países</span>
+            <button class="btn btn-primary btn-sm" onclick="openModalPais()">+ Nuevo</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Código</th><th>País</th><th>Carnets</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody id="tb-paises"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="card-pais-form" style="display:none">
+          <div class="card-header">
+            <span class="card-title" id="pais-form-title">Nuevo País</span>
+            <button class="btn btn-ghost btn-sm" onclick="closePaisForm()">✕</button>
+          </div>
+          <div class="card-body">
+            <input type="hidden" id="pais-id"/>
+            <div class="form-group mb-4">
+              <label class="form-label">Código ISO (2–3 letras)</label>
+              <input type="text" id="pais-codigo" class="form-control" placeholder="DO" maxlength="3"/>
+            </div>
+            <div class="form-group mb-4">
+              <label class="form-label">Nombre del País</label>
+              <input type="text" id="pais-nombre" class="form-control" placeholder="República Dominicana"/>
+            </div>
+            <div class="form-group mb-4">
+              <label class="form-label">URL de Bandera (opcional)</label>
+              <input type="text" id="pais-bandera" class="form-control" placeholder="/pais/do.png"/>
+            </div>
+            <button class="btn btn-primary" onclick="savePais()">💾 Guardar País</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── SESIONES ──────────────────────── -->
+    <section id="sec-sesiones" class="section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🔐 Sesiones Activas</span>
+          <div class="btn-group">
+            <button class="btn btn-ghost btn-sm" onclick="loadSesiones()">↺ Actualizar</button>
+            <button class="btn btn-danger btn-sm" onclick="revocarTodas()">⛔ Revocar Todas</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Usuario</th><th>Rol</th><th>Inicio</th><th>Expira</th><th>Min. Restantes</th><th>Acciones</th></tr></thead>
+              <tbody id="tb-sesiones"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── CONFIGURACIÓN ────────────────── -->
+    <section id="sec-configuracion" class="section">
+      <div class="config-tabs" id="config-tabs"></div>
+      <div id="config-groups">
+        <div class="loading"><div class="spinner"></div> Cargando configuración…</div>
+      </div>
+    </section>
+
+    <!-- ─── AUDITORÍA ─────────────────────── -->
+    <section id="sec-auditoria" class="section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 Logs de Auditoría</span>
+          <span id="audit-total" class="text-muted"></span>
+        </div>
+        <div class="card-body">
+          <div class="filter-bar">
+            <select id="aud-accion" class="filter-select"><option value="">Todas las acciones</option></select>
+            <select id="aud-entidad" class="filter-select">
+              <option value="">Todas las entidades</option>
+              <option>Usuarios</option><option>Carnets</option>
+              <option>Configuracion</option><option>Paises</option><option>Sesiones</option>
+            </select>
+            <input type="date" id="aud-desde" class="filter-select" title="Desde"/>
+            <input type="date" id="aud-hasta" class="filter-select" title="Hasta"/>
+            <button class="btn btn-primary btn-sm" onclick="loadAuditoria(1)">🔍 Filtrar</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>IP</th><th>Detalles</th></tr></thead>
+              <tbody id="tb-audit"></tbody>
+            </table>
+          </div>
+          <div id="aud-pagination" class="pagination"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── SISTEMA ───────────────────────── -->
+    <section id="sec-sistema" class="section">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">🖥️ Información del Servidor</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadSistema()">↺</button>
+          </div>
+          <div class="card-body" id="sys-info">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🔒 Herramientas de Seguridad</span></div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--text-2);margin-bottom:16px">
+              Acciones de mantenimiento de seguridad del sistema.
+            </p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button class="btn btn-warning" onclick="revocarTodas()">
+                ⛔ Revocar todas las sesiones activas
+              </button>
+              <button class="btn btn-ghost" onclick="navTo('auditoria')">
+                📋 Ver logs de auditoría completos
+              </button>
+              <button class="btn btn-ghost" onclick="navTo('sesiones')">
+                🔐 Gestionar sesiones activas
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ════════════════════════════════════════
+     MODAL GENÉRICO
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Detalles</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ─── Config ────────────────────────────────
+const API = '';  // mismo origen
+
+// ─── Estado ────────────────────────────────
+let token  = localStorage.getItem('admin_token') || '';
+let userInfo = null;
+let currentSection = 'dashboard';
+
+// ─── Reloj ────────────────────────────────
+const clockEl = document.getElementById('clock');
+function updateClock() {
+  const now = new Date();
+  clockEl.textContent = now.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ─── HTTP helper ────────────────────────────
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${API}${path}`, { ...opts, headers: { ...headers, ...(opts.headers || {}) } });
+  const data = await res.json().catch(() => ({ success: false, message: `HTTP ${res.status}` }));
+  if (res.status === 401 || res.status === 403) { doLogout(); return null; }
+  return data;
+}
+
+// ─── Toast ─────────────────────────────────
+function toast(msg, type = 'info', duration = 3500) {
+  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), duration);
+}
+
+// ─── Modal ─────────────────────────────────
+function openModal(title, body, footer = '') {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-footer').innerHTML = footer;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// ─── Navegación ────────────────────────────
+function navTo(section) {
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
+  document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+  const sec = document.getElementById(`sec-${section}`);
+  if (sec) sec.classList.add('active');
+  currentSection = section;
+  const titles = {
+    dashboard: '📊 Dashboard', usuarios: '👥 Usuarios', carnets: '🪪 Carnets',
+    paises: '🌍 Países', sesiones: '🔐 Sesiones Activas',
+    configuracion: '⚙️ Configuración del Sistema', auditoria: '📋 Logs de Auditoría',
+    sistema: '🖥️ Información del Sistema'
+  };
+  document.getElementById('page-title').textContent = titles[section] || section;
+  // Carga lazy por sección
+  const loaders = {
+    dashboard: loadDashboard, usuarios: () => loadUsuarios(1),
+    carnets: () => loadCarnets(1), paises: loadPaises,
+    sesiones: loadSesiones, configuracion: loadConfig,
+    auditoria: () => loadAuditoria(1), sistema: loadSistema
+  };
+  if (loaders[section]) loaders[section]();
+}
+
+// Sidebar toggle
+document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
+  const sb = document.getElementById('sidebar');
+  const main = document.getElementById('main');
+  if (window.innerWidth <= 768) {
+    sb.classList.toggle('open');
+  } else {
+    sb.classList.toggle('collapsed');
+    main.classList.toggle('expanded');
+  }
+});
+
+document.querySelectorAll('.sb-item').forEach(el => {
+  el.addEventListener('click', () => navTo(el.dataset.section));
+});
+
+// ═══════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════
+document.getElementById('btn-login').addEventListener('click', doLogin);
+document.getElementById('l-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  if (!email || !pass) { errEl.textContent = 'Completa email y contraseña'; errEl.style.display = 'block'; return; }
+
+  const btn = document.getElementById('btn-login');
+  btn.textContent = 'Verificando…'; btn.disabled = true;
+
+  const res = await fetch(`${API}/api/auth/login`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pass })
+  });
+  const data = await res.json().catch(() => ({}));
+  btn.textContent = 'Ingresar al Panel'; btn.disabled = false;
+
+  if (!data.success) {
+    errEl.textContent = data.message || 'Credenciales inválidas'; errEl.style.display = 'block';
+    return;
+  }
+  if (data.data?.usuario?.rol !== 'administrador') {
+    errEl.textContent = 'Acceso denegado: se requiere rol administrador'; errEl.style.display = 'block';
+    return;
+  }
+
+  token = data.data.token;
+  userInfo = data.data.usuario;
+  localStorage.setItem('admin_token', token);
+  document.getElementById('sb-email').textContent = userInfo.email;
+  document.getElementById('login-overlay').style.display = 'none';
+  loadDashboard();
+}
+
+document.getElementById('btn-logout').addEventListener('click', doLogout);
+
+async function doLogout() {
+  await api('/api/auth/logout', { method: 'POST' }).catch(() => {});
+  localStorage.removeItem('admin_token');
+  token = ''; userInfo = null;
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('l-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+// Auto-login con token guardado
+async function checkSession() {
+  if (!token) return;
+  const res = await api('/api/auth/perfil');
+  if (!res?.success || res.data?.Rol !== 'administrador') {
+    localStorage.removeItem('admin_token'); token = '';
+    return;
+  }
+  userInfo = res.data;
+  document.getElementById('sb-email').textContent = userInfo.Email || userInfo.email;
+  document.getElementById('login-overlay').style.display = 'none';
+  loadDashboard();
+}
+
+// ═══════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════
+async function loadDashboard() {
+  const data = await api('/api/admin/dashboard');
+  if (!data?.success) return;
+  const d = data.data;
+
+  // Stats cards
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon blue">👥</div>
+      <div><div class="stat-value">${d.usuarios.total}</div>
+        <div class="stat-label">Usuarios</div>
+        <div class="stat-sub">${d.usuarios.activos} activos · ${d.usuarios.admins} admins</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon yellow">⏳</div>
+      <div><div class="stat-value">${d.carnets.pendientes}</div>
+        <div class="stat-label">Carnets Pendientes</div>
+        <div class="stat-sub">${d.carnets.total} total · ${d.carnets.aprobados} aprobados</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">✅</div>
+      <div><div class="stat-value">${d.carnets.aprobados}</div>
+        <div class="stat-label">Carnets Aprobados</div>
+        <div class="stat-sub">${d.carnets.rechazados} rechazados</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon purple">🔐</div>
+      <div><div class="stat-value">${d.sesiones.activas}</div>
+        <div class="stat-label">Sesiones Activas</div>
+        <div class="stat-sub">${d.paises.activos} países activos</div></div>
+    </div>
+  `;
+
+  // Badge sidebar
+  const bdg = document.getElementById('badge-pendientes');
+  if (d.carnets.pendientes > 0) { bdg.textContent = d.carnets.pendientes; bdg.style.display = ''; }
+  else bdg.style.display = 'none';
+
+  // Carnets pendientes
+  if (d.carnetsPendientes.length === 0) {
+    document.getElementById('dash-carnets-pendientes').innerHTML = '<div class="empty-state"><div class="icon">🎉</div><p>Sin carnets pendientes</p></div>';
+  } else {
+    document.getElementById('dash-carnets-pendientes').innerHTML = `
+      <div class="table-wrap"><table>
+        <thead><tr><th>Carnet</th><th>Nombre</th><th>País</th><th>Fecha</th><th></th></tr></thead>
+        <tbody>${d.carnetsPendientes.map(c => `
+          <tr>
+            <td><span class="badge badge-pending">${c.Carnet}</span></td>
+            <td>${escHtml(c.Nombre)}</td>
+            <td>${escHtml(c.Pais)}</td>
+            <td>${fmtDate(c.FechaCreacion)}</td>
+            <td><button class="btn btn-success btn-sm" onclick="aprobarCarnet(${c.Id})">✓</button>
+                <button class="btn btn-danger btn-sm" onclick="openRechazarModal(${c.Id})">✗</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    `;
+  }
+
+  // Actividad reciente
+  document.getElementById('dash-actividad').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px">
+    ${d.actividad.map(a => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg);border-radius:8px">
+        <span style="font-size:18px">${actionIcon(a.Accion)}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600">${escHtml(a.Accion)}</div>
+          <div style="font-size:11px;color:var(--text-2)">${escHtml(a.UsuarioEmail || 'Sistema')}</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-2);flex-shrink:0">${fmtDate(a.FechaAccion)}</div>
+      </div>`).join('')}
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+// USUARIOS
+// ═══════════════════════════════════════════
+let usrPage = 1;
+async function loadUsuarios(page = 1) {
+  usrPage = page;
+  const buscar = document.getElementById('usr-search').value.trim();
+  const rol    = document.getElementById('usr-rol').value;
+  const activo = document.getElementById('usr-activo').value;
+  const qs     = new URLSearchParams({ page, limit: 20, ...(buscar && { buscar }), ...(rol && { rol }), ...(activo !== '' && { activo }) });
+  const data   = await api(`/api/admin/usuarios?${qs}`);
+  if (!data?.success) return;
+
+  document.getElementById('usuarios-total').textContent = `${data.pagination.total} usuarios`;
+  const tb = document.getElementById('tb-usuarios');
+  if (!data.data.length) {
+    tb.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">👥</div><p>Sin usuarios</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = data.data.map(u => `
+    <tr>
+      <td class="text-muted">${u.Id}</td>
+      <td><span class="fw-bold">${escHtml(u.Email)}</span></td>
+      <td><span class="badge ${u.Rol === 'administrador' ? 'badge-admin' : 'badge-user'}">${u.Rol}</span></td>
+      <td>${escHtml(u.Pais || '—')}</td>
+      <td>${u.totalCarnets}</td>
+      <td><span class="badge ${u.Activo ? 'badge-active' : 'badge-inactive'}">${u.Activo ? 'Activo' : 'Inactivo'}</span></td>
+      <td class="text-muted">${fmtDate(u.FechaCreacion)}</td>
+      <td>
+        <div class="btn-group">
+          <button class="btn btn-ghost btn-sm" onclick="verUsuario(${u.Id})" title="Ver detalle">👁</button>
+          <button class="btn btn-ghost btn-sm" onclick="cambiarRol(${u.Id}, '${u.Rol}')" title="Cambiar rol">🔄</button>
+          <button class="btn ${u.Activo ? 'btn-warning' : 'btn-success'} btn-sm"
+            onclick="toggleUsuario(${u.Id}, ${u.Activo})" title="${u.Activo ? 'Desactivar' : 'Activar'}">
+            ${u.Activo ? '🚫' : '✅'}</button>
+        </div>
+      </td>
+    </tr>`).join('');
+  renderPagination('usr-pagination', data.pagination, p => loadUsuarios(p));
+}
+
+async function verUsuario(id) {
+  const data = await api(`/api/admin/usuarios/${id}`);
+  if (!data?.success) return toast('Error al cargar usuario', 'error');
+  const u = data.data;
+  openModal(`👤 Usuario #${id}`,
+    `<div class="info-grid" style="margin-bottom:16px">
+       <div class="info-item"><div class="info-label">Email</div><div class="info-value" style="font-size:14px">${escHtml(u.Email)}</div></div>
+       <div class="info-item"><div class="info-label">Rol</div><div class="info-value">${u.Rol}</div></div>
+       <div class="info-item"><div class="info-label">País</div><div class="info-value">${escHtml(u.Pais || '—')}</div></div>
+       <div class="info-item"><div class="info-label">Estado</div><div class="info-value">${u.Activo ? '✅ Activo' : '🚫 Inactivo'}</div></div>
+     </div>
+     <p class="fw-bold" style="margin-bottom:8px">Carnets (${u.carnets.length})</p>
+     ${u.carnets.length ? `<div class="table-wrap"><table>
+       <thead><tr><th>Nº Carnet</th><th>Nombre</th><th>Estado</th></tr></thead>
+       <tbody>${u.carnets.map(c => `<tr>
+         <td>${escHtml(c.Carnet)}</td><td>${escHtml(c.Nombre)}</td>
+         <td><span class="badge badge-${c.Estatus === 'aprobado' ? 'approved' : c.Estatus === 'rechazado' ? 'rejected' : 'pending'}">${c.Estatus}</span></td>
+       </tr>`).join('')}</tbody></table></div>` : '<p class="text-muted">Sin carnets</p>'}`,
+    `<button class="btn btn-danger btn-sm" onclick="revocarSesionesUsuario(${id})">⛔ Revocar Sesiones</button>
+     <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cerrar</button>`
+  );
+}
+
+async function cambiarRol(id, rolActual) {
+  const nuevoRol = rolActual === 'administrador' ? 'usuario' : 'administrador';
+  if (!confirm(`¿Cambiar el rol a "${nuevoRol}"?`)) return;
+  const r = await api(`/api/auth/usuarios/${id}/rol`, { method: 'PUT', body: JSON.stringify({ rol: nuevoRol }) });
+  if (r?.success) { toast('Rol actualizado', 'success'); loadUsuarios(usrPage); }
+  else toast(r?.message || 'Error', 'error');
+}
+
+async function toggleUsuario(id, activo) {
+  const accion = activo ? 'desactivar' : 'activar';
+  if (!confirm(`¿${accion} este usuario?`)) return;
+  const r = await api(`/api/auth/usuarios/${id}/activo`, { method: 'PUT', body: JSON.stringify({ activo: !activo }) });
+  if (r?.success) { toast(`Usuario ${accion === 'activar' ? 'activado' : 'desactivado'}`, 'success'); loadUsuarios(usrPage); }
+  else toast(r?.message || 'Error', 'error');
+}
+
+async function revocarSesionesUsuario(id) {
+  if (!confirm('¿Revocar todas las sesiones de este usuario?')) return;
+  const r = await api(`/api/admin/usuarios/${id}/sesiones`, { method: 'DELETE' });
+  if (r?.success) { toast(r.message, 'success'); closeModal(); }
+  else toast(r?.message || 'Error', 'error');
+}
+
+// ═══════════════════════════════════════════
+// CARNETS
+// ═══════════════════════════════════════════
+let crtPage = 1;
+async function loadCarnets(page = 1) {
+  crtPage = page;
+  const buscar  = document.getElementById('crt-search').value.trim();
+  const estatus = document.getElementById('crt-estatus').value;
+  const qs = new URLSearchParams({ page, limit: 20, ...(buscar && { buscar }), ...(estatus && { estatus }) });
+  const data = await api(`/api/carnets?${qs}`);
+  if (!data?.success) return;
+
+  document.getElementById('carnets-total').textContent = `${data.pagination.total} carnets`;
+  const tb = document.getElementById('tb-carnets');
+  if (!data.data.length) {
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">🪪</div><p>Sin carnets</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = data.data.map(c => `
+    <tr>
+      <td class="text-muted">${c.Id}</td>
+      <td><code style="font-size:11px">${escHtml(c.Carnet)}</code></td>
+      <td>${escHtml(c.Nombre)}</td>
+      <td>${escHtml(c.Pais || '—')}</td>
+      <td><span class="badge badge-${c.Estatus === 'aprobado' ? 'approved' : c.Estatus === 'rechazado' ? 'rejected' : 'pending'}">${c.Estatus}</span></td>
+      <td class="text-muted">${fmtDate(c.FechaCreacion)}</td>
+      <td>
+        <div class="btn-group">
+          ${c.Estatus === 'pendiente' ? `
+            <button class="btn btn-success btn-sm" onclick="aprobarCarnet(${c.Id})">✓ Aprobar</button>
+            <button class="btn btn-danger btn-sm" onclick="openRechazarModal(${c.Id})">✗ Rechazar</button>
+          ` : ''}
+          <button class="btn btn-ghost btn-sm" onclick="verCarnet(${c.Id})">👁</button>
+        </div>
+      </td>
+    </tr>`).join('');
+  renderPagination('crt-pagination', data.pagination, p => loadCarnets(p));
+}
+
+async function aprobarCarnet(id) {
+  if (!confirm('¿Aprobar este carnet?')) return;
+  const r = await api(`/api/carnets/${id}/aprobar`, { method: 'POST', body: JSON.stringify({}) });
+  if (r?.success) { toast('Carnet aprobado ✅', 'success'); loadCarnets(crtPage); loadDashboard(); }
+  else toast(r?.message || 'Error', 'error');
+}
+
+function openRechazarModal(id) {
+  openModal('✗ Rechazar Carnet',
+    `<div class="form-group">
+       <label class="form-label">Motivo del rechazo (requerido)</label>
+       <textarea id="rej-comentario" class="form-control" rows="4" placeholder="Describe el motivo del rechazo…"></textarea>
+     </div>`,
+    `<button class="btn btn-danger" onclick="rechazarCarnet(${id})">✗ Confirmar Rechazo</button>
+     <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>`
+  );
+}
+
+async function rechazarCarnet(id) {
+  const comentarios = document.getElementById('rej-comentario').value.trim();
+  if (!comentarios) { toast('El motivo es requerido', 'warning'); return; }
+  const r = await api(`/api/carnets/${id}/rechazar`, { method: 'POST', body: JSON.stringify({ comentarios }) });
+  if (r?.success) { toast('Carnet rechazado', 'info'); closeModal(); loadCarnets(crtPage); loadDashboard(); }
+  else toast(r?.message || 'Error', 'error');
+}
+
+async function verCarnet(id) {
+  const data = await api(`/api/carnets/${id}`);
+  if (!data?.success) return toast('Error', 'error');
+  const c = data.data;
+  openModal(`🪪 Carnet #${id}`,
+    `<div class="info-grid">
+       <div class="info-item"><div class="info-label">Número</div><div class="info-value" style="font-size:13px">${escHtml(c.Carnet)}</div></div>
+       <div class="info-item"><div class="info-label">Nombre</div><div class="info-value" style="font-size:14px">${escHtml(c.Nombre)}</div></div>
+       <div class="info-item"><div class="info-label">País</div><div class="info-value">${escHtml(c.Pais)}</div></div>
+       <div class="info-item"><div class="info-label">Estado</div>
+         <div class="info-value"><span class="badge badge-${c.Estatus === 'aprobado' ? 'approved' : c.Estatus === 'rechazado' ? 'rejected' : 'pending'}">${c.Estatus}</span></div>
+       </div>
+     </div>
+     ${c.FotoUrl ? `<img src="${escHtml(c.FotoUrl)}" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin-top:14px" alt="Foto">` : ''}
+     ${c.Comentarios ? `<div style="margin-top:14px;padding:12px;background:var(--bg);border-radius:8px"><strong>Comentarios:</strong> ${escHtml(c.Comentarios)}</div>` : ''}`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>`
+  );
+}
+
+// ═══════════════════════════════════════════
+// PAÍSES
+// ═══════════════════════════════════════════
+async function loadPaises() {
+  const data = await api('/api/admin/paises');
+  if (!data?.success) return;
+  const tb = document.getElementById('tb-paises');
+  if (!data.data.length) {
+    tb.innerHTML = `<tr><td colspan="5"><div class="empty-state"><p>Sin países registrados</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = data.data.map(p => `
+    <tr>
+      <td><span class="badge badge-${p.Activo ? 'active' : 'inactive'}">${escHtml(p.Codigo)}</span></td>
+      <td>${p.BanderaUrl ? `<img src="${escHtml(p.BanderaUrl)}" style="height:16px;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'">` : ''}${escHtml(p.Nombre)}</td>
+      <td>${p.totalCarnets}</td>
+      <td><span class="badge ${p.Activo ? 'badge-active' : 'badge-inactive'}">${p.Activo ? 'Activo' : 'Inactivo'}</span></td>
+      <td>
+        <div class="btn-group">
+          <button class="btn btn-ghost btn-sm" onclick="editarPais(${p.Id},'${escJs(p.Codigo)}','${escJs(p.Nombre)}','${escJs(p.BanderaUrl || '')}')">✏️</button>
+          <button class="btn ${p.Activo ? 'btn-warning' : 'btn-success'} btn-sm" onclick="togglePais(${p.Id})">
+            ${p.Activo ? '🚫' : '✅'}</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openModalPais() {
+  document.getElementById('pais-id').value = '';
+  document.getElementById('pais-codigo').value = '';
+  document.getElementById('pais-nombre').value = '';
+  document.getElementById('pais-bandera').value = '';
+  document.getElementById('pais-form-title').textContent = 'Nuevo País';
+  document.getElementById('card-pais-form').style.display = 'block';
+  document.getElementById('pais-codigo').focus();
+}
+
+function editarPais(id, codigo, nombre, bandera) {
+  document.getElementById('pais-id').value     = id;
+  document.getElementById('pais-codigo').value  = codigo;
+  document.getElementById('pais-nombre').value  = nombre;
+  document.getElementById('pais-bandera').value = bandera;
+  document.getElementById('pais-form-title').textContent = 'Editar País';
+  document.getElementById('card-pais-form').style.display = 'block';
+}
+
+function closePaisForm() { document.getElementById('card-pais-form').style.display = 'none'; }
+
+async function savePais() {
+  const id      = document.getElementById('pais-id').value;
+  const Codigo  = document.getElementById('pais-codigo').value.trim();
+  const Nombre  = document.getElementById('pais-nombre').value.trim();
+  const BanderaUrl = document.getElementById('pais-bandera').value.trim();
+  if (!Codigo || !Nombre) { toast('Código y nombre son requeridos', 'warning'); return; }
+
+  const url    = id ? `/api/admin/paises/${id}` : '/api/admin/paises';
+  const method = id ? 'PUT' : 'POST';
+  const r = await api(url, { method, body: JSON.stringify({ Codigo, Nombre, BanderaUrl }) });
+  if (r?.success) { toast(id ? 'País actualizado' : 'País creado', 'success'); closePaisForm(); loadPaises(); }
+  else toast(r?.message || 'Error', 'error');
+}
+
+async function togglePais(id) {
+  const r = await api(`/api/admin/paises/${id}/toggle`, { method: 'PATCH' });
+  if (r?.success) { toast(r.message, 'success'); loadPaises(); }
+  else toast(r?.message || 'Error', 'error');
+}
+
+// ═══════════════════════════════════════════
+// SESIONES
+// ═══════════════════════════════════════════
+async function loadSesiones() {
+  const data = await api('/api/admin/sesiones');
+  if (!data?.success) return;
+  const tb = document.getElementById('tb-sesiones');
+  if (!data.data.length) {
+    tb.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">🔐</div><p>No hay sesiones activas</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = data.data.map(s => `
+    <tr>
+      <td>${escHtml(s.UsuarioEmail)}</td>
+      <td><span class="badge ${s.Rol === 'administrador' ? 'badge-admin' : 'badge-user'}">${s.Rol}</span></td>
+      <td class="text-muted">${fmtDate(s.FechaCreacion)}</td>
+      <td class="text-muted">${fmtDate(s.FechaExpiracion)}</td>
+      <td><span class="badge ${s.MinutosRestantes < 60 ? 'badge-pending' : 'badge-active'}">${s.MinutosRestantes} min</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="revocarSesion(${s.Id})">⛔ Revocar</button></td>
+    </tr>`).join('');
+}
+
+async function revocarSesion(id) {
+  if (!confirm('¿Revocar esta sesión?')) return;
+  const r = await api(`/api/admin/sesiones/${id}`, { method: 'DELETE' });
+  if (r?.success) { toast('Sesión revocada', 'success'); loadSesiones(); }
+  else toast(r?.message || 'Error', 'error');
+}
+
+async function revocarTodas() {
+  if (!confirm('¿Revocar TODAS las sesiones activas (excepto la tuya)?')) return;
+  const r = await api('/api/admin/sesiones/todas', { method: 'DELETE' });
+  if (r?.success) { toast(r.message, 'success'); loadSesiones(); }
+  else toast(r?.message || 'Error', 'error');
+}
+
+// ═══════════════════════════════════════════
+// CONFIGURACIÓN
+// ═══════════════════════════════════════════
+let configData = {};
+const grupoLabels = {
+  general: '🏠 General', apariencia: '🎨 Apariencia',
+  seguridad: '🔒 Seguridad', carnets: '🪪 Carnets',
+  ranking: '🏆 Ranking', integraciones: '🔗 Integraciones'
+};
+
+async function loadConfig() {
+  const data = await api('/api/admin/config');
+  if (!data?.success) return;
+  configData = data.grouped;
+
+  // Renderizar tabs
+  const tabsEl   = document.getElementById('config-tabs');
+  const gruposEl = document.getElementById('config-groups');
+  const grupos   = Object.keys(configData);
+
+  tabsEl.innerHTML = grupos.map((g, i) =>
+    `<button class="config-tab${i === 0 ? ' active' : ''}" onclick="switchConfigTab('${g}')" data-grupo="${g}">${grupoLabels[g] || g}</button>`
+  ).join('');
+
+  gruposEl.innerHTML = grupos.map((g, i) => `
+    <div class="config-group${i === 0 ? ' active' : ''}" id="cg-${g}">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">${grupoLabels[g] || g}</span>
+          <button class="btn btn-primary btn-sm" onclick="saveGrupo('${g}')">💾 Guardar grupo</button>
+        </div>
+        <div class="card-body">
+          ${configData[g].map(item => renderConfigItem(item)).join('')}
+        </div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function renderConfigItem(item) {
+  const inputId = `cfg-${item.Clave}`;
+  let input = '';
+  if (item.Tipo === 'booleano') {
+    const checked = item.Valor === 'true' || item.Valor === '1';
+    input = `
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" id="${inputId}" ${checked ? 'checked' : ''} onchange="autoSaveConfig('${item.Clave}', this.checked ? 'true' : 'false')">
+          <span class="slider"></span>
+        </label>
+        <span style="font-size:13px;color:var(--text-2)" id="${inputId}-label">${checked ? 'Habilitado' : 'Deshabilitado'}</span>
+      </div>`;
+  } else if (item.Tipo === 'color') {
+    input = `<input type="color" id="${inputId}" class="form-control" value="${escHtml(item.Valor)}" style="width:80px;height:38px">`;
+  } else if (item.Tipo === 'password') {
+    input = `<input type="password" id="${inputId}" class="form-control" placeholder="${item._hasValue ? '(sin cambios)' : 'Ingresar valor…'}" autocomplete="new-password">`;
+  } else if (item.Tipo === 'numero') {
+    input = `<input type="number" id="${inputId}" class="form-control" value="${escHtml(item.Valor)}">`;
+  } else {
+    input = `<input type="text" id="${inputId}" class="form-control" value="${escHtml(item.Valor)}">`;
+  }
+
+  return `
+    <div class="config-item" id="ci-${item.Clave}">
+      <div class="config-meta">
+        <div class="config-key">${item.Clave}</div>
+        <div class="config-desc">${escHtml(item.Descripcion || '')}</div>
+        <div class="text-muted" style="margin-top:4px">Tipo: ${item.Tipo}</div>
+      </div>
+      <div class="config-input">
+        ${input}
+        ${item.Tipo !== 'booleano' ? `<button class="config-save" id="save-${item.Clave}" onclick="saveConfig('${item.Clave}')">Guardar</button>` : ''}
+      </div>
+    </div>`;
+}
+
+function switchConfigTab(grupo) {
+  document.querySelectorAll('.config-tab').forEach(t => t.classList.toggle('active', t.dataset.grupo === grupo));
+  document.querySelectorAll('.config-group').forEach(g => g.classList.toggle('active', g.id === `cg-${grupo}`));
+}
+
+async function saveConfig(clave) {
+  const el = document.getElementById(`cfg-${clave}`);
+  if (!el) return;
+  const valor = el.type === 'checkbox' ? (el.checked ? 'true' : 'false') : el.value;
+  const btn   = document.getElementById(`save-${clave}`);
+  if (btn) { btn.textContent = '…'; btn.disabled = true; }
+
+  const r = await api(`/api/admin/config/${encodeURIComponent(clave)}`, { method: 'PUT', body: JSON.stringify({ valor }) });
+  if (btn) { btn.disabled = false; }
+
+  if (r?.success) {
+    toast(`✅ ${clave} guardado`, 'success', 2000);
+    if (btn) { btn.textContent = '✓ Guardado'; btn.classList.add('saved');
+      setTimeout(() => { btn.textContent = 'Guardar'; btn.classList.remove('saved'); }, 2500); }
+  } else {
+    toast(r?.message || 'Error al guardar', 'error');
+    if (btn) btn.textContent = 'Guardar';
+  }
+}
+
+async function autoSaveConfig(clave, valor) {
+  const labelEl = document.getElementById(`cfg-${clave}-label`);
+  if (labelEl) labelEl.textContent = valor === 'true' ? 'Habilitado' : 'Deshabilitado';
+  const r = await api(`/api/admin/config/${encodeURIComponent(clave)}`, { method: 'PUT', body: JSON.stringify({ valor }) });
+  if (r?.success) toast(`✅ ${clave} actualizado`, 'success', 1800);
+  else toast(r?.message || 'Error', 'error');
+}
+
+async function saveGrupo(grupo) {
+  if (!configData[grupo]) return;
+  const params = configData[grupo].map(item => {
+    const el = document.getElementById(`cfg-${item.Clave}`);
+    if (!el) return null;
+    const valor = el.type === 'checkbox' ? (el.checked ? 'true' : 'false') : el.value;
+    if (item.Tipo === 'password' && !valor) return null; // no sobreescribir password vacío
+    return { clave: item.Clave, valor };
+  }).filter(Boolean);
+
+  const r = await api('/api/admin/config/bulk', { method: 'POST', body: JSON.stringify({ params }) });
+  if (r?.success) toast(`✅ ${r.actualizados.length} parámetros guardados`, 'success');
+  else toast(r?.message || 'Error', 'error');
+}
+
+// ═══════════════════════════════════════════
+// AUDITORÍA
+// ═══════════════════════════════════════════
+let audPage = 1;
+async function loadAuditoria(page = 1) {
+  audPage = page;
+  const accion  = document.getElementById('aud-accion').value;
+  const entidad = document.getElementById('aud-entidad').value;
+  const desde   = document.getElementById('aud-desde').value;
+  const hasta   = document.getElementById('aud-hasta').value;
+  const qs = new URLSearchParams({ page, limit: 30, ...(accion && { accion }), ...(entidad && { entidad }), ...(desde && { desde }), ...(hasta && { hasta }) });
+  const data = await api(`/api/admin/audit?${qs}`);
+  if (!data?.success) return;
+
+  // Poblar selector de acciones
+  const sel = document.getElementById('aud-accion');
+  const current = sel.value;
+  if (data.acciones?.length) {
+    sel.innerHTML = '<option value="">Todas las acciones</option>' +
+      data.acciones.map(a => `<option ${a === current ? 'selected' : ''}>${a}</option>`).join('');
+  }
+
+  document.getElementById('audit-total').textContent = `${data.pagination.total} registros`;
+  const tb = document.getElementById('tb-audit');
+  if (!data.data.length) {
+    tb.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">📋</div><p>Sin registros</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = data.data.map(l => `
+    <tr>
+      <td class="text-muted" style="white-space:nowrap">${fmtDateTime(l.FechaAccion)}</td>
+      <td>${escHtml(l.UsuarioEmail || '—')}</td>
+      <td><span class="badge badge-${auditColor(l.Accion)}">${escHtml(l.Accion)}</span></td>
+      <td>${escHtml(l.Entidad || '—')}</td>
+      <td class="text-muted">${escHtml(l.IPAddress || '—')}</td>
+      <td>
+        ${l.Detalles ? `<button class="btn btn-ghost btn-sm" onclick='showDetalles(${JSON.stringify(l.Detalles)})'>Ver</button>` : '—'}
+      </td>
+    </tr>`).join('');
+  renderPagination('aud-pagination', data.pagination, p => loadAuditoria(p));
+}
+
+function showDetalles(detalles) {
+  let obj = detalles;
+  if (typeof detalles === 'string') { try { obj = JSON.parse(detalles); } catch(e) { obj = detalles; } }
+  openModal('📋 Detalles del Registro',
+    `<pre style="background:var(--bg);padding:16px;border-radius:8px;overflow-x:auto;font-size:12px;line-height:1.6">${JSON.stringify(obj, null, 2)}</pre>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>`
+  );
+}
+
+// ═══════════════════════════════════════════
+// SISTEMA
+// ═══════════════════════════════════════════
+async function loadSistema() {
+  const data = await api('/api/admin/system-info');
+  if (!data?.success) return;
+  const d = data.data;
+  document.getElementById('sys-info').innerHTML = `
+    <div class="info-grid">
+      <div class="info-item"><div class="info-label">Node.js</div><div class="info-value">${d.node}</div></div>
+      <div class="info-item"><div class="info-label">Entorno</div><div class="info-value">${d.env}</div></div>
+      <div class="info-item"><div class="info-label">Tiempo activo</div><div class="info-value">${d.uptimeH}</div></div>
+      <div class="info-item"><div class="info-label">Base de datos</div><div class="info-value">${d.database.name}</div></div>
+      <div class="info-item"><div class="info-label">Memoria Heap</div><div class="info-value">${d.memory.heapUsed}</div></div>
+      <div class="info-item"><div class="info-label">MySQL</div><div class="info-value">${d.database.version}</div></div>
+      <div class="info-item"><div class="info-label">RSS</div><div class="info-value">${d.memory.rss}</div></div>
+      <div class="info-item"><div class="info-label">Actualizado</div><div class="info-value" style="font-size:12px">${fmtDateTime(d.timestamp)}</div></div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════
+// UTILIDADES
+// ═══════════════════════════════════════════
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escJs(s) { return (s||'').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('es-DO', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+function fmtDateTime(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('es-DO', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function renderPagination(containerId, pg, onPage) {
+  const el = document.getElementById(containerId);
+  if (!el || pg.totalPages <= 1) { if(el) el.innerHTML = ''; return; }
+  let html = `<button class="page-btn" ${pg.page <= 1 ? 'disabled' : ''} onclick="(${onPage.toString()})(${pg.page-1})">‹</button>`;
+  const range = 2;
+  for (let i = Math.max(1, pg.page - range); i <= Math.min(pg.totalPages, pg.page + range); i++) {
+    html += `<button class="page-btn${i === pg.page ? ' current' : ''}" onclick="(${onPage.toString()})(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" ${pg.page >= pg.totalPages ? 'disabled' : ''} onclick="(${onPage.toString()})(${pg.page+1})">›</button>`;
+  html += `<span class="page-info">${pg.page} / ${pg.totalPages} (${pg.total} total)</span>`;
+  el.innerHTML = html;
+}
+
+function actionIcon(accion = '') {
+  if (accion.includes('LOGIN'))    return '🔑';
+  if (accion.includes('LOGOUT'))   return '🚪';
+  if (accion.includes('CREAR'))    return '➕';
+  if (accion.includes('APROBAR'))  return '✅';
+  if (accion.includes('RECHAZAR')) return '❌';
+  if (accion.includes('ELIMINAR')) return '🗑️';
+  if (accion.includes('CONFIG'))   return '⚙️';
+  if (accion.includes('ROL'))      return '🔄';
+  if (accion.includes('REVOCAR'))  return '⛔';
+  return '📝';
+}
+
+function auditColor(accion = '') {
+  if (accion.includes('APROBAR') || accion.includes('ACTIVAR') || accion.includes('LOGIN')) return 'approved';
+  if (accion.includes('RECHAZAR') || accion.includes('ELIMINAR') || accion.includes('REVOCAR') || accion.includes('DESACTIVAR')) return 'rejected';
+  return 'pending';
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+checkSession();
+</script>
+</body>
+</html>

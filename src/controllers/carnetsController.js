@@ -61,7 +61,7 @@ exports.crearSolicitudCarnet = async (req, res) => {
 
         // Verificar si el carnet ya existe
         const [carnetsExistentes] = await connection.query(
-            'SELECT Id FROM carnets WHERE Carnet = ?',
+            'SELECT Id FROM Carnets WHERE Carnet = ?',
             [carnet]
         );
 
@@ -80,7 +80,7 @@ exports.crearSolicitudCarnet = async (req, res) => {
 
         // Insertar carnet con estatus 'pendiente'
         const [resultado] = await connection.query(
-            `INSERT INTO carnets (Carnet, Nombre, Pais, Bandera, Union_Federacion, FotoUrl, Estatus, UsuarioId)
+            `INSERT INTO Carnets (Carnet, Nombre, Pais, Bandera, Union_Federacion, FotoUrl, Estatus, UsuarioId)
              VALUES (?, ?, ?, ?, ?, ?, 'pendiente', ?)`,
             [carnet, nombre, pais, bandera || null, union_federacion || null, fotoUrl, usuarioId]
         );
@@ -167,7 +167,7 @@ exports.listarCarnets = async (req, res) => {
         const [carnets] = await db.query(query, params);
 
         // Contar total
-        let countQuery = 'SELECT COUNT(*) as total FROM carnets WHERE 1=1';
+        let countQuery = 'SELECT COUNT(*) as total FROM Carnets WHERE 1=1';
         const countParams = [];
 
         if (estatus) {
@@ -265,7 +265,7 @@ exports.actualizarCarnet = async (req, res) => {
 
         // Obtener carnet actual
         const [carnetsActuales] = await connection.query(
-            'SELECT * FROM carnets WHERE Id = ?',
+            'SELECT * FROM Carnets WHERE Id = ?',
             [id]
         );
 
@@ -307,7 +307,7 @@ exports.actualizarCarnet = async (req, res) => {
 
         // Actualizar carnet
         const [resultado] = await connection.query(
-            `UPDATE carnets
+            `UPDATE Carnets
              SET Nombre = ?, Pais = ?, Bandera = ?, Union_Federacion = ?, FotoUrl = ?
              WHERE Id = ?`,
             [nombre || carnetActual.Nombre,
@@ -364,7 +364,7 @@ exports.aprobarCarnet = async (req, res) => {
 
         // Verificar que el carnet existe y está pendiente
         const [carnets] = await connection.query(
-            'SELECT * FROM carnets WHERE Id = ?',
+            'SELECT * FROM Carnets WHERE Id = ?',
             [id]
         );
 
@@ -386,7 +386,7 @@ exports.aprobarCarnet = async (req, res) => {
 
         // Aprobar carnet
         await connection.query(
-            `UPDATE carnets
+            `UPDATE Carnets
              SET Estatus = 'aprobado',
                  AdministradorAprobadorId = ?,
                  FechaAprobacion = NOW(),
@@ -442,7 +442,7 @@ exports.rechazarCarnet = async (req, res) => {
 
         // Verificar que el carnet existe y está pendiente
         const [carnets] = await connection.query(
-            'SELECT * FROM carnets WHERE Id = ?',
+            'SELECT * FROM Carnets WHERE Id = ?',
             [id]
         );
 
@@ -464,7 +464,7 @@ exports.rechazarCarnet = async (req, res) => {
 
         // Rechazar carnet
         await connection.query(
-            `UPDATE carnets
+            `UPDATE Carnets
              SET Estatus = 'rechazado',
                  AdministradorAprobadorId = ?,
                  Comentarios = ?
@@ -511,7 +511,7 @@ exports.eliminarCarnet = async (req, res) => {
 
         // Obtener carnet para eliminar la foto
         const [carnets] = await connection.query(
-            'SELECT * FROM carnets WHERE Id = ?',
+            'SELECT * FROM Carnets WHERE Id = ?',
             [id]
         );
 
@@ -530,7 +530,7 @@ exports.eliminarCarnet = async (req, res) => {
         }
 
         // Eliminar carnet
-        await connection.query('DELETE FROM carnets WHERE Id = ?', [id]);
+        await connection.query('DELETE FROM Carnets WHERE Id = ?', [id]);
 
         // Registrar auditoría
         await registrarAuditoria(
@@ -571,7 +571,7 @@ exports.obtenerEstadisticas = async (req, res) => {
                 SUM(CASE WHEN Estatus = 'pendiente' THEN 1 ELSE 0 END) as pendientes,
                 SUM(CASE WHEN Estatus = 'aprobado' THEN 1 ELSE 0 END) as aprobados,
                 SUM(CASE WHEN Estatus = 'rechazado' THEN 1 ELSE 0 END) as rechazados
-            FROM carnets
+            FROM Carnets
         `);
 
         // Estadísticas por país
@@ -648,7 +648,7 @@ exports.crearSolicitudCarnetBase64 = async (req, res) => {
 
         // Verificar si el carnet ya existe (por si acaso)
         const [carnetsExistentes] = await connection.query(
-            'SELECT Id FROM carnets WHERE Carnet = ?',
+            'SELECT Id FROM Carnets WHERE Carnet = ?',
             [carnetNumero]
         );
 
@@ -688,7 +688,7 @@ exports.crearSolicitudCarnetBase64 = async (req, res) => {
 
         // Insertar carnet con estatus 'pendiente'
         const [resultado] = await connection.query(
-            `INSERT INTO carnets (Carnet, Nombre, Pais, Bandera, Union_Federacion, FotoUrl, Estatus, UsuarioId)
+            `INSERT INTO Carnets (Carnet, Nombre, Pais, Bandera, Union_Federacion, FotoUrl, Estatus, UsuarioId)
              VALUES (?, ?, ?, ?, ?, ?, 'pendiente', ?)`,
             [carnetNumero, nombre, pais, bandera, genero || null, fotoUrl, usuarioId]
         );

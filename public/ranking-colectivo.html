@@ -20,74 +20,22 @@
     <script src="js/api-config.js"></script>
 
     <style>
-        /* ── Expand button ── */
+        /* ── Expand button (purely visual, pointer-events off) ── */
         .btn-expand {
             background: none;
             border: none;
-            cursor: pointer;
             padding: 4px 8px;
             border-radius: 6px;
             font-size: 14px;
             color: #16a34a;
-            transition: background 0.2s, transform 0.25s;
+            transition: transform 0.25s;
             line-height: 1;
-        }
-        .btn-expand:hover {
-            background: rgba(22, 163, 74, 0.1);
+            pointer-events: none; /* click handled by the TR */
         }
         .btn-expand.expanded {
             transform: rotate(90deg);
             color: #0d6b30;
         }
-
-        /* ── Fila de detalle (integrantes) ── */
-        .detail-row td {
-            padding: 0 !important;
-            background: #f8fdf9;
-            border-bottom: 2px solid #16a34a;
-        }
-        .detail-inner {
-            overflow: hidden;
-            max-height: 0;
-            transition: max-height 0.38s ease, padding 0.2s;
-        }
-        .detail-inner.open {
-            max-height: 1200px;
-        }
-        .detail-content {
-            padding: 0;
-        }
-
-        /* ── Mini-tabla de integrantes ── */
-        .members-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.88em;
-        }
-        .members-table th {
-            background: #1e6b4f;
-            color: #fff;
-            padding: 10px 16px;
-            text-align: left;
-            font-weight: 600;
-            white-space: nowrap;
-            font-size: 0.72em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .members-table th.centrado { text-align: center; }
-        .members-table td {
-            padding: 11px 16px;
-            border-bottom: 1px solid #f0f0f0;
-            text-align: left;
-            color: #374151;
-        }
-        .members-table td:first-child { font-weight: 500; }
-        .members-table .centrado { text-align: center; }
-        .members-table tr:last-child td { border-bottom: none; }
-        .members-table tr:hover td { background: #edfaf2; }
-        .members-table .efect-neg { color: #dc2626; }
-        .members-table .efect-pos { color: #16a34a; }
 
         /* ── Fila del equipo cuando está expandida ── */
         tr.row-expanded td {
@@ -95,7 +43,48 @@
             font-weight: 600;
         }
 
-        /* ── Spinner dentro del detail ── */
+        /* ── Click en cualquier parte de la fila ── */
+        tbody tr[data-id] {
+            cursor: pointer;
+        }
+
+        /* ── Filas de integrantes inyectadas en el mismo tbody ── */
+        tr.member-row td {
+            background: #f8fdf9;
+            border-bottom: 1px solid #e5f5eb;
+            padding: 9px 16px;
+            font-size: 0.9em;
+            color: #374151;
+            animation: fadeInRow 0.18s ease;
+        }
+        tr.member-row:last-of-type td,
+        tr.member-row + tr:not(.member-row) td ~ td { /* last member before next team */ }
+        tr.member-row.member-last td {
+            border-bottom: 2px solid #16a34a;
+        }
+        tr.member-row:hover td {
+            background: #edfaf2;
+            cursor: default;
+        }
+        tr.member-row td.centrado { text-align: center; }
+        tr.member-row .efect-neg { color: #dc2626; }
+        tr.member-row .efect-pos { color: #16a34a; }
+        tr.member-row .member-name {
+            color: #1f4d35;
+            padding-left: 10px;
+        }
+        tr.member-row .member-name::before {
+            content: '↳ ';
+            color: #9ca3af;
+            font-style: normal;
+        }
+
+        @keyframes fadeInRow {
+            from { opacity: 0; transform: translateY(-3px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Loading / Error ── */
         .members-loading {
             text-align: center;
             padding: 16px;
@@ -106,27 +95,6 @@
             text-align: center;
             padding: 12px;
             color: #dc2626;
-        }
-
-        /* ── Encabezado de la sección de miembros ── */
-        .members-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .members-header h4 {
-            margin: 0;
-            color: #114d37;
-            font-size: 0.95em;
-        }
-        .members-badge {
-            background: #16a34a;
-            color: #fff;
-            border-radius: 20px;
-            padding: 2px 10px;
-            font-size: 0.78em;
-            font-weight: 600;
         }
     </style>
 </head>
@@ -167,6 +135,9 @@
 
         // Cache de integrantes ya cargados { equipoNombre: [...] }
         const cacheIntegrantes = {};
+
+        // ID del equipo actualmente expandido (sólo uno a la vez)
+        let currentlyExpandedId = null;
 
         // ✅ Esperar a que la API se inicialice
         window.addEventListener('load', () => {
@@ -226,6 +197,9 @@
         }
 
         function mostrarEquipos() {
+            // Al cambiar de página, cerrar cualquier equipo expandido
+            currentlyExpandedId = null;
+
             const equipos = equiposActuales;
 
             const totalRegistros = equipos.length;
@@ -237,9 +211,10 @@
             let filas = equiposPaginados.map(equipo => {
                 const equipoId = 'eq-' + encodeURIComponent(equipo.Equipo || equipo.ID || Math.random()).replace(/[^a-zA-Z0-9]/g, '_');
                 return `
-                    <tr id="row-${equipoId}" data-equipo="${escapeHtml(equipo.Equipo)}" data-id="${equipoId}">
+                    <tr id="row-${equipoId}" data-equipo="${escapeHtml(equipo.Equipo)}" data-id="${equipoId}"
+                        onclick="toggleIntegrantes('${equipoId}', '${escapeHtml(equipo.Equipo)}')">
                         <td class="centrado">
-                            <button class="btn-expand" id="btn-${equipoId}" onclick="toggleIntegrantes('${equipoId}', '${escapeHtml(equipo.Equipo)}')" title="Ver integrantes">▶</button>
+                            <button class="btn-expand" id="btn-${equipoId}" title="Ver integrantes">▶</button>
                         </td>
                         <td class="centrado"><strong>${equipo.Ranking || '-'}</strong></td>
                         <td><strong>${equipo.Equipo || '-'}</strong></td>
@@ -252,15 +227,6 @@
                         <td class="centrado">${equipo.PtsPermitidos || 0}</td>
                         <td class="efectividad centrado ${(equipo.Efectividad || 0) < 0 ? 'negativa' : ''}">${equipo.Efectividad || 0}</td>
                         <td class="centrado">${equipo.TotalPts || 0}</td>
-                    </tr>
-                    <tr class="detail-row" id="detail-${equipoId}">
-                        <td colspan="12">
-                            <div class="detail-inner" id="inner-${equipoId}">
-                                <div class="detail-content" id="content-${equipoId}">
-                                    <div class="members-loading">Cargando integrantes...</div>
-                                </div>
-                            </div>
-                        </td>
                     </tr>
                 `;
             }).join('');
@@ -300,70 +266,107 @@
             agregarEventosPaginacion();
         }
 
-        // ── Toggle integrantes (accordion) ──────────────────────────
-        async function toggleIntegrantes(equipoId, equipoNombre) {
-            const inner   = document.getElementById('inner-' + equipoId);
+        // ── Cerrar integrantes de un equipo ──────────────────────────
+        function cerrarIntegrantes(equipoId) {
             const btn     = document.getElementById('btn-' + equipoId);
-            const row     = document.getElementById('row-' + equipoId);
-            const content = document.getElementById('content-' + equipoId);
+            const teamRow = document.getElementById('row-' + equipoId);
+            // Eliminar todas las filas inyectadas de este equipo
+            document.querySelectorAll('tr.member-row[data-parent="' + equipoId + '"]').forEach(r => r.remove());
+            if (btn)     btn.classList.remove('expanded');
+            if (teamRow) teamRow.classList.remove('row-expanded');
+            if (currentlyExpandedId === equipoId) currentlyExpandedId = null;
+        }
 
-            const isOpen = inner.classList.contains('open');
+        // ── Toggle integrantes (accordion: solo uno abierto a la vez) ─
+        async function toggleIntegrantes(equipoId, equipoNombre) {
+            const isOpen = currentlyExpandedId === equipoId;
 
-            if (isOpen) {
-                // Cerrar
-                inner.classList.remove('open');
-                btn.classList.remove('expanded');
-                row.classList.remove('row-expanded');
-                return;
+            // Cerrar el que esté abierto (si hay uno)
+            if (currentlyExpandedId) {
+                cerrarIntegrantes(currentlyExpandedId);
             }
 
-            // Abrir
-            inner.classList.add('open');
+            // Si era el mismo, quedó cerrado → terminamos
+            if (isOpen) return;
+
+            // ── Abrir el nuevo ──
+            const btn     = document.getElementById('btn-' + equipoId);
+            const teamRow = document.getElementById('row-' + equipoId);
+            if (!teamRow) return;
+
             btn.classList.add('expanded');
-            row.classList.add('row-expanded');
+            teamRow.classList.add('row-expanded');
+            currentlyExpandedId = equipoId;
 
-            // Scroll suave hacia la fila
-            setTimeout(() => {
-                row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 50);
+            // Insertar fila de loading alineada
+            teamRow.insertAdjacentHTML('afterend', `
+                <tr class="member-row member-last" data-parent="${equipoId}">
+                    <td colspan="12"><div class="members-loading">⏳ Cargando integrantes de <strong>${escapeHtml(equipoNombre)}</strong>...</div></td>
+                </tr>
+            `);
 
-            // Si ya tenemos los datos en caché, solo renderizar
+            // Scroll suave
+            setTimeout(() => teamRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+
+            // Si ya está en caché, renderizar directamente
             if (cacheIntegrantes[equipoNombre]) {
-                renderIntegrantes(content, equipoNombre, cacheIntegrantes[equipoNombre]);
+                document.querySelectorAll('tr.member-row[data-parent="' + equipoId + '"]').forEach(r => r.remove());
+                insertarFilasIntegrantes(equipoId, cacheIntegrantes[equipoNombre]);
                 return;
             }
-
-            // Mostrar spinner mientras carga
-            content.innerHTML = '<div class="members-loading">⏳ Cargando integrantes de <strong>' + escapeHtml(equipoNombre) + '</strong>...</div>';
 
             try {
                 const data = await API.get('/colectivo/equipo/' + encodeURIComponent(equipoNombre));
+                // Quitar loading
+                document.querySelectorAll('tr.member-row[data-parent="' + equipoId + '"]').forEach(r => r.remove());
+
                 if (data && data.success) {
                     cacheIntegrantes[equipoNombre] = data.data || [];
-                    renderIntegrantes(content, equipoNombre, cacheIntegrantes[equipoNombre]);
+                    insertarFilasIntegrantes(equipoId, cacheIntegrantes[equipoNombre]);
                 } else {
-                    content.innerHTML = '<div class="members-error">⚠️ No se pudieron cargar los integrantes.</div>';
+                    teamRow.insertAdjacentHTML('afterend', `
+                        <tr class="member-row member-last" data-parent="${equipoId}">
+                            <td colspan="12"><div class="members-error">⚠️ No se pudieron cargar los integrantes.</div></td>
+                        </tr>
+                    `);
                 }
             } catch (err) {
                 console.error('Error cargando integrantes:', err);
-                content.innerHTML = '<div class="members-error">⚠️ Error al cargar integrantes: ' + escapeHtml(err.message) + '</div>';
+                document.querySelectorAll('tr.member-row[data-parent="' + equipoId + '"]').forEach(r => r.remove());
+                teamRow.insertAdjacentHTML('afterend', `
+                    <tr class="member-row member-last" data-parent="${equipoId}">
+                        <td colspan="12"><div class="members-error">⚠️ Error: ${escapeHtml(err.message)}</div></td>
+                    </tr>
+                `);
             }
         }
 
-        function renderIntegrantes(container, equipoNombre, jugadores) {
+        // ── Inyectar filas de jugadores directamente en el tbody ─────
+        function insertarFilasIntegrantes(equipoId, jugadores) {
+            const teamRow = document.getElementById('row-' + equipoId);
+            if (!teamRow) return;
+
             if (!jugadores || jugadores.length === 0) {
-                container.innerHTML = `<p style="color:#6b7280;font-style:italic;margin:8px 0;padding:0 4px">Sin datos de integrantes para este equipo.</p>`;
+                teamRow.insertAdjacentHTML('afterend', `
+                    <tr class="member-row member-last" data-parent="${equipoId}">
+                        <td colspan="12"><p style="color:#6b7280;font-style:italic;padding:12px 16px;margin:0">Sin datos de integrantes para este equipo.</p></td>
+                    </tr>
+                `);
                 return;
             }
 
-            const filas = jugadores.map(j => {
-                const efClass = (j.Efectividad || 0) < 0 ? 'efect-neg' : 'efect-pos';
-                const bandera = j.Siglas ? `<img src="pais/${escapeHtml(j.Siglas)}.png" class="flag" alt="${escapeHtml(j.Siglas)}" style="width:22px;height:auto;">` : '-';
+            // Construir todas las filas y luego insertarlas de una vez
+            const filas = jugadores.map((j, idx) => {
+                const esUltimo   = idx === jugadores.length - 1;
+                const efClass    = (j.Efectividad || 0) < 0 ? 'efect-neg' : 'efect-pos';
+                const bandera    = j.Siglas
+                    ? `<img src="pais/${escapeHtml(j.Siglas)}.png" class="flag" alt="${escapeHtml(j.Siglas)}">`
+                    : '-';
                 return `
-                    <tr>
+                    <tr class="member-row${esUltimo ? ' member-last' : ''}" data-parent="${equipoId}">
                         <td></td>
                         <td></td>
-                        <td>${escapeHtml(j.NJugador || '-')}</td>
+                        <td class="member-name">${escapeHtml(j.NJugador || '-')}</td>
                         <td>${bandera}</td>
                         <td>${escapeHtml(j.Pais || '-')}</td>
                         <td class="centrado">${j.Partidas || 0}</td>
@@ -372,16 +375,12 @@
                         <td class="centrado">${j.PtsObtenidos || 0}</td>
                         <td class="centrado">${j.PtsPermitidos || 0}</td>
                         <td class="centrado ${efClass}">${j.Efectividad || 0}</td>
-                        <td class="centrado"><strong>${j.PtsObtenidos || 0}</strong></td>
+                        <td class="centrado">${j.PtsObtenidos || 0}</td>
                     </tr>
                 `;
             }).join('');
 
-            container.innerHTML = `
-                <table class="members-table">
-                    <tbody>${filas}</tbody>
-                </table>
-            `;
+            teamRow.insertAdjacentHTML('afterend', filas);
         }
 
         // ── Helpers ─────────────────────────────────────────────────

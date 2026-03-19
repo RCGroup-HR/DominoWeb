@@ -34,14 +34,15 @@ const setSecurityHeaders = (req, res, next) => {
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     // Deshabilita APIs sensibles del navegador
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
-    // Content Security Policy básica
+    // Content Security Policy
     res.setHeader('Content-Security-Policy',
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline'; " +
+        "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "font-src 'self' https://fonts.gstatic.com data:; " +
         "img-src 'self' data: blob: https:; " +
-        "connect-src 'self';"
+        "frame-src https://www.youtube.com https://youtube.com; " +
+        "connect-src 'self' https://www.googleapis.com https://www.google-analytics.com;"
     );
     // Ocultar información del servidor
     res.removeHeader('X-Powered-By');

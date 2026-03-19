@@ -42,6 +42,10 @@ router.put('/patrocinadores/:id',                ctrl.updatePatrocinador);
 router.delete('/patrocinadores/:id',             ctrl.deletePatrocinador);
 router.patch('/patrocinadores/:id/toggle',       ctrl.togglePatrocinadorActivo);
 
+// ── Metodología ────────────────────────────
+router.get('/metodologia',  ctrl.getMetodologia);
+router.put('/metodologia',  ctrl.updateMetodologia);
+
 // ── Auditoría ──────────────────────────────
 router.get('/audit', ctrl.getAuditLogs);
 

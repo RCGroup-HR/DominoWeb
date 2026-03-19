@@ -62,6 +62,9 @@ app.get('/api/config/publica', adminController.getConfigPublica);
 // Patrocinadores públicos (carousel homepage)
 app.get('/api/patrocinadores', adminController.getPatrocinadoresPublico);
 
+// Metodología pública (página metodología)
+app.get('/api/metodologia', adminController.getMetodologiaPublico);
+
 // ──────────────────────────────────────────
 // 6. RUTAS DE AUTH Y CARNETS (protección JWT interna)
 // ──────────────────────────────────────────

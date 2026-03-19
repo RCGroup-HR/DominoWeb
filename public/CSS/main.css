@@ -15,7 +15,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 0 15px;
+    padding: 0;
     position: relative;
     overflow-y: auto;
 }
@@ -35,10 +35,10 @@ body {
     flex-direction: column;
     min-height: 100vh;
     max-width: 100%;
-    margin: 15px;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin: 0;
+    background: #fff;
+    border-radius: 0;
+    box-shadow: none;
     position: relative;
     z-index: 1;
 }
@@ -50,14 +50,15 @@ body {
 .header {
     background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
     color: white;
-    padding: 25px 30px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 22px 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     position: -webkit-sticky;
     position: sticky;
-    top: 0px;
+    top: 70px;
     z-index: 100;
-    border-radius: 12px 12px 0 0;
+    border-radius: 0;
     margin: 0;
+    width: 100%;
 }
 
 .header h1 {
@@ -221,8 +222,17 @@ body {
 
 .table-container {
     padding: 0;
-    overflow-x: auto;
     background: white;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Wrapper de scroll horizontal/vertical para la tabla */
+/* La altura se fija por JS: ajustarAlturaTabla() */
+.table-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+    width: 100%;
 }
 
 table {
@@ -245,6 +255,10 @@ thead th {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: linear-gradient(135deg, #1e6b4f 0%, #145a40 100%);
 }
 
 tbody tr {
@@ -670,17 +684,17 @@ tbody td {
 
 @media (max-width: 768px) {
     body {
-        padding: 0 10px;
+        padding: 0;
     }
 
     .container {
-        margin: 10px auto;
-        border-radius: 8px;
+        margin: 0;
+        border-radius: 0;
     }
 
     .footer {
-        margin: 0 auto 10px;
-        border-radius: 8px;
+        margin: 0;
+        border-radius: 0;
     }
 
     .header {

@@ -434,6 +434,9 @@
     <div class="sb-item" data-section="patrocinadores">
       <span class="icon">🏆</span> Patrocinadores
     </div>
+    <div class="sb-item" data-section="metodologia">
+      <span class="icon">📋</span> Metodología
+    </div>
     <div class="sb-group">Sistema</div>
     <div class="sb-item" data-section="configuracion">
       <span class="icon">⚙️</span> Configuración
@@ -701,6 +704,43 @@
       </div>
     </section>
 
+    <section id="sec-metodologia" class="section">
+      <!-- Card: Info del Torneo -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="card-title">🏟️ Información del Torneo</span>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+            <div style="grid-column:1/-1">
+              <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Nombre del Torneo *</label>
+              <input id="met-nombre" class="filter-select" style="width:100%" placeholder="Ej: 1ER TORNEO INTER CLUBES LA VEGA">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Subtítulo</label>
+              <input id="met-subtitulo" class="filter-select" style="width:100%" placeholder="Ej: Metodología de Juego">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Fecha</label>
+              <input id="met-fecha" class="filter-select" style="width:100%" placeholder="Ej: 30 de Noviembre">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="guardarInfoMetodologia()">💾 Guardar Info</button>
+        </div>
+      </div>
+
+      <!-- Card: Secciones -->
+      <div class="card">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <span class="card-title">📄 Secciones</span>
+          <button class="btn btn-primary" onclick="agregarSeccion()">➕ Nueva Sección</button>
+        </div>
+        <div class="card-body">
+          <div id="met-secciones-list"><div class="loading"><div class="spinner"></div> Cargando…</div></div>
+        </div>
+      </div>
+    </section>
+
     <section id="sec-configuracion" class="section">
       <div class="config-tabs" id="config-tabs"></div>
       <div id="config-groups">
@@ -853,7 +893,8 @@ function navTo(section) {
     dashboard: '📊 Dashboard', usuarios: '👥 Usuarios', carnets: '🪪 Carnets',
     paises: '🌍 Países', sesiones: '🔐 Sesiones Activas',
     configuracion: '⚙️ Configuración del Sistema', auditoria: '📋 Logs de Auditoría',
-    sistema: '🖥️ Información del Sistema', patrocinadores: '🏆 Patrocinadores'
+    sistema: '🖥️ Información del Sistema', patrocinadores: '🏆 Patrocinadores',
+    metodologia: '📋 Metodología del Torneo'
   };
   document.getElementById('page-title').textContent = titles[section] || section;
   // Carga lazy por sección
@@ -862,7 +903,8 @@ function navTo(section) {
     carnets: () => loadCarnets(1), paises: loadPaises,
     sesiones: loadSesiones, configuracion: loadConfig,
     auditoria: () => loadAuditoria(1), sistema: loadSistema,
-    patrocinadores: () => { loadDuracionCarousel(); loadPatrocinadores(); }
+    patrocinadores: () => { loadDuracionCarousel(); loadPatrocinadores(); },
+    metodologia: loadMetodologia
   };
   if (loaders[section]) loaders[section]();
 }
@@ -1717,6 +1759,117 @@ async function eliminarPatrocinador(id, nombre) {
   const res = await api(`/api/admin/patrocinadores/${id}`, { method: 'DELETE' });
   if (res?.success) { toast('Patrocinador eliminado', 'success'); loadPatrocinadores(); }
   else toast(res?.message || 'Error al eliminar', 'error');
+}
+
+// ═══════════════════════════════════════════
+// METODOLOGÍA
+// ═══════════════════════════════════════════
+let _metodData = null;
+
+async function loadMetodologia() {
+  const res = await api('/api/admin/metodologia');
+  if (!res?.success) { toast('Error al cargar metodología', 'error'); return; }
+  _metodData = res.data || { TorneoNombre: '', TorneoSubtitulo: '', TorneoFecha: '', Secciones: [] };
+  document.getElementById('met-nombre').value    = _metodData.TorneoNombre    || '';
+  document.getElementById('met-subtitulo').value = _metodData.TorneoSubtitulo || '';
+  document.getElementById('met-fecha').value     = _metodData.TorneoFecha     || '';
+  if (!Array.isArray(_metodData.Secciones)) _metodData.Secciones = [];
+  renderSeccionesAdmin();
+}
+
+async function guardarInfoMetodologia() {
+  if (!_metodData) return;
+  const nombre = document.getElementById('met-nombre').value.trim();
+  if (!nombre) { toast('El nombre del torneo es requerido', 'error'); return; }
+  _metodData.TorneoNombre    = nombre;
+  _metodData.TorneoSubtitulo = document.getElementById('met-subtitulo').value.trim();
+  _metodData.TorneoFecha     = document.getElementById('met-fecha').value.trim();
+  await _saveMetodologia('Info guardada ✅');
+}
+
+async function _saveMetodologia(msg) {
+  const res = await api('/api/admin/metodologia', {
+    method: 'PUT',
+    body: JSON.stringify(_metodData)
+  });
+  if (res?.success) toast(msg, 'success');
+  else toast(res?.message || 'Error al guardar', 'error');
+}
+
+function renderSeccionesAdmin() {
+  const list = document.getElementById('met-secciones-list');
+  const secs  = _metodData.Secciones;
+  if (secs.length === 0) {
+    list.innerHTML = '<p style="color:var(--text-2);font-size:13px;text-align:center;padding:20px">Sin secciones. Pulsa ➕ Nueva Sección para agregar.</p>';
+    return;
+  }
+  list.innerHTML = secs.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <button class="btn btn-ghost btn-sm" ${i === 0 ? 'disabled' : ''} onclick="moverSeccion(${i},-1)" title="Subir">▲</button>
+        <button class="btn btn-ghost btn-sm" ${i === secs.length-1 ? 'disabled' : ''} onclick="moverSeccion(${i},1)" title="Bajar">▼</button>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escAdmin(s.titulo)}</div>
+        <div style="font-size:11px;color:var(--text-2)">Sección ${i+1} de ${secs.length}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="editarSeccion(${i})" title="Editar">✏️</button>
+      <button class="btn btn-ghost btn-sm" onclick="eliminarSeccion(${i})" title="Eliminar">🗑️</button>
+    </div>
+  `).join('');
+}
+
+function escAdmin(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function moverSeccion(idx, dir) {
+  const secs = _metodData.Secciones;
+  const target = idx + dir;
+  if (target < 0 || target >= secs.length) return;
+  [secs[idx], secs[target]] = [secs[target], secs[idx]];
+  renderSeccionesAdmin();
+  await _saveMetodologia('Orden actualizado ✅');
+}
+
+function agregarSeccion() {
+  _metodData.Secciones.push({ titulo: 'Nueva Sección', contenido: '<p>Contenido de la sección.</p>' });
+  editarSeccion(_metodData.Secciones.length - 1);
+}
+
+function editarSeccion(idx) {
+  const s = _metodData.Secciones[idx];
+  openModal(
+    `✏️ Editar Sección`,
+    `<div style="margin-bottom:12px">
+       <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Título *</label>
+       <input id="sec-edit-titulo" class="filter-select" style="width:100%" value="${escAdmin(s.titulo)}">
+     </div>
+     <div>
+       <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Contenido (HTML permitido)</label>
+       <textarea id="sec-edit-contenido" class="filter-select" style="width:100%;height:260px;resize:vertical;font-size:12px;font-family:monospace">${escAdmin(s.contenido)}</textarea>
+     </div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+     <button class="btn btn-primary" onclick="guardarSeccion(${idx})">💾 Guardar</button>`
+  );
+}
+
+async function guardarSeccion(idx) {
+  const titulo    = document.getElementById('sec-edit-titulo').value.trim();
+  const contenido = document.getElementById('sec-edit-contenido').value;
+  if (!titulo) { toast('El título es requerido', 'error'); return; }
+  _metodData.Secciones[idx] = { titulo, contenido };
+  closeModal();
+  renderSeccionesAdmin();
+  await _saveMetodologia('Sección guardada ✅');
+}
+
+async function eliminarSeccion(idx) {
+  const titulo = _metodData.Secciones[idx].titulo;
+  if (!confirm(`¿Eliminar la sección "${titulo}"?`)) return;
+  _metodData.Secciones.splice(idx, 1);
+  renderSeccionesAdmin();
+  await _saveMetodologia('Sección eliminada ✅');
 }
 
 // ═══════════════════════════════════════════

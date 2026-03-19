@@ -554,6 +554,53 @@ exports.togglePatrocinadorActivo = async (req, res) => {
 };
 
 // ══════════════════════════════════════════
+// METODOLOGÍA
+// ══════════════════════════════════════════
+
+exports.getMetodologiaPublico = async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT TorneoNombre, TorneoSubtitulo, TorneoFecha, Secciones FROM Metodologia WHERE Id = 1');
+        if (rows.length === 0) return res.json({ success: true, data: null });
+        const row = rows[0];
+        row.Secciones = typeof row.Secciones === 'string' ? JSON.parse(row.Secciones) : row.Secciones;
+        res.json({ success: true, data: row });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al obtener metodología', error: error.message });
+    }
+};
+
+exports.getMetodologia = async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM Metodologia WHERE Id = 1');
+        if (rows.length === 0) return res.json({ success: true, data: null });
+        const row = rows[0];
+        row.Secciones = typeof row.Secciones === 'string' ? JSON.parse(row.Secciones) : row.Secciones;
+        res.json({ success: true, data: row });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al obtener metodología', error: error.message });
+    }
+};
+
+exports.updateMetodologia = async (req, res) => {
+    try {
+        const { TorneoNombre, TorneoSubtitulo, TorneoFecha, Secciones } = req.body;
+        if (!TorneoNombre) return res.status(400).json({ success: false, message: 'Nombre del torneo es requerido' });
+        const seccionesJson = JSON.stringify(Array.isArray(Secciones) ? Secciones : []);
+        await db.query(
+            `INSERT INTO Metodologia (Id, TorneoNombre, TorneoSubtitulo, TorneoFecha, Secciones)
+             VALUES (1, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE TorneoNombre=VALUES(TorneoNombre), TorneoSubtitulo=VALUES(TorneoSubtitulo),
+             TorneoFecha=VALUES(TorneoFecha), Secciones=VALUES(Secciones)`,
+            [TorneoNombre.trim(), (TorneoSubtitulo || '').trim(), (TorneoFecha || '').trim(), seccionesJson]
+        );
+        await audit(req.usuario.Id, 'UPDATE_METODOLOGIA', 'Metodologia', 1, { TorneoNombre }, req.ip);
+        res.json({ success: true, message: 'Metodología actualizada exitosamente' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al actualizar metodología', error: error.message });
+    }
+};
+
+// ══════════════════════════════════════════
 // INFO DEL SISTEMA
 // ══════════════════════════════════════════
 exports.getSystemInfo = async (req, res) => {

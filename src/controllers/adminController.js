@@ -116,7 +116,9 @@ exports.getConfigPublica = async (req, res) => {
             // Homepage hero textos
             'hero_badge', 'hero_titulo_1', 'hero_titulo_highlight', 'hero_titulo_2', 'hero_subtitulo',
             // YouTube
-            'youtube_canal_id', 'youtube_video_default'
+            'youtube_canal_id', 'youtube_video_default',
+            // Patrocinadores
+            'patrocinadores_duracion'
         ];
         const [config] = await db.query(
             `SELECT Clave, Valor FROM Configuracion WHERE Clave IN (${clavesPublicas.map(() => '?').join(',')})`,

@@ -1265,22 +1265,27 @@ function updateCarousel(idx) {
     document.querySelectorAll('.carousel-image').forEach((el, i) => el.classList.toggle('active', i === idx));
     document.querySelectorAll('.dot').forEach((el, i) => el.classList.toggle('active', i === idx));
     clearInterval(autoTimer);
-    autoTimer = setInterval(() => updateCarousel(currentIdx + 1), 2800);
+    autoTimer = setInterval(() => updateCarousel(currentIdx + 1), window._carouselInterval || 3000);
 }
 
 async function cargarPatrocinadores() {
     try {
-        const res = await fetch('/api/patrocinadores');
-        const data = await res.json();
-        if (!data.success || !data.data.length) return;
+        const [res, cfgRes] = await Promise.all([
+            fetch('/api/patrocinadores').then(r => r.json()),
+            fetch('/api/config/publica').then(r => r.json())
+        ]);
+        if (!res.success || !res.data.length) return;
+
+        const duracion = parseInt(cfgRes?.data?.patrocinadores_duracion) || 3;
+        window._carouselInterval = duracion * 1000;
 
         const imgs = document.querySelector('.carousel-images');
         const dots = document.querySelector('.carousel-dots');
         imgs.innerHTML = '';
         dots.innerHTML = '';
-        carouselTotal = data.data.length;
+        carouselTotal = res.data.length;
 
-        data.data.forEach((p, i) => {
+        res.data.forEach((p, i) => {
             const div = document.createElement('div');
             div.className = 'carousel-image' + (i === 0 ? ' active' : '');
             div.dataset.index = i;
@@ -1308,7 +1313,7 @@ async function cargarPatrocinadores() {
 function mostrarPopup() {
     if (sessionStorage.getItem('popupMostrado') === 'true') return;
     document.getElementById('popup-modal').style.display = 'block';
-    autoTimer = setInterval(() => updateCarousel(currentIdx + 1), 2800);
+    autoTimer = setInterval(() => updateCarousel(currentIdx + 1), window._carouselInterval || 3000);
 }
 
 function cerrarPopup() {

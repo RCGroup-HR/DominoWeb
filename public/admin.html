@@ -633,6 +633,23 @@
     <section id="sec-patrocinadores" class="section">
       <div class="card" style="margin-bottom:20px">
         <div class="card-header">
+          <span class="card-title">⏱️ Tiempo de visualización por anuncio</span>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <div>
+              <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Segundos por imagen</label>
+              <input id="pat-duracion" class="filter-select" type="number" min="1" max="30" style="width:140px" placeholder="3">
+            </div>
+            <div style="align-self:flex-end">
+              <button class="btn btn-primary" onclick="guardarDuracion()">💾 Guardar</button>
+            </div>
+            <p style="font-size:12px;color:var(--text-2);align-self:flex-end;margin:0">Tiempo que cada patrocinador se muestra antes de cambiar automáticamente.</p>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
           <span class="card-title">➕ Agregar Patrocinador</span>
         </div>
         <div class="card-body">
@@ -845,7 +862,7 @@ function navTo(section) {
     carnets: () => loadCarnets(1), paises: loadPaises,
     sesiones: loadSesiones, configuracion: loadConfig,
     auditoria: () => loadAuditoria(1), sistema: loadSistema,
-    patrocinadores: loadPatrocinadores
+    patrocinadores: () => { loadDuracionCarousel(); loadPatrocinadores(); }
   };
   if (loaders[section]) loaders[section]();
 }
@@ -1535,6 +1552,23 @@ function auditColor(accion = '') {
 // PATROCINADORES
 // ═══════════════════════════════════════════
 let _patList = [];
+
+async function loadDuracionCarousel() {
+  const res = await api('/api/admin/config');
+  if (!res?.success) return;
+  const cfg = res.data.find(c => c.Clave === 'patrocinadores_duracion');
+  if (cfg) document.getElementById('pat-duracion').value = cfg.Valor;
+}
+
+async function guardarDuracion() {
+  const val = parseInt(document.getElementById('pat-duracion').value);
+  if (!val || val < 1 || val > 30) { toast('Ingresa un valor entre 1 y 30 segundos', 'warning'); return; }
+  const res = await api('/api/admin/config/patrocinadores_duracion', {
+    method: 'PUT', body: JSON.stringify({ valor: val })
+  });
+  if (res?.success) toast('Duración guardada ✅', 'success');
+  else toast(res?.message || 'Error al guardar', 'error');
+}
 
 async function loadPatrocinadores() {
   const tbody = document.getElementById('tb-patrocinadores');

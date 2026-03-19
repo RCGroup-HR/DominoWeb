@@ -1163,7 +1163,7 @@ async function cargarConfigPublica() {
         const d = await r.json();
         if (!d.success) return;
         const c = d.data;
-        const set = (id, val) => { if (val != null) document.getElementById(id).textContent = val; };
+        const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.textContent = val; };
         // Hero stats
         set('hs1-num', c.hero_stat1_num); set('hs1-lbl', c.hero_stat1_lbl);
         set('hs2-num', c.hero_stat2_num); set('hs2-lbl', c.hero_stat2_lbl);
@@ -1208,10 +1208,7 @@ async function detectarLive() {
 }
 
 function mostrarVideoDestacado() {
-    const p = [];
-    if (CONFIG.AUTOPLAY) p.push('autoplay=1');
-    if (CONFIG.MUTE) p.push('mute=1');
-    player.src = `https://www.youtube.com/embed/${CONFIG.DEFAULT_VIDEO_ID}?${p.join('&')}`;
+    player.src = `https://www.youtube.com/embed/${CONFIG.DEFAULT_VIDEO_ID}?autoplay=1&mute=1&rel=0&enablejsapi=1`;
     statusEl.innerHTML = '🎥 Video destacado';
     modoActual = 'video';
     btnLive.classList.add('show');

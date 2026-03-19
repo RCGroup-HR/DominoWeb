@@ -667,7 +667,7 @@
             <table>
               <thead>
                 <tr>
-                  <th style="width:60px">Orden</th>
+                  <th style="width:70px">Orden</th>
                   <th style="width:80px">Vista previa</th>
                   <th>Nombre</th>
                   <th>Link</th>
@@ -1534,18 +1534,27 @@ function auditColor(accion = '') {
 // ═══════════════════════════════════════════
 // PATROCINADORES
 // ═══════════════════════════════════════════
+let _patList = [];
+
 async function loadPatrocinadores() {
   const tbody = document.getElementById('tb-patrocinadores');
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px"><div class="spinner"></div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px"><div class="spinner"></div></td></tr>';
   const res = await api('/api/admin/patrocinadores');
   if (!res || !res.success) { toast('Error al cargar patrocinadores', 'error'); return; }
-  if (res.data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-2)">No hay patrocinadores registrados</td></tr>';
+  _patList = res.data;
+  if (_patList.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-2)">No hay patrocinadores registrados</td></tr>';
     return;
   }
-  tbody.innerHTML = res.data.map(p => `
+  tbody.innerHTML = _patList.map((p, i) => `
     <tr>
-      <td style="text-align:center;font-weight:700">${p.Orden}</td>
+      <td style="text-align:center">
+        <div style="display:flex;flex-direction:column;gap:2px;align-items:center">
+          <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:14px" onclick="moverPatrocinador(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="Subir">▲</button>
+          <span style="font-weight:700;font-size:13px">${p.Orden}</span>
+          <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:14px" onclick="moverPatrocinador(${i}, 1)" ${i === _patList.length - 1 ? 'disabled' : ''} title="Bajar">▼</button>
+        </div>
+      </td>
       <td style="text-align:center">
         <img src="${p.ImagenUrl}" alt="${p.Nombre}" style="width:52px;height:52px;object-fit:contain;border-radius:6px;border:1px solid var(--border)">
       </td>
@@ -1565,6 +1574,22 @@ async function loadPatrocinadores() {
       </td>
     </tr>
   `).join('');
+}
+
+async function moverPatrocinador(idx, dir) {
+  const a = _patList[idx];
+  const b = _patList[idx + dir];
+  if (!a || !b) return;
+
+  // Intercambiar órdenes
+  const ordenA = a.Orden;
+  const ordenB = b.Orden;
+
+  await Promise.all([
+    api(`/api/admin/patrocinadores/${a.Id}`, { method: 'PUT', body: JSON.stringify({ Nombre: a.Nombre, ImagenUrl: a.ImagenUrl, LinkUrl: a.LinkUrl, Orden: ordenB, Activo: a.Activo }) }),
+    api(`/api/admin/patrocinadores/${b.Id}`, { method: 'PUT', body: JSON.stringify({ Nombre: b.Nombre, ImagenUrl: b.ImagenUrl, LinkUrl: b.LinkUrl, Orden: ordenA, Activo: b.Activo }) })
+  ]);
+  loadPatrocinadores();
 }
 
 async function crearPatrocinador() {

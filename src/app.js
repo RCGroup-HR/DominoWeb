@@ -59,6 +59,9 @@ app.use('/api/youtube', youtubeRoutes);
 // Config pública (colores, nombre de app, etc.)
 app.get('/api/config/publica', adminController.getConfigPublica);
 
+// Patrocinadores públicos (carousel homepage)
+app.get('/api/patrocinadores', adminController.getPatrocinadoresPublico);
+
 // ──────────────────────────────────────────
 // 6. RUTAS DE AUTH Y CARNETS (protección JWT interna)
 // ──────────────────────────────────────────

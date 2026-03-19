@@ -431,6 +431,9 @@
     <div class="sb-item" data-section="sesiones">
       <span class="icon">🔐</span> Sesiones Activas
     </div>
+    <div class="sb-item" data-section="patrocinadores">
+      <span class="icon">🏆</span> Patrocinadores
+    </div>
     <div class="sb-group">Sistema</div>
     <div class="sb-item" data-section="configuracion">
       <span class="icon">⚙️</span> Configuración
@@ -626,6 +629,61 @@
     </section>
 
     <!-- ─── CONFIGURACIÓN ────────────────── -->
+    <!-- ─── PATROCINADORES ────────────────── -->
+    <section id="sec-patrocinadores" class="section">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="card-title">➕ Agregar Patrocinador</span>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div>
+              <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Nombre *</label>
+              <input id="pat-nombre" class="filter-select" style="width:100%" placeholder="Ej: Industrial Shal">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">URL de Imagen *</label>
+              <input id="pat-imagen" class="filter-select" style="width:100%" placeholder="https://... o patrocinadores/logo.jpg">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Link (Instagram / Web)</label>
+              <input id="pat-link" class="filter-select" style="width:100%" placeholder="https://www.instagram.com/...">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Orden</label>
+              <input id="pat-orden" class="filter-select" style="width:100%" type="number" min="1" placeholder="1">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="crearPatrocinador()">➕ Agregar Patrocinador</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🏆 Patrocinadores Registrados</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadPatrocinadores()">↺ Recargar</button>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:60px">Orden</th>
+                  <th style="width:80px">Vista previa</th>
+                  <th>Nombre</th>
+                  <th>Link</th>
+                  <th style="width:90px">Estado</th>
+                  <th style="width:130px">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tb-patrocinadores">
+                <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-2)">Cargando…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="sec-configuracion" class="section">
       <div class="config-tabs" id="config-tabs"></div>
       <div id="config-groups">
@@ -778,7 +836,7 @@ function navTo(section) {
     dashboard: '📊 Dashboard', usuarios: '👥 Usuarios', carnets: '🪪 Carnets',
     paises: '🌍 Países', sesiones: '🔐 Sesiones Activas',
     configuracion: '⚙️ Configuración del Sistema', auditoria: '📋 Logs de Auditoría',
-    sistema: '🖥️ Información del Sistema'
+    sistema: '🖥️ Información del Sistema', patrocinadores: '🏆 Patrocinadores'
   };
   document.getElementById('page-title').textContent = titles[section] || section;
   // Carga lazy por sección
@@ -786,7 +844,8 @@ function navTo(section) {
     dashboard: loadDashboard, usuarios: () => loadUsuarios(1),
     carnets: () => loadCarnets(1), paises: loadPaises,
     sesiones: loadSesiones, configuracion: loadConfig,
-    auditoria: () => loadAuditoria(1), sistema: loadSistema
+    auditoria: () => loadAuditoria(1), sistema: loadSistema,
+    patrocinadores: loadPatrocinadores
   };
   if (loaders[section]) loaders[section]();
 }
@@ -1470,6 +1529,135 @@ function auditColor(accion = '') {
   if (accion.includes('APROBAR') || accion.includes('ACTIVAR') || accion.includes('LOGIN')) return 'approved';
   if (accion.includes('RECHAZAR') || accion.includes('ELIMINAR') || accion.includes('REVOCAR') || accion.includes('DESACTIVAR')) return 'rejected';
   return 'pending';
+}
+
+// ═══════════════════════════════════════════
+// PATROCINADORES
+// ═══════════════════════════════════════════
+async function loadPatrocinadores() {
+  const tbody = document.getElementById('tb-patrocinadores');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px"><div class="spinner"></div></td></tr>';
+  const res = await api('/api/admin/patrocinadores');
+  if (!res || !res.success) { toast('Error al cargar patrocinadores', 'error'); return; }
+  if (res.data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-2)">No hay patrocinadores registrados</td></tr>';
+    return;
+  }
+  tbody.innerHTML = res.data.map(p => `
+    <tr>
+      <td style="text-align:center;font-weight:700">${p.Orden}</td>
+      <td style="text-align:center">
+        <img src="${p.ImagenUrl}" alt="${p.Nombre}" style="width:52px;height:52px;object-fit:contain;border-radius:6px;border:1px solid var(--border)">
+      </td>
+      <td><strong>${p.Nombre}</strong></td>
+      <td style="font-size:12px;color:var(--text-2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${p.LinkUrl ? `<a href="${p.LinkUrl}" target="_blank" rel="noopener" style="color:var(--primary)">🔗 ${p.LinkUrl}</a>` : '<span style="color:var(--text-2)">—</span>'}
+      </td>
+      <td style="text-align:center">
+        <span class="badge ${p.Activo ? 'badge-success' : 'badge-danger'}">${p.Activo ? 'Activo' : 'Inactivo'}</span>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="editarPatrocinador(${p.Id})" title="Editar">✏️</button>
+          <button class="btn btn-ghost btn-sm" onclick="togglePatrocinador(${p.Id})" title="${p.Activo ? 'Desactivar' : 'Activar'}">${p.Activo ? '🔴' : '🟢'}</button>
+          <button class="btn btn-ghost btn-sm" onclick="eliminarPatrocinador(${p.Id}, '${p.Nombre.replace(/'/g,"\\'")}' )" title="Eliminar">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function crearPatrocinador() {
+  const nombre = document.getElementById('pat-nombre').value.trim();
+  const imagen = document.getElementById('pat-imagen').value.trim();
+  const link   = document.getElementById('pat-link').value.trim();
+  const orden  = document.getElementById('pat-orden').value || 99;
+  if (!nombre || !imagen) { toast('Nombre e imagen son requeridos', 'warning'); return; }
+  const res = await api('/api/admin/patrocinadores', {
+    method: 'POST', body: JSON.stringify({ Nombre: nombre, ImagenUrl: imagen, LinkUrl: link, Orden: orden })
+  });
+  if (res?.success) {
+    toast('Patrocinador creado ✅', 'success');
+    document.getElementById('pat-nombre').value = '';
+    document.getElementById('pat-imagen').value = '';
+    document.getElementById('pat-link').value   = '';
+    document.getElementById('pat-orden').value  = '';
+    loadPatrocinadores();
+  } else {
+    toast(res?.message || 'Error al crear', 'error');
+  }
+}
+
+async function editarPatrocinador(id) {
+  const res = await api('/api/admin/patrocinadores');
+  if (!res?.success) return;
+  const p = res.data.find(x => x.Id === id);
+  if (!p) return;
+  openModal('✏️ Editar Patrocinador',
+    `<div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Nombre *</label>
+        <input id="ep-nombre" class="filter-select" style="width:100%" value="${p.Nombre}">
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">URL de Imagen *</label>
+        <input id="ep-imagen" class="filter-select" style="width:100%" value="${p.ImagenUrl}">
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Link (Instagram / Web)</label>
+        <input id="ep-link" class="filter-select" style="width:100%" value="${p.LinkUrl || ''}">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Orden</label>
+          <input id="ep-orden" class="filter-select" style="width:100%" type="number" min="1" value="${p.Orden}">
+        </div>
+        <div>
+          <label style="font-size:13px;font-weight:600;color:var(--text-2);display:block;margin-bottom:4px">Estado</label>
+          <select id="ep-activo" class="filter-select" style="width:100%">
+            <option value="1" ${p.Activo ? 'selected' : ''}>Activo</option>
+            <option value="0" ${!p.Activo ? 'selected' : ''}>Inactivo</option>
+          </select>
+        </div>
+      </div>
+      <div id="ep-preview" style="text-align:center;padding:8px">
+        <img src="${p.ImagenUrl}" style="max-height:100px;object-fit:contain;border-radius:8px" onerror="this.style.display='none'">
+      </div>
+    </div>`,
+    `<button class="btn btn-primary" onclick="guardarPatrocinador(${id})">💾 Guardar cambios</button>
+     <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>`
+  );
+  document.getElementById('ep-imagen').addEventListener('input', e => {
+    const img = document.querySelector('#ep-preview img');
+    img.src = e.target.value; img.style.display = '';
+  });
+}
+
+async function guardarPatrocinador(id) {
+  const nombre = document.getElementById('ep-nombre').value.trim();
+  const imagen = document.getElementById('ep-imagen').value.trim();
+  const link   = document.getElementById('ep-link').value.trim();
+  const orden  = document.getElementById('ep-orden').value || 99;
+  const activo = document.getElementById('ep-activo').value;
+  if (!nombre || !imagen) { toast('Nombre e imagen son requeridos', 'warning'); return; }
+  const res = await api(`/api/admin/patrocinadores/${id}`, {
+    method: 'PUT', body: JSON.stringify({ Nombre: nombre, ImagenUrl: imagen, LinkUrl: link, Orden: orden, Activo: activo === '1' })
+  });
+  if (res?.success) { toast('Guardado ✅', 'success'); closeModal(); loadPatrocinadores(); }
+  else toast(res?.message || 'Error al guardar', 'error');
+}
+
+async function togglePatrocinador(id) {
+  const res = await api(`/api/admin/patrocinadores/${id}/toggle`, { method: 'PATCH' });
+  if (res?.success) { toast(res.message, 'success'); loadPatrocinadores(); }
+  else toast('Error', 'error');
+}
+
+async function eliminarPatrocinador(id, nombre) {
+  if (!confirm(`¿Eliminar el patrocinador "${nombre}"? Esta acción no se puede deshacer.`)) return;
+  const res = await api(`/api/admin/patrocinadores/${id}`, { method: 'DELETE' });
+  if (res?.success) { toast('Patrocinador eliminado', 'success'); loadPatrocinadores(); }
+  else toast(res?.message || 'Error al eliminar', 'error');
 }
 
 // ═══════════════════════════════════════════

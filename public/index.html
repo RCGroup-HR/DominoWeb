@@ -125,6 +125,8 @@ body {
     transform: translateY(-1px);
 }
 
+.nav-admin{color:rgba(255,255,255,.32)!important;padding:6px 9px!important;font-size:1.05em!important;line-height:1;border-radius:7px;margin-left:4px;text-decoration:none!important;}.nav-admin:hover{color:rgba(255,255,255,.85)!important;background:rgba(255,255,255,.09)!important;}
+
 /* =========================================================
    HERO
    ========================================================= */
@@ -790,18 +792,19 @@ body {
 }
 
 .popup-close {
-    position: absolute; right: -14px; top: -14px;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white; border: none; border-radius: 50%;
-    width: 40px; height: 40px; font-size: 18px;
+    position: absolute; right: 12px; top: 12px;
+    background: rgba(255,255,255,0.18);
+    color: white; border: 2px solid rgba(255,255,255,0.5); border-radius: 50%;
+    width: 34px; height: 34px; font-size: 16px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 14px rgba(239,68,68,0.4); transition: all 0.2s; z-index: 10;
+    transition: all 0.2s; z-index: 10; line-height: 1;
 }
-.popup-close:hover { transform: scale(1.1); }
+.popup-close:hover { background: rgba(255,255,255,0.32); transform: scale(1.1); }
 
 .popup-header {
     background: linear-gradient(135deg, var(--green-mid), var(--green-dark));
     color: white; padding: 18px 24px; text-align: center;
+    position: relative;
 }
 .popup-header h3 { margin:0; font-size:1.05em; font-weight:700; }
 
@@ -923,44 +926,12 @@ body {
     <div class="popup-content">
         <div class="popup-header">
             <h3>🏆 Patrocinadores de ScoreDomino.com</h3>
+            <button class="popup-close" onclick="cerrarPopup()">✕</button>
         </div>
-        <button class="popup-close" onclick="cerrarPopup()">✕</button>
 
         <div class="carousel-container">
-            <div class="carousel-images">
-                <div class="carousel-image active" data-index="0">
-                    <a href="https://www.instagram.com/industrialshal_/" target="_blank" rel="noopener noreferrer" class="carousel-link">
-                        <img src="patrocinadores/logo.jpg" alt="Industrial Shal">
-                    </a>
-                </div>
-                <div class="carousel-image" data-index="1">
-                    <a href="https://www.instagram.com/movimientojugadores/" target="_blank" rel="noopener noreferrer" class="carousel-link">
-                        <img src="patrocinadores/logo5.png" alt="Movimiento Jugadores">
-                    </a>
-                </div>
-                <div class="carousel-image" data-index="2">
-                    <a href="https://www.instagram.com/tj.multiservice/" target="_blank" rel="noopener noreferrer" class="carousel-link">
-                        <img src="patrocinadores/logo4.jpg" alt="TJ Multiservice">
-                    </a>
-                </div>
-                <div class="carousel-image" data-index="3">
-                    <a href="https://www.instagram.com/brisasdelolimpo/" target="_blank" rel="noopener noreferrer" class="carousel-link">
-                        <img src="patrocinadores/logo2.jpg" alt="Brisas del Olimpo">
-                    </a>
-                </div>
-                <div class="carousel-image" data-index="4">
-                    <a href="https://www.instagram.com/ronniehdez/" target="_blank" rel="noopener noreferrer" class="carousel-link">
-                        <img src="patrocinadores/logo3.png" alt="Ronnie Hdez">
-                    </a>
-                </div>
-            </div>
-            <div class="carousel-dots">
-                <div class="dot active" data-index="0"></div>
-                <div class="dot" data-index="1"></div>
-                <div class="dot" data-index="2"></div>
-                <div class="dot" data-index="3"></div>
-                <div class="dot" data-index="4"></div>
-            </div>
+            <div class="carousel-images"></div>
+            <div class="carousel-dots"></div>
             <button class="carousel-btn prev">❮</button>
             <button class="carousel-btn next">❯</button>
         </div>
@@ -984,6 +955,7 @@ body {
         <li><a href="comparar-jugadores.html">Comparar</a></li>
         <li><a href="metodologia-scoredomino.html">Metodología</a></li>
         <li><a href="solicitar-carnet.html" class="nav-cta">🎫 Carnet</a></li>
+        <li><a href="admin.html" class="nav-admin" title="Panel Admin">⚙️</a></li>
     </ul>
 </nav>
 
@@ -994,15 +966,15 @@ body {
 
     <div class="hero-badge">
         <span class="hero-badge-dot"></span>
-        Plataforma Oficial · Temporada 2025
+        <span id="hero-badge-text">Plataforma Oficial · Temporada 2025</span>
     </div>
 
     <h1 class="hero-title">
-        El ranking de dominó<br>
-        <span class="highlight">más completo</span> del mundo
+        <span id="hero-titulo-1">El ranking de dominó</span><br>
+        <span class="highlight" id="hero-titulo-highlight">más completo</span> <span id="hero-titulo-2">del mundo</span>
     </h1>
 
-    <p class="hero-subtitle">
+    <p class="hero-subtitle" id="hero-subtitulo">
         Estadísticas en tiempo real, clasificaciones oficiales, comparativas de jugadores y torneos internacionales — todo en un solo lugar.
     </p>
 
@@ -1170,6 +1142,20 @@ body {
 
 <!-- ===== SCRIPTS ===== -->
 <script>
+// ── Extrae video ID de URL de YouTube o ID directo ────────
+function extraerVideoId(valor) {
+    if (!valor) return null;
+    const v = valor.trim();
+    const m1 = v.match(/[?&]v=([A-Za-z0-9_-]{11})/);
+    if (m1) return m1[1];
+    const m2 = v.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
+    if (m2) return m2[1];
+    const m3 = v.match(/embed\/([A-Za-z0-9_-]{11})/);
+    if (m3) return m3[1];
+    if (/^[A-Za-z0-9_-]{11}$/.test(v)) return v;
+    return null;
+}
+
 // ── Config pública desde admin ────────────────────────────
 async function cargarConfigPublica() {
     try {
@@ -1184,9 +1170,18 @@ async function cargarConfigPublica() {
         if (c.hero_stat2_lbl) { document.getElementById('hs2-lbl').textContent = c.hero_stat2_lbl; }
         if (c.hero_stat3_num) { document.getElementById('hs3-num').textContent = c.hero_stat3_num; }
         if (c.hero_stat3_lbl) { document.getElementById('hs3-lbl').textContent = c.hero_stat3_lbl; }
+        // Hero textos
+        if (c.hero_badge)            document.getElementById('hero-badge-text').textContent = c.hero_badge;
+        if (c.hero_titulo_1)         document.getElementById('hero-titulo-1').textContent = c.hero_titulo_1;
+        if (c.hero_titulo_highlight) document.getElementById('hero-titulo-highlight').textContent = c.hero_titulo_highlight;
+        if (c.hero_titulo_2)         document.getElementById('hero-titulo-2').textContent = c.hero_titulo_2;
+        if (c.hero_subtitulo)        document.getElementById('hero-subtitulo').textContent = c.hero_subtitulo;
         // YouTube
-        if (c.youtube_canal_id)     CONFIG.CHANNEL_ID       = c.youtube_canal_id;
-        if (c.youtube_video_default) CONFIG.DEFAULT_VIDEO_ID = c.youtube_video_default;
+        if (c.youtube_canal_id)      CONFIG.CHANNEL_ID = c.youtube_canal_id;
+        if (c.youtube_video_default) {
+            const vid = extraerVideoId(c.youtube_video_default);
+            if (vid) CONFIG.DEFAULT_VIDEO_ID = vid;
+        }
     } catch(e) { console.warn('Config pública no disponible:', e.message); }
 }
 
@@ -1257,19 +1252,57 @@ async function init() {
 
 window.addEventListener('load', init);
 
-// ── Carousel ────────────────────────────────────────────────
+// ── Carousel (dinámico) ──────────────────────────────────────
 let currentIdx = 0;
-const total = 5;
+let carouselTotal = 0;
 let autoTimer = null;
 
 function updateCarousel(idx) {
-    if (idx < 0) idx = total - 1;
-    if (idx >= total) idx = 0;
+    if (carouselTotal === 0) return;
+    if (idx < 0) idx = carouselTotal - 1;
+    if (idx >= carouselTotal) idx = 0;
     currentIdx = idx;
     document.querySelectorAll('.carousel-image').forEach((el, i) => el.classList.toggle('active', i === idx));
     document.querySelectorAll('.dot').forEach((el, i) => el.classList.toggle('active', i === idx));
     clearInterval(autoTimer);
     autoTimer = setInterval(() => updateCarousel(currentIdx + 1), 2800);
+}
+
+async function cargarPatrocinadores() {
+    try {
+        const res = await fetch('/api/patrocinadores');
+        const data = await res.json();
+        if (!data.success || !data.data.length) return;
+
+        const imgs = document.querySelector('.carousel-images');
+        const dots = document.querySelector('.carousel-dots');
+        imgs.innerHTML = '';
+        dots.innerHTML = '';
+        carouselTotal = data.data.length;
+
+        data.data.forEach((p, i) => {
+            const div = document.createElement('div');
+            div.className = 'carousel-image' + (i === 0 ? ' active' : '');
+            div.dataset.index = i;
+            if (p.LinkUrl) {
+                div.innerHTML = `<a href="${p.LinkUrl}" target="_blank" rel="noopener noreferrer" class="carousel-link"><img src="${p.ImagenUrl}" alt="${p.Nombre}"></a>`;
+            } else {
+                div.innerHTML = `<div class="carousel-link"><img src="${p.ImagenUrl}" alt="${p.Nombre}"></div>`;
+            }
+            imgs.appendChild(div);
+
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.dataset.index = i;
+            dot.addEventListener('click', () => updateCarousel(i));
+            dots.appendChild(dot);
+        });
+
+        document.querySelector('.carousel-btn.next').addEventListener('click', () => updateCarousel(currentIdx + 1));
+        document.querySelector('.carousel-btn.prev').addEventListener('click', () => updateCarousel(currentIdx - 1));
+    } catch (e) {
+        console.warn('No se pudieron cargar patrocinadores:', e.message);
+    }
 }
 
 function mostrarPopup() {
@@ -1287,13 +1320,10 @@ function cerrarPopup() {
 window.addEventListener('click', e => { if (e.target === document.getElementById('popup-modal')) cerrarPopup(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarPopup(); });
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.carousel-btn.next').addEventListener('click', () => updateCarousel(currentIdx + 1));
-    document.querySelector('.carousel-btn.prev').addEventListener('click', () => updateCarousel(currentIdx - 1));
-    document.querySelectorAll('.dot').forEach(d => d.addEventListener('click', e => updateCarousel(+e.target.dataset.index)));
+window.addEventListener('load', async () => {
+    await cargarPatrocinadores();
+    mostrarPopup();
 });
-
-window.addEventListener('load', () => mostrarPopup());
 
 // ── Nav glass effect ─────────────────────────────────────────
 window.addEventListener('scroll', () => {

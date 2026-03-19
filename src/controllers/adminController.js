@@ -113,6 +113,8 @@ exports.getConfigPublica = async (req, res) => {
             'hero_stat1_num', 'hero_stat1_lbl',
             'hero_stat2_num', 'hero_stat2_lbl',
             'hero_stat3_num', 'hero_stat3_lbl',
+            // Homepage hero textos
+            'hero_badge', 'hero_titulo_1', 'hero_titulo_highlight', 'hero_titulo_2', 'hero_subtitulo',
             // YouTube
             'youtube_canal_id', 'youtube_video_default'
         ];
@@ -455,6 +457,97 @@ exports.getAuditLogs = async (req, res) => {
     } catch (error) {
         console.error('Error getAuditLogs:', error);
         res.status(500).json({ success: false, message: 'Error al obtener logs', error: error.message });
+    }
+};
+
+// ══════════════════════════════════════════
+// PATROCINADORES
+// ══════════════════════════════════════════
+
+// Obtener todos (admin) o solo activos (público)
+exports.getPatrocinadores = async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT Id, Nombre, ImagenUrl, LinkUrl, Orden, Activo FROM Patrocinadores ORDER BY Orden ASC, Id ASC'
+        );
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al obtener patrocinadores', error: error.message });
+    }
+};
+
+exports.getPatrocinadoresPublico = async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT Nombre, ImagenUrl, LinkUrl, Orden FROM Patrocinadores WHERE Activo = 1 ORDER BY Orden ASC, Id ASC'
+        );
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error', error: error.message });
+    }
+};
+
+exports.createPatrocinador = async (req, res) => {
+    try {
+        const { Nombre, ImagenUrl, LinkUrl, Orden } = req.body;
+        if (!Nombre || !ImagenUrl) {
+            return res.status(400).json({ success: false, message: 'Nombre e imagen son requeridos' });
+        }
+        const orden = parseInt(Orden) || 99;
+        const [result] = await db.query(
+            'INSERT INTO Patrocinadores (Nombre, ImagenUrl, LinkUrl, Orden, Activo) VALUES (?, ?, ?, ?, 1)',
+            [Nombre.trim(), ImagenUrl.trim(), LinkUrl?.trim() || null, orden]
+        );
+        await audit(req.usuario.Id, 'CREATE_PATROCINADOR', 'Patrocinadores', result.insertId, { Nombre }, req.ip);
+        res.status(201).json({ success: true, message: 'Patrocinador creado', data: { Id: result.insertId } });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al crear patrocinador', error: error.message });
+    }
+};
+
+exports.updatePatrocinador = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { Nombre, ImagenUrl, LinkUrl, Orden, Activo } = req.body;
+        if (!Nombre || !ImagenUrl) {
+            return res.status(400).json({ success: false, message: 'Nombre e imagen son requeridos' });
+        }
+        const [result] = await db.query(
+            'UPDATE Patrocinadores SET Nombre=?, ImagenUrl=?, LinkUrl=?, Orden=?, Activo=? WHERE Id=?',
+            [Nombre.trim(), ImagenUrl.trim(), LinkUrl?.trim() || null, parseInt(Orden) || 99, Activo ? 1 : 0, id]
+        );
+        if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Patrocinador no encontrado' });
+        await audit(req.usuario.Id, 'UPDATE_PATROCINADOR', 'Patrocinadores', id, { Nombre }, req.ip);
+        res.json({ success: true, message: 'Patrocinador actualizado' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al actualizar patrocinador', error: error.message });
+    }
+};
+
+exports.deletePatrocinador = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rows] = await db.query('SELECT Nombre FROM Patrocinadores WHERE Id=?', [id]);
+        if (rows.length === 0) return res.status(404).json({ success: false, message: 'Patrocinador no encontrado' });
+        await db.query('DELETE FROM Patrocinadores WHERE Id=?', [id]);
+        await audit(req.usuario.Id, 'DELETE_PATROCINADOR', 'Patrocinadores', id, { Nombre: rows[0].Nombre }, req.ip);
+        res.json({ success: true, message: 'Patrocinador eliminado' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al eliminar patrocinador', error: error.message });
+    }
+};
+
+exports.togglePatrocinadorActivo = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [rows] = await db.query('SELECT Nombre, Activo FROM Patrocinadores WHERE Id=?', [id]);
+        if (rows.length === 0) return res.status(404).json({ success: false, message: 'Patrocinador no encontrado' });
+        const nuevo = rows[0].Activo ? 0 : 1;
+        await db.query('UPDATE Patrocinadores SET Activo=? WHERE Id=?', [nuevo, id]);
+        await audit(req.usuario.Id, nuevo ? 'ACTIVAR_PATROCINADOR' : 'DESACTIVAR_PATROCINADOR', 'Patrocinadores', id, { Nombre: rows[0].Nombre }, req.ip);
+        res.json({ success: true, message: `Patrocinador ${nuevo ? 'activado' : 'desactivado'}` });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error', error: error.message });
     }
 };
 

@@ -35,6 +35,13 @@ router.post('/paises',             ctrl.createPais);
 router.put('/paises/:id',          ctrl.updatePais);
 router.patch('/paises/:id/toggle', ctrl.togglePaisActivo);
 
+// ── Patrocinadores ─────────────────────────
+router.get('/patrocinadores',                    ctrl.getPatrocinadores);
+router.post('/patrocinadores',                   ctrl.createPatrocinador);
+router.put('/patrocinadores/:id',                ctrl.updatePatrocinador);
+router.delete('/patrocinadores/:id',             ctrl.deletePatrocinador);
+router.patch('/patrocinadores/:id/toggle',       ctrl.togglePatrocinadorActivo);
+
 // ── Auditoría ──────────────────────────────
 router.get('/audit', ctrl.getAuditLogs);
 

@@ -36,6 +36,7 @@ const colectivoController = {
 
       const [rows] = await pool.query(`
         SELECT
+          Ranking,
           ID_Jugador,
           NJugador,
           Equipo,
@@ -49,7 +50,7 @@ const colectivoController = {
           Pais
         FROM RIndividual
         WHERE Equipo = ?
-        ORDER BY PtsObtenidos DESC, Efectividad DESC
+        ORDER BY Ranking ASC
       `, [nombre]);
 
       res.json({

@@ -108,7 +108,13 @@ exports.getConfigPublica = async (req, res) => {
             'color_primario', 'color_secundario', 'logo_url', 'favicon_url',
             'banner_activo', 'banner_mensaje', 'banner_tipo',
             'modo_mantenimiento', 'mensaje_mantenimiento',
-            'registro_habilitado', 'ranking_visible_publico', 'contacto_email'
+            'registro_habilitado', 'ranking_visible_publico', 'contacto_email',
+            // Homepage hero stats
+            'hero_stat1_num', 'hero_stat1_lbl',
+            'hero_stat2_num', 'hero_stat2_lbl',
+            'hero_stat3_num', 'hero_stat3_lbl',
+            // YouTube
+            'youtube_canal_id', 'youtube_video_default'
         ];
         const [config] = await db.query(
             `SELECT Clave, Valor FROM Configuracion WHERE Clave IN (${clavesPublicas.map(() => '?').join(',')})`,

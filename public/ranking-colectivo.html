@@ -112,6 +112,21 @@ body{padding-top:70px!important;}
             color: #9ca3af;
             font-style: normal;
         }
+        tr.member-row .member-rank {
+            text-align: center;
+            font-size: 0.8em;
+            font-weight: 700;
+            color: #6b7280;
+        }
+        tr.member-row .member-rank span {
+            display: inline-block;
+            background: #f1f5f9;
+            color: #374151;
+            border-radius: 50%;
+            width: 26px; height: 26px;
+            line-height: 26px;
+            font-size: 0.82em;
+        }
 
         @keyframes fadeInRow {
             from { opacity: 0; transform: translateY(-3px); }
@@ -416,7 +431,7 @@ body{padding-top:70px!important;}
                 return `
                     <tr class="member-row${esUltimo ? ' member-last' : ''}" data-parent="${equipoId}">
                         <td></td>
-                        <td></td>
+                        <td class="member-rank"><span>${j.Ranking || '-'}</span></td>
                         <td class="member-name">${escapeHtml(j.NJugador || '-')}</td>
                         <td>${bandera}</td>
                         <td>${escapeHtml(j.Pais || '-')}</td>

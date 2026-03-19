@@ -1,6 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
+const pool = require('../config/database');
+
+/**
+ * Obtiene el valor de una clave de configuración desde la BD
+ */
+async function getConfigValue(clave) {
+    try {
+        const [rows] = await pool.query(
+            'SELECT Valor FROM Configuracion WHERE Clave = ?', [clave]
+        );
+        return rows.length > 0 ? rows[0].Valor : null;
+    } catch { return null; }
+}
 
 /**
  * @route GET /api/youtube/check-live
@@ -10,20 +23,21 @@ const fetch = require('node-fetch');
 router.get('/check-live', async (req, res) => {
     try {
         const { channelId } = req.query;
-        
+
         if (!channelId) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 error: 'channelId es requerido',
-                isLive: false 
+                isLive: false
             });
         }
 
-        const apiKey = process.env.YOUTUBE_API_KEY;
+        // Leer API key desde env o desde la BD
+        const apiKey = process.env.YOUTUBE_API_KEY || await getConfigValue('youtube_api_key');
         if (!apiKey) {
-            console.error('❌ YOUTUBE_API_KEY no configurada en .env');
-            return res.status(500).json({ 
-                error: 'Configuración del servidor incompleta',
-                isLive: false 
+            console.error('❌ YOUTUBE_API_KEY no configurada');
+            return res.status(500).json({
+                error: 'Configuración del servidor incompleta — configura youtube_api_key en el panel admin',
+                isLive: false
             });
         }
 

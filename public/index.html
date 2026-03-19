@@ -1163,19 +1163,17 @@ async function cargarConfigPublica() {
         const d = await r.json();
         if (!d.success) return;
         const c = d.data;
+        const set = (id, val) => { if (val != null) document.getElementById(id).textContent = val; };
         // Hero stats
-        if (c.hero_stat1_num) { document.getElementById('hs1-num').textContent = c.hero_stat1_num; }
-        if (c.hero_stat1_lbl) { document.getElementById('hs1-lbl').textContent = c.hero_stat1_lbl; }
-        if (c.hero_stat2_num) { document.getElementById('hs2-num').textContent = c.hero_stat2_num; }
-        if (c.hero_stat2_lbl) { document.getElementById('hs2-lbl').textContent = c.hero_stat2_lbl; }
-        if (c.hero_stat3_num) { document.getElementById('hs3-num').textContent = c.hero_stat3_num; }
-        if (c.hero_stat3_lbl) { document.getElementById('hs3-lbl').textContent = c.hero_stat3_lbl; }
+        set('hs1-num', c.hero_stat1_num); set('hs1-lbl', c.hero_stat1_lbl);
+        set('hs2-num', c.hero_stat2_num); set('hs2-lbl', c.hero_stat2_lbl);
+        set('hs3-num', c.hero_stat3_num); set('hs3-lbl', c.hero_stat3_lbl);
         // Hero textos
-        if (c.hero_badge)            document.getElementById('hero-badge-text').textContent = c.hero_badge;
-        if (c.hero_titulo_1)         document.getElementById('hero-titulo-1').textContent = c.hero_titulo_1;
-        if (c.hero_titulo_highlight) document.getElementById('hero-titulo-highlight').textContent = c.hero_titulo_highlight;
-        if (c.hero_titulo_2)         document.getElementById('hero-titulo-2').textContent = c.hero_titulo_2;
-        if (c.hero_subtitulo)        document.getElementById('hero-subtitulo').textContent = c.hero_subtitulo;
+        set('hero-badge-text',       c.hero_badge);
+        set('hero-titulo-1',         c.hero_titulo_1);
+        set('hero-titulo-highlight', c.hero_titulo_highlight);
+        set('hero-titulo-2',         c.hero_titulo_2);
+        set('hero-subtitulo',        c.hero_subtitulo);
         // YouTube
         if (c.youtube_canal_id)      CONFIG.CHANNEL_ID = c.youtube_canal_id;
         if (c.youtube_video_default) {

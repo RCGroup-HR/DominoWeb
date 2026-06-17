@@ -90,7 +90,11 @@ input:focus,select:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rg
   letter-spacing:2px;padding:16px;border-radius:12px;text-align:center;margin:14px 0}
 /* SEARCH RESULTS */
 .results{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:18px}
-.team-card{border:1px solid var(--gray-200);border-radius:12px;padding:15px;background:#fff}
+.team-card{border:1px solid var(--gray-200);border-radius:12px;padding:15px;background:#fff;transition:.2s}
+.team-card:hover{border-color:var(--green-light);box-shadow:0 6px 18px rgba(22,163,74,.1)}
+.team-toggle{width:100%;margin-top:12px;border:none;border-top:1px solid var(--gray-100);background:none;cursor:pointer;font-family:var(--font);font-size:.85em;font-weight:600;color:var(--green-base);display:flex;align-items:center;justify-content:space-between;padding:10px 0 0}
+.team-toggle .chev{transition:transform .2s}
+.team-toggle.open .chev{transform:rotate(180deg)}
 .badge{font-size:.72em;font-weight:700;padding:4px 10px;border-radius:50px;white-space:nowrap}
 .badge.apr{background:#dcfce7;color:#15803d}
 .badge.pen{background:#fef3c7;color:#b45309}
@@ -384,6 +388,12 @@ const val = id => document.getElementById(id).value;
 // ── Buscar equipos ──
 let searchTimer;
 function debouncedSearch(){ clearTimeout(searchTimer); searchTimer = setTimeout(buscarEquipos, 300); }
+function toggleTeam(btn){
+  const box = btn.nextElementSibling;
+  const abierto = box.style.display !== 'none';
+  box.style.display = abierto ? 'none' : 'block';
+  btn.classList.toggle('open', !abierto);
+}
 async function buscarEquipos() {
   const cont = document.getElementById('search-results');
   const sp = document.getElementById('search-spinner');
@@ -397,8 +407,10 @@ async function buscarEquipos() {
     sp.classList.add('hidden');
     if (!d.data || !d.data.length) { cont.innerHTML = '<p style="color:var(--gray-400);padding:20px">No se encontraron equipos.</p>'; return; }
     cont.innerHTML = d.data.map(e => {
-      const jug = (e.Jugadores||[]).slice(0,4).map(n=>`<span class="tag">${n.split(' ')[0]}</span>`).join('');
-      const extra = (e.TotalJugadores>4)?`<span class="tag">+${e.TotalJugadores-4}</span>`:'';
+      const players = (e.Jugadores||[]);
+      const list = players.length
+        ? players.map((n,i)=>`<span class="tag">${i+1}. ${n}</span>`).join('')
+        : '<span style="color:var(--gray-400);font-size:.85em">Sin jugadores registrados</span>';
       const badge = e.Estado==='aprobado'?'<span class="badge apr">Aprobado</span>':'<span class="badge pen">Pendiente</span>';
       return `<div class="team-card">
         <div style="display:flex;justify-content:space-between;gap:8px">
@@ -406,10 +418,13 @@ async function buscarEquipos() {
           <div style="font-size:.8em;color:var(--gray-500);margin-top:2px">${[e.Pais,e.Club].filter(Boolean).join(' · ')||'—'}</div></div>
           ${badge}
         </div>
-        <div style="border-top:1px solid var(--gray-100);margin-top:12px;padding-top:10px">
-          <div style="font-size:.72em;color:var(--gray-400);text-transform:uppercase;margin-bottom:6px">${e.TotalJugadores} jugadores</div>
-          <div style="display:flex;flex-wrap:wrap;gap:5px">${jug}${extra}</div>
-        </div></div>`;
+        <button class="team-toggle" onclick="toggleTeam(this)">
+          <span>👥 Ver ${e.TotalJugadores} jugadores</span><span class="chev">▾</span>
+        </button>
+        <div class="team-players" style="display:none">
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">${list}</div>
+        </div>
+      </div>`;
     }).join('');
   } catch(e) { sp.classList.add('hidden'); cont.innerHTML='<p style="color:#b91c1c;padding:20px">Error al buscar.</p>'; }
 }

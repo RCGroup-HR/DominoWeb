@@ -12,8 +12,11 @@ const colectivoRoutes = require('./routes/colectivoRoutes');
 const youtubeRoutes   = require('./routes/youtube');
 const authRoutes      = require('./routes/authRoutes');
 const carnetsRoutes   = require('./routes/carnetsRoutes');
-const adminRoutes     = require('./routes/adminRoutes');
-const adminController = require('./controllers/adminController');
+const adminRoutes        = require('./routes/adminRoutes');
+const adminController    = require('./controllers/adminController');
+const cargaMasivaRoutes  = require('./routes/cargaMasivaRoutes');
+const inscripcionRoutes      = require('./routes/inscripcionRoutes');
+const inscripcionAdminRoutes = require('./routes/inscripcionAdminRoutes');
 
 const app = express();
 
@@ -65,6 +68,9 @@ app.get('/api/patrocinadores', adminController.getPatrocinadoresPublico);
 // Metodología pública (página metodología)
 app.get('/api/metodologia', adminController.getMetodologiaPublico);
 
+// Inscripción de equipos (público, sin auth)
+app.use('/api/inscripcion', inscripcionRoutes);
+
 // ──────────────────────────────────────────
 // 6. RUTAS DE AUTH Y CARNETS (protección JWT interna)
 // ──────────────────────────────────────────
@@ -75,6 +81,8 @@ app.use('/api/carnets', carnetsRoutes);
 // 7. MÓDULO ADMIN (JWT + rol administrador)
 // ──────────────────────────────────────────
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/carga', cargaMasivaRoutes);
+app.use('/api/admin/inscripcion', inscripcionAdminRoutes);
 
 // ──────────────────────────────────────────
 // 8. RUTAS PROTEGIDAS CON API KEY

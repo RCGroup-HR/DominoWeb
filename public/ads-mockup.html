@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup Anuncios – ScoreDomino</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#f5f7f5;color:#1f2937;}
+
+/* ── NAV ── */
+.nav{background:rgba(10,61,31,.96);padding:13px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-icon{width:36px;height:36px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.nav-title{font-size:1.1em;font-weight:800;color:#fff;}
+.nav-title span{color:#22c55e;}
+.nav-links{display:flex;gap:4px;list-style:none;}
+.nav-links a{color:rgba(255,255,255,.75);font-size:.85em;padding:7px 13px;border-radius:7px;text-decoration:none;}
+.nav-links a.active{background:rgba(255,255,255,.13);color:#fff;}
+
+/* ── AD LABEL ── */
+.ad-slot{background:#fff8e1;border:2px dashed #f59e0b;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;}
+.ad-slot::before{content:'ANUNCIO (Google AdSense)';font-size:10px;font-weight:700;letter-spacing:1px;color:#92400e;background:#fef3c7;padding:3px 8px;border-radius:4px;position:absolute;top:8px;}
+.ad-slot .ad-size{font-size:12px;color:#b45309;font-weight:600;margin-top:16px;}
+.ad-slot .ad-example{font-size:11px;color:#92400e;opacity:.8;}
+.ad-earn{font-size:11px;color:#059669;font-weight:700;background:#d1fae5;padding:2px 8px;border-radius:4px;}
+
+/* ── LEADERBOARD (728x90) ── */
+.ad-leaderboard{width:100%;height:90px;max-width:728px;margin:0 auto;}
+/* ── RECTANGLE (300x250) ── */
+.ad-rect{width:300px;height:250px;flex-shrink:0;}
+/* ── BANNER (320x50 mobile) ── */
+.ad-mobile{width:100%;height:60px;}
+
+/* ── PAGE LAYOUT ── */
+.page-header{background:linear-gradient(135deg,#1e6b4f,#145a40);color:white;padding:22px 32px;position:sticky;top:64px;}
+.page-header h1{font-size:1.8em;font-weight:700;}
+.page-header span{color:#22c55e;}
+
+.main{max-width:1200px;margin:0 auto;padding:24px 20px;}
+
+.content-with-sidebar{display:grid;grid-template-columns:1fr 300px;gap:24px;}
+.content{flex:1;}
+.sidebar{display:flex;flex-direction:column;gap:20px;}
+
+.section-title{font-size:1.1em;font-weight:700;color:#1e6b4f;margin:20px 0 12px;padding-bottom:8px;border-bottom:2px solid #e5e7eb;}
+
+/* ── FAKE TABLE ── */
+.fake-table{background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:20px;}
+.fake-table-header{background:#f9fafb;padding:12px 16px;display:grid;grid-template-columns:40px 1fr 80px 80px 80px;gap:8px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;}
+.fake-row{padding:12px 16px;display:grid;grid-template-columns:40px 1fr 80px 80px 80px;gap:8px;border-bottom:1px solid #f3f4f6;align-items:center;}
+.fake-row:last-child{border-bottom:none;}
+.fake-rank{font-weight:800;color:#1e6b4f;font-size:1.1em;}
+.fake-name{font-weight:600;font-size:.9em;}
+.fake-stat{font-size:.85em;color:#4b5563;text-align:center;}
+.fake-bar{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;}
+.fake-fill{height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:4px;}
+
+/* ── IN-CONTENT AD ── */
+.in-content-ad{width:100%;min-height:100px;margin:20px 0;}
+
+/* ── FOOTER ── */
+.footer{background:#0f172a;padding:40px 28px;text-align:center;margin-top:40px;}
+.footer-logo{font-size:1.2em;font-weight:800;color:#fff;margin-bottom:8px;}
+.footer-logo span{color:#22c55e;}
+.footer-copy{color:rgba(255,255,255,.25);font-size:.8em;margin-top:16px;}
+
+/* ── INCOME PANEL ── */
+.income-panel{background:white;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:28px;margin:32px 0;}
+.income-title{font-size:1.3em;font-weight:800;color:#1f2937;margin-bottom:4px;}
+.income-sub{color:#6b7280;font-size:.9em;margin-bottom:24px;}
+.income-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.income-card{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:12px;padding:18px;text-align:center;border:1px solid #bbf7d0;}
+.income-visits{font-size:1.4em;font-weight:800;color:#1e6b4f;}
+.income-label{font-size:.75em;color:#6b7280;margin:4px 0;}
+.income-range{font-size:1.1em;font-weight:700;color:#059669;}
+.income-note{font-size:.75em;color:#6b7280;}
+.income-factors{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
+.factor{background:#f9fafb;border-radius:10px;padding:14px;border-left:3px solid #22c55e;}
+.factor-title{font-size:.85em;font-weight:700;color:#1f2937;margin-bottom:4px;}
+.factor-desc{font-size:.78em;color:#6b7280;}
+.factor.up .factor-title::before{content:'⬆️ ';}
+.factor.down .factor-title::before{content:'⬇️ ';}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75em;font-weight:700;}
+.badge-new{background:#fef3c7;color:#92400e;}
+.badge-top{background:#dcfce7;color:#166534;}
+
+.disclaimer{background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px 18px;font-size:.82em;color:#0369a1;margin-top:20px;}
+
+@media(max-width:768px){
+  .content-with-sidebar{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .income-grid{grid-template-columns:repeat(2,1fr);}
+  .income-factors{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav class="nav">
+  <a href="#" class="nav-brand">
+    <div class="nav-icon">
+      <svg width="20" height="12" viewBox="0 0 20 12" fill="none"><rect x=".5" y=".5" width="19" height="11" rx="2" fill="rgba(255,255,255,.15)" stroke="white" stroke-width=".8"/><line x1="10" y1=".5" x2="10" y2="11.5" stroke="white" stroke-width=".7"/><circle cx="5" cy="6" r="1.6" fill="white"/><circle cx="13" cy="3" r="1.4" fill="white"/><circle cx="16" cy="6" r="1.4" fill="white"/><circle cx="13" cy="9" r="1.4" fill="white"/></svg>
+    </div>
+    <span class="nav-title">Score<span>Domino</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#" class="active">Individual</a></li>
+    <li><a href="#">Colectivo</a></li>
+    <li><a href="#">Histórico</a></li>
+    <li><a href="#">Comparar</a></li>
+    <li><a href="#">Metodología</a></li>
+  </ul>
+</nav>
+
+<!-- ══ AD #1: LEADERBOARD (debajo del nav) ══ -->
+<div style="background:#fff;padding:10px 0;border-bottom:1px solid #e5e7eb;">
+  <div class="ad-slot ad-leaderboard" style="margin:0 auto;">
+    <span class="ad-size">Banner Superior — 728×90</span>
+    <span class="ad-example">Aparece en TODAS las páginas al cargar</span>
+    <span class="ad-earn">~$0.10–0.40 por 1,000 vistas</span>
+  </div>
+</div>
+
+<!-- ══ PAGE HEADER ══ -->
+<div class="page-header">
+  <h1>Ranking Individual <span>Torneo Inter Clubes</span></h1>
+</div>
+
+<!-- ══ MAIN CONTENT ══ -->
+<div class="main">
+  <div class="content-with-sidebar">
+
+    <!-- LEFT: tabla + ads intercalados -->
+    <div class="content">
+
+      <div class="section-title">🏆 Clasificación General</div>
+
+      <div class="fake-table">
+        <div class="fake-table-header">
+          <span>#</span><span>Jugador</span><span>Partidas</span><span>Victorias</span><span>Efectividad</span>
+        </div>
+        <div class="fake-row">
+          <span class="fake-rank">1</span>
+          <div><div class="fake-name">Carlos Martínez</div><div style="font-size:10px;color:#9ca3af;">DOM · Equipo A</div></div>
+          <span class="fake-stat">42</span><span class="fake-stat">35</span>
+          <div><div class="fake-bar"><div class="fake-fill" style="width:83%"></div></div><div style="font-size:11px;color:#059669;font-weight:700;text-align:center">83.3%</div></div>
+        </div>
+        <div class="fake-row">
+          <span class="fake-rank">2</span>
+          <div><div class="fake-name">Pedro Jiménez</div><div style="font-size:10px;color:#9ca3af;">DOM · Equipo B</div></div>
+          <span class="fake-stat">40</span><span class="fake-stat">31</span>
+          <div><div class="fake-bar"><div class="fake-fill" style="width:77%"></div></div><div style="font-size:11px;color:#059669;font-weight:700;text-align:center">77.5%</div></div>
+        </div>
+        <div class="fake-row">
+          <span class="fake-rank">3</span>
+          <div><div class="fake-name">Luis Rodríguez</div><div style="font-size:10px;color:#9ca3af;">DOM · Equipo C</div></div>
+          <span class="fake-stat">38</span><span class="fake-stat">28</span>
+          <div><div class="fake-bar"><div class="fake-fill" style="width:73%"></div></div><div style="font-size:11px;color:#059669;font-weight:700;text-align:center">73.6%</div></div>
+        </div>
+      </div>
+
+      <!-- ══ AD #2: IN-CONTENT (entre tabla y tabla) ══ -->
+      <div class="ad-slot in-content-ad" style="height:110px;">
+        <span class="ad-size">Anuncio en Contenido — 728×90 / Responsive</span>
+        <span class="ad-example">Aparece entre secciones mientras el usuario hace scroll</span>
+        <span class="ad-earn">~$0.20–0.80 por 1,000 vistas · Mayor visibilidad = más ingresos</span>
+      </div>
+
+      <div class="fake-table">
+        <div class="fake-row">
+          <span class="fake-rank">4</span>
+          <div><div class="fake-name">José Vargas</div><div style="font-size:10px;color:#9ca3af;">DOM · Equipo D</div></div>
+          <span class="fake-stat">36</span><span class="fake-stat">25</span>
+          <div><div class="fake-bar"><div class="fake-fill" style="width:69%"></div></div><div style="font-size:11px;color:#4b5563;font-weight:700;text-align:center">69.4%</div></div>
+        </div>
+        <div class="fake-row">
+          <span class="fake-rank">5</span>
+          <div><div class="fake-name">Miguel Santos</div><div style="font-size:10px;color:#9ca3af;">DOM · Equipo A</div></div>
+          <span class="fake-stat">35</span><span class="fake-stat">22</span>
+          <div><div class="fake-bar"><div class="fake-fill" style="width:62%"></div></div><div style="font-size:11px;color:#4b5563;font-weight:700;text-align:center">62.8%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: sidebar con ad fijo ══ -->
+    <div class="sidebar">
+      <div class="ad-slot ad-rect">
+        <span class="ad-size">Sidebar — 300×250</span>
+        <span class="ad-example">Fijo mientras el usuario hace scroll</span>
+        <span class="ad-earn" style="margin-top:8px">Mayor CTR = más $$$</span>
+      </div>
+      <div class="ad-slot" style="width:300px;height:200px;">
+        <span class="ad-size">Sidebar 2 — 300×200</span>
+        <span class="ad-example">Segundo anuncio lateral</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<div class="footer">
+  <div class="footer-logo">Score<span>Domino</span></div>
+
+  <!-- ══ AD #3: FOOTER BANNER ══ -->
+  <div class="ad-slot ad-leaderboard" style="margin:20px auto;">
+    <span class="ad-size">Banner Footer — 728×90</span>
+    <span class="ad-example">Visible antes de salir de la página</span>
+    <span class="ad-earn">Buena tasa de conversión</span>
+  </div>
+
+  <div class="footer-copy">© 2025 Ronnie Hernández</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     ESTIMADO DE INGRESOS
+══════════════════════════════════════ -->
+<div class="main">
+  <div class="income-panel">
+    <div class="income-title">💰 Estimado de Ingresos — Google AdSense</div>
+    <div class="income-sub">Basado en tráfico de República Dominicana · Contenido deportivo/estadísticas · 3 bloques de anuncios por página</div>
+
+    <div class="income-grid">
+      <div class="income-card">
+        <div class="income-visits">1,000</div>
+        <div class="income-label">visitas / mes</div>
+        <div class="income-range">$0.90 – $3</div>
+        <div class="income-note">Inicio</div>
+      </div>
+      <div class="income-card">
+        <div class="income-visits">5,000</div>
+        <div class="income-label">visitas / mes</div>
+        <div class="income-range">$4.50 – $15</div>
+        <div class="income-note">Creciendo</div>
+      </div>
+      <div class="income-card" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:#fde68a;">
+        <div class="income-visits" style="color:#92400e;">20,000</div>
+        <div class="income-label">visitas / mes</div>
+        <div class="income-range" style="color:#b45309;">$18 – $60</div>
+        <div class="income-note">⭐ Meta realista año 1</div>
+      </div>
+      <div class="income-card" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-color:#93c5fd;">
+        <div class="income-visits" style="color:#1d4ed8;">100,000</div>
+        <div class="income-label">visitas / mes</div>
+        <div class="income-range" style="color:#1d4ed8;">$90 – $300</div>
+        <div class="income-note">🚀 Escalado</div>
+      </div>
+    </div>
+
+    <div style="background:#f9fafb;border-radius:10px;padding:16px;margin-bottom:16px;">
+      <div style="font-size:.85em;font-weight:700;color:#374151;margin-bottom:8px;">📊 ¿Cómo se calcula?</div>
+      <div style="font-size:.82em;color:#6b7280;line-height:1.7;">
+        Google paga por cada 1,000 vistas (RPM). Para RD, el RPM en contenido deportivo es <strong style="color:#1e6b4f;">$0.90 – $3.00 USD</strong>.<br>
+        Con 3 bloques de anuncios por página y varias páginas visitadas por usuario, el ingreso real puede ser mayor.<br>
+        <strong style="color:#059669;">AdSense paga mensualmente cuando llegas a $100 USD acumulados.</strong>
+      </div>
+    </div>
+
+    <div class="income-factors">
+      <div class="factor up">
+        <div class="factor-title">Tráfico internacional</div>
+        <div class="factor-desc">Si llegan visitas de EE.UU., España o México, el RPM sube a $2–8 USD — hasta 5x más que tráfico local.</div>
+      </div>
+      <div class="factor up">
+        <div class="factor-title">Múltiples páginas por visita</div>
+        <div class="factor-desc">Si un usuario visita Ranking + Histórico + Comparar = 3 páginas = 3x los ingresos por visita.</div>
+      </div>
+      <div class="factor up">
+        <div class="factor-title">Torneos frecuentes</div>
+        <div class="factor-desc">Cada torneo activo genera picos de tráfico. Más torneos = más visitas = más ingresos.</div>
+      </div>
+      <div class="factor down">
+        <div class="factor-title">Bloqueadores de anuncios</div>
+        <div class="factor-desc">~20–30% de usuarios usan AdBlock. Ese % no genera ingresos. Normal en todos los sitios.</div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      ℹ️ <strong>Nota:</strong> Estos son estimados basados en promedios de la industria. Los ingresos reales dependen del tráfico real, la geografía de los visitantes y el comportamiento del usuario. AdSense es solo una fuente — combinar con <strong>patrocinadores directos</strong> (que ya tienes) multiplica los ingresos significativamente.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

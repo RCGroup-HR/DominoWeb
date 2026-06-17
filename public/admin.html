@@ -453,6 +453,13 @@
     <div class="sb-item" data-section="metodologia">
       <span class="icon">📋</span> Metodología
     </div>
+    <div class="sb-item" data-section="torneos">
+      <span class="icon">🗓️</span> Torneos
+      <span class="sb-badge" id="badge-torneos-pend" style="display:none">0</span>
+    </div>
+    <div class="sb-item" data-section="carga">
+      <span class="icon">📥</span> Carga Masiva
+    </div>
     <div class="sb-group">Sistema</div>
     <div class="sb-item" data-section="configuracion">
       <span class="icon">⚙️</span> Configuración
@@ -827,6 +834,113 @@
       </div>
     </section>
 
+    <!-- ─── CARGA MASIVA ──────────────────── -->
+    <!-- ─── TORNEOS / INSCRIPCIONES ─────────── -->
+    <section id="sec-torneos" class="section">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header">
+          <span class="card-title">🗓️ Torneos</span>
+          <div style="display:flex;gap:8px">
+            <select id="trn-select" class="filter-select" onchange="trnSeleccionar(this.value)"></select>
+            <button class="btn btn-primary btn-sm" onclick="trnAbrirModal()">➕ Nuevo torneo</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="trn-config" style="font-size:13px;color:var(--text-2)">Selecciona un torneo…</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div id="trn-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px"></div>
+
+      <!-- Equipos del torneo -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">👥 Equipos inscritos</span>
+          <div style="display:flex;gap:8px">
+            <input id="trn-q" class="filter-select" placeholder="Buscar equipo, código…" oninput="trnDebounce()" style="width:200px">
+            <select id="trn-estado" class="filter-select" onchange="trnCargarEquipos()">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobado">Aprobado</option>
+              <option value="rechazado">Rechazado</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="trnCargarEquipos()">↺</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:130px">Código</th><th>Equipo</th><th>País</th>
+                  <th style="width:70px">Jug.</th><th style="width:100px">Estado</th>
+                  <th style="width:200px">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="trn-tbody">
+                <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-2)">Selecciona un torneo…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sec-carga" class="section">
+      <div class="two-col" style="align-items:start">
+
+        <!-- ── Equipos ── -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">⚽ Carga Masiva de Equipos</span>
+          </div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--text-2);margin-bottom:16px">
+              Sube un Excel con las columnas:<br>
+              <strong>Atleta No. · País · Equipo Número/Nombre</strong><br>
+              Se registran los jugadores en el <strong>torneo activo</strong>.
+              Varios jugadores con el mismo nombre de equipo crean un solo registro de equipo.
+            </p>
+            <div class="form-group" style="margin-bottom:14px">
+              <label class="form-label">Archivo Excel (.xlsx / .xls)</label>
+              <input type="file" id="file-equipos" accept=".xlsx,.xls"
+                     class="form-control" style="padding:6px 10px;cursor:pointer">
+            </div>
+            <button class="btn btn-primary" onclick="uploadEquipos()" id="btn-upload-equipos">
+              ▲ Procesar archivo
+            </button>
+            <div id="res-equipos" style="margin-top:20px"></div>
+          </div>
+        </div>
+
+        <!-- ── Carnets ── -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🪪 Carga Masiva de Carnets</span>
+          </div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--text-2);margin-bottom:16px">
+              Sube un Excel con las columnas:<br>
+              <strong>Atleta No. · Nombre y Apellido · País · Sexo</strong><br>
+              Si el carnet <strong>ya existe</strong> solo se actualiza el nombre.
+              La federación se asigna por país (fallback FEMUNDO).
+            </p>
+            <div class="form-group" style="margin-bottom:14px">
+              <label class="form-label">Archivo Excel (.xlsx / .xls)</label>
+              <input type="file" id="file-carnets" accept=".xlsx,.xls"
+                     class="form-control" style="padding:6px 10px;cursor:pointer">
+            </div>
+            <button class="btn btn-success" onclick="uploadCarnets()" id="btn-upload-carnets">
+              ▲ Procesar archivo
+            </button>
+            <div id="res-carnets" style="margin-top:20px"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
   </div><!-- /content -->
 </div><!-- /main -->
 
@@ -910,7 +1024,8 @@ function navTo(section) {
     paises: '🌍 Países', sesiones: '🔐 Sesiones Activas',
     configuracion: '⚙️ Configuración del Sistema', auditoria: '📋 Logs de Auditoría',
     sistema: '🖥️ Información del Sistema', patrocinadores: '🏆 Patrocinadores',
-    metodologia: '📋 Metodología del Torneo'
+    metodologia: '📋 Metodología del Torneo', carga: '📥 Carga Masiva',
+    torneos: '🗓️ Torneos e Inscripciones'
   };
   document.getElementById('page-title').textContent = titles[section] || section;
   // Carga lazy por sección
@@ -920,7 +1035,8 @@ function navTo(section) {
     sesiones: loadSesiones, configuracion: loadConfig,
     auditoria: () => loadAuditoria(1), sistema: loadSistema,
     patrocinadores: () => { loadDuracionCarousel(); loadPatrocinadores(); },
-    metodologia: loadMetodologia
+    metodologia: loadMetodologia,
+    torneos: loadTorneos
   };
   if (loaders[section]) loaders[section]();
 }
@@ -1933,6 +2049,370 @@ async function eliminarSeccion(idx) {
   _metodData.Secciones.splice(idx, 1);
   renderSeccionesAdmin();
   await _saveMetodologia('Sección eliminada ✅');
+}
+
+// ═══════════════════════════════════════════
+// CARGA MASIVA
+// ═══════════════════════════════════════════
+
+async function uploadEquipos() {
+  const fileInput = document.getElementById('file-equipos');
+  const resDiv    = document.getElementById('res-equipos');
+  const btn       = document.getElementById('btn-upload-equipos');
+
+  if (!fileInput.files.length) { toast('Selecciona un archivo Excel primero', 'warning'); return; }
+
+  const formData = new FormData();
+  formData.append('archivo', fileInput.files[0]);
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Procesando…';
+  resDiv.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando…</div>';
+
+  try {
+    const r = await fetch('/api/admin/carga/equipos', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+      body: formData
+    });
+    const data = await r.json();
+
+    if (!data.success) {
+      resDiv.innerHTML = `<div class="toast-error" style="border-radius:8px;padding:12px 16px">❌ ${data.message}</div>`;
+      return;
+    }
+
+    const { torneo, resumen, equipos = [], errores = [] } = data;
+
+    let html = `
+      <div style="background:var(--bg);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+        <div style="font-size:12px;color:var(--text-2);margin-bottom:6px">Torneo activo</div>
+        <div style="font-weight:700">${torneo.nombre} <span style="font-size:12px;color:var(--text-2)">#${torneo.id}</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:800;color:#16a34a">${resumen.jugadores_registrados}</div>
+          <div style="font-size:11px;color:#16a34a;font-weight:600">Registrados</div>
+        </div>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:800;color:#2563eb">${resumen.equipos_creados}</div>
+          <div style="font-size:11px;color:#2563eb;font-weight:600">Equipos creados</div>
+        </div>
+        <div style="background:${errores.length ? '#fef2f2' : 'var(--bg)'};border:1px solid ${errores.length ? '#fecaca' : 'var(--border)'};border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:800;color:${errores.length ? '#dc2626' : 'var(--text-2)'}">${errores.length}</div>
+          <div style="font-size:11px;color:${errores.length ? '#dc2626' : 'var(--text-2)'};font-weight:600">Errores</div>
+        </div>
+      </div>`;
+
+    if (equipos.length) {
+      html += `<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-2);margin-bottom:8px">Detalle por equipo</div>`;
+      equipos.forEach(eq => {
+        const badgeColor = eq.estado === 'creado' ? '#16a34a' : '#2563eb';
+        const badgeBg    = eq.estado === 'creado' ? '#f0fdf4'  : '#eff6ff';
+        const badgeBd    = eq.estado === 'creado' ? '#bbf7d0'  : '#bfdbfe';
+        html += `
+          <div style="border:1px solid var(--border);border-radius:8px;margin-bottom:10px;overflow:hidden">
+            <div style="padding:10px 14px;background:var(--bg);display:flex;align-items:center;justify-content:space-between">
+              <span style="font-weight:700;font-size:14px">${eq.nombre}</span>
+              <div style="display:flex;gap:8px;align-items:center">
+                <span style="font-size:12px;color:var(--text-2)">${eq.pais}</span>
+                <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:${badgeBg};color:${badgeColor};border:1px solid ${badgeBd}">${eq.estado}</span>
+              </div>
+            </div>
+            <table style="width:100%;font-size:13px;border-collapse:collapse">
+              <thead><tr>
+                <th style="padding:7px 14px;text-align:left;font-size:11px;color:var(--text-2);font-weight:700;border-bottom:1px solid var(--border)">Carnet</th>
+                <th style="padding:7px 14px;text-align:left;font-size:11px;color:var(--text-2);font-weight:700;border-bottom:1px solid var(--border)">Nombre</th>
+                <th style="padding:7px 14px;text-align:left;font-size:11px;color:var(--text-2);font-weight:700;border-bottom:1px solid var(--border)">Estado</th>
+              </tr></thead>
+              <tbody>
+                ${eq.jugadores.map(j => {
+                  const c = j.estado === 'registrado' ? '#16a34a' : '#64748b';
+                  return `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:7px 14px;font-weight:700;color:var(--primary)">${j.carnet}</td>
+                    <td style="padding:7px 14px">${j.nombre}</td>
+                    <td style="padding:7px 14px;font-size:12px;font-weight:600;color:${c}">${j.estado}</td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>`;
+      });
+    }
+
+    if (errores.length) {
+      html += `<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#dc2626;margin:12px 0 8px">Errores</div>`;
+      errores.forEach(e => {
+        html += `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:12px;margin-bottom:6px;color:#dc2626">
+          Fila ${e.fila}${e.carnet ? ` · Carnet ${e.carnet}` : ''}: ${e.error}
+        </div>`;
+      });
+    }
+
+    resDiv.innerHTML = html;
+    toast(`✅ ${resumen.jugadores_registrados} jugadores registrados en ${resumen.equipos_creados} equipos nuevos`, 'success');
+    fileInput.value = '';
+  } catch(err) {
+    resDiv.innerHTML = `<div class="toast-error" style="border-radius:8px;padding:12px 16px">❌ Error de conexión: ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '▲ Procesar archivo';
+  }
+}
+
+async function uploadCarnets() {
+  const fileInput = document.getElementById('file-carnets');
+  const resDiv    = document.getElementById('res-carnets');
+  const btn       = document.getElementById('btn-upload-carnets');
+
+  if (!fileInput.files.length) { toast('Selecciona un archivo Excel primero', 'warning'); return; }
+
+  const formData = new FormData();
+  formData.append('archivo', fileInput.files[0]);
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Procesando…';
+  resDiv.innerHTML = '<div class="loading"><div class="spinner"></div> Cargando…</div>';
+
+  try {
+    const r = await fetch('/api/admin/carga/carnets', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+      body: formData
+    });
+    const data = await r.json();
+
+    if (!data.success) {
+      resDiv.innerHTML = `<div class="toast-error" style="border-radius:8px;padding:12px 16px">❌ ${data.message}</div>`;
+      return;
+    }
+
+    const { resumen, insertados = [], actualizados = [], errores = [] } = data;
+
+    let html = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:800;color:#16a34a">${resumen.insertados}</div>
+          <div style="font-size:11px;color:#16a34a;font-weight:600">Insertados</div>
+        </div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:800;color:#d97706">${resumen.actualizados}</div>
+          <div style="font-size:11px;color:#d97706;font-weight:600">Actualizados</div>
+        </div>
+        <div style="background:${errores.length ? '#fef2f2' : 'var(--bg)'};border:1px solid ${errores.length ? '#fecaca' : 'var(--border)'};border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:800;color:${errores.length ? '#dc2626' : 'var(--text-2)'}">${errores.length}</div>
+          <div style="font-size:11px;color:${errores.length ? '#dc2626' : 'var(--text-2)'};font-weight:600">Errores</div>
+        </div>
+      </div>`;
+
+    function buildTable(rows, title, color, bg, bd) {
+      if (!rows.length) return '';
+      return `
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:${color};margin-bottom:8px">${title}</div>
+        <div style="border:1px solid ${bd};border-radius:8px;overflow:hidden;margin-bottom:14px">
+          <table style="width:100%;font-size:13px;border-collapse:collapse">
+            <thead><tr style="background:${bg}">
+              <th style="padding:7px 14px;text-align:left;font-size:11px;font-weight:700;color:${color}">Carnet</th>
+              <th style="padding:7px 14px;text-align:left;font-size:11px;font-weight:700;color:${color}">Nombre</th>
+              <th style="padding:7px 14px;text-align:left;font-size:11px;font-weight:700;color:${color}">Apellidos</th>
+              <th style="padding:7px 14px;text-align:left;font-size:11px;font-weight:700;color:${color}">País</th>
+            </tr></thead>
+            <tbody>
+              ${rows.map(r => `<tr style="border-top:1px solid var(--border)">
+                <td style="padding:7px 14px;font-weight:700;color:var(--primary)">${r.carnet}</td>
+                <td style="padding:7px 14px">${r.nombre || ''}</td>
+                <td style="padding:7px 14px">${r.apellidos || ''}</td>
+                <td style="padding:7px 14px">${r.pais || ''}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
+    html += buildTable(insertados,   '✅ Insertados',   '#16a34a', '#f0fdf4', '#bbf7d0');
+    html += buildTable(actualizados, '✏️ Actualizados', '#d97706', '#fffbeb', '#fde68a');
+
+    if (errores.length) {
+      html += `<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#dc2626;margin-bottom:8px">Errores</div>`;
+      errores.forEach(e => {
+        html += `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:12px;margin-bottom:6px;color:#dc2626">
+          Fila ${e.fila}${e.carnet ? ` · Carnet ${e.carnet}` : ''}: ${e.error}
+        </div>`;
+      });
+    }
+
+    resDiv.innerHTML = html;
+    toast(`✅ ${resumen.insertados} insertados · ${resumen.actualizados} actualizados`, 'success');
+    fileInput.value = '';
+  } catch(err) {
+    resDiv.innerHTML = `<div class="toast-error" style="border-radius:8px;padding:12px 16px">❌ Error de conexión: ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '▲ Procesar archivo';
+  }
+}
+
+// ═══════════════════════════════════════════
+// TORNEOS / INSCRIPCIONES
+// ═══════════════════════════════════════════
+const TRN_API = '/api/admin/inscripcion';
+let trnList = [], trnId = null, trnTimer = null;
+const fdate = s => s ? new Date(s).toLocaleDateString('es-DO', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+
+async function loadTorneos() {
+  const d = await api(TRN_API + '/torneos');
+  if (!d?.success) return;
+  trnList = d.data || [];
+  const sel = document.getElementById('trn-select');
+  if (!trnList.length) {
+    sel.innerHTML = '<option value="">Sin torneos</option>';
+    document.getElementById('trn-config').textContent = 'Aún no hay torneos. Crea el primero con “➕ Nuevo torneo”.';
+    document.getElementById('trn-stats').innerHTML = '';
+    document.getElementById('trn-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-2)">—</td></tr>';
+    return;
+  }
+  sel.innerHTML = trnList.map(t => `<option value="${t.Id}">${t.Nombre}</option>`).join('');
+  trnSeleccionar(trnId && trnList.some(t => t.Id == trnId) ? trnId : trnList[0].Id);
+}
+
+function trnSeleccionar(id) {
+  trnId = id;
+  document.getElementById('trn-select').value = id;
+  const t = trnList.find(x => x.Id == id);
+  if (!t) return;
+  const estadoBadge = t.Estado === 'abierto'
+    ? '<span class="badge badge-approved">Inscripciones abiertas</span>'
+    : `<span class="badge badge-user">${t.Estado}</span>`;
+  document.getElementById('trn-config').innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:center;justify-content:space-between">
+      <div style="display:flex;flex-wrap:wrap;gap:22px">
+        <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2)">Lugar</div><b style="color:var(--text-1)">${t.Lugar || '—'}</b></div>
+        <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2)">Fechas</div><b style="color:var(--text-1)">${fdate(t.FechaInicio)} – ${fdate(t.FechaFin)}</b></div>
+        <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2)">Jugadores/equipo</div><b style="color:var(--text-1)">${t.JugadoresPorEquipo}</b></div>
+        <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2)">Cierre modif.</div><b style="color:var(--text-1)">${t.FechaLimiteModificacion ? fdate(t.FechaLimiteModificacion) : '—'}</b></div>
+        <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2)">Búsqueda jugadores</div><b style="color:${t.BusquedaJugadores?'#16a34a':'#b91c1c'}">${t.BusquedaJugadores?'Activada':'Desactivada'}</b></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">${estadoBadge}<button class="btn btn-ghost btn-sm" onclick="trnEditarTorneo(${t.Id})">⚙️ Configurar</button></div>
+    </div>`;
+  trnCargarStats();
+  trnCargarEquipos();
+}
+
+async function trnCargarStats() {
+  const d = await api(TRN_API + '/stats?torneo=' + trnId);
+  if (!d?.success) return;
+  const s = d.data;
+  const card = (lbl, val, color) => `<div class="card" style="padding:14px"><div style="font-size:12px;color:var(--text-2)">${lbl}</div><div style="font-size:26px;font-weight:800;color:${color||'var(--text-1)'}">${val||0}</div></div>`;
+  document.getElementById('trn-stats').innerHTML =
+    card('Total equipos', s.total) + card('Pendientes', s.pendientes, '#b45309') +
+    card('Aprobados', s.aprobados, '#15803d') + card('Rechazados', s.rechazados, '#b91c1c') +
+    card('Jugadores', s.jugadores);
+  const badge = document.getElementById('badge-torneos-pend');
+  if (badge) { badge.textContent = s.pendientes || 0; badge.style.display = (s.pendientes>0)?'inline-block':'none'; }
+}
+
+function trnDebounce() { clearTimeout(trnTimer); trnTimer = setTimeout(trnCargarEquipos, 300); }
+
+async function trnCargarEquipos() {
+  if (!trnId) return;
+  const q = document.getElementById('trn-q').value, estado = document.getElementById('trn-estado').value;
+  const p = new URLSearchParams({ torneo: trnId }); if (q) p.set('q', q); if (estado) p.set('estado', estado);
+  const d = await api(TRN_API + '/equipos?' + p);
+  const tb = document.getElementById('trn-tbody');
+  const eq = d?.data || [];
+  if (!eq.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-2)">No hay equipos.</td></tr>'; return; }
+  tb.innerHTML = eq.map(e => {
+    const b = e.Estado==='aprobado' ? '<span class="badge badge-approved">Aprobado</span>'
+      : e.Estado==='rechazado' ? '<span class="badge badge-rejected">Rechazado</span>'
+      : '<span class="badge badge-pending">Pendiente</span>';
+    const acc = e.Estado==='pendiente'
+      ? `<button class="btn btn-primary btn-sm" onclick="trnEstado(${e.Id},'aprobado')">Aprobar</button>
+         <button class="btn btn-ghost btn-sm" onclick="trnEstado(${e.Id},'rechazado')">Rechazar</button>`
+      : `<button class="btn btn-ghost btn-sm" onclick="trnEstado(${e.Id},'pendiente')">Reabrir</button>`;
+    return `<tr>
+      <td style="font-family:monospace;font-weight:600">${e.CodigoEquipo}</td>
+      <td><b>${e.NombreEquipo}</b><br><span style="font-size:12px;color:var(--text-2)">${e.Representante}</span></td>
+      <td>${e.Pais || '—'}</td>
+      <td>${e.TotalJugadores}/${e.JugadoresPorEquipo}</td>
+      <td>${b}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="trnVer(${e.Id})">👁 Ver</button> ${acc}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function trnEstado(id, estado) {
+  const d = await api(TRN_API + '/equipos/' + id + '/estado', { method:'PATCH', body: JSON.stringify({ estado }) });
+  if (d?.success) { toast('Equipo ' + estado, 'success'); trnCargarStats(); trnCargarEquipos(); }
+}
+
+async function trnVer(id) {
+  const d = await api(TRN_API + '/equipos/' + id);
+  if (!d?.success) return;
+  const e = d.data;
+  const jugs = (e.Jugadores||[]).map((j,i) => `<tr><td>${i+1}</td><td>${j.NombreCompleto}</td><td>${j.Genero||'—'}</td><td>${j.Telefono||'—'}</td></tr>`).join('');
+  openModal(`${e.NombreEquipo} · ${e.CodigoEquipo}`, `
+    <div style="font-size:14px;line-height:1.9">
+      <b>Club:</b> ${e.Club||'—'} &nbsp;·&nbsp; <b>País:</b> ${e.Pais||'—'}<br>
+      <b>Representante:</b> ${e.Representante}<br>
+      <b>Correo:</b> ${e.CorreoRepresentante} &nbsp;·&nbsp; <b>Tel:</b> ${e.Telefono||'—'}
+    </div>
+    <div class="table-wrap" style="margin-top:14px"><table>
+      <thead><tr><th style="width:40px">#</th><th>Jugador</th><th>Género</th><th>Teléfono</th></tr></thead>
+      <tbody>${jugs || '<tr><td colspan="4" style="color:var(--text-2)">Sin jugadores</td></tr>'}</tbody>
+    </table></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>`);
+}
+
+// ── Crear / editar torneo ──
+function trnModalForm(t) {
+  const v = (x, d='') => t && t[x] != null ? t[x] : d;
+  return `
+    <label style="font-size:13px;font-weight:600">Nombre del torneo *</label>
+    <input id="trn-f-nombre" class="filter-select" style="width:100%;margin-bottom:10px" value="${v('Nombre').replace(/"/g,'&quot;')}">
+    <label style="font-size:13px;font-weight:600">Lugar del evento</label>
+    <input id="trn-f-lugar" class="filter-select" style="width:100%;margin-bottom:10px" placeholder="Ej: Santo Domingo, R.D." value="${v('Lugar').replace(/"/g,'&quot;')}">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div><label style="font-size:13px;font-weight:600">Fecha inicio</label><input id="trn-f-ini" type="date" class="filter-select" style="width:100%" value="${v('FechaInicio')?String(v('FechaInicio')).split('T')[0]:''}"></div>
+      <div><label style="font-size:13px;font-weight:600">Fecha fin</label><input id="trn-f-fin" type="date" class="filter-select" style="width:100%" value="${v('FechaFin')?String(v('FechaFin')).split('T')[0]:''}"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div><label style="font-size:13px;font-weight:600">Jugadores por equipo</label><input id="trn-f-jug" type="number" min="1" max="20" class="filter-select" style="width:100%" value="${v('JugadoresPorEquipo',4)}"></div>
+      <div><label style="font-size:13px;font-weight:600">Estado</label>
+        <select id="trn-f-estado" class="filter-select" style="width:100%">
+          ${['borrador','abierto','cerrado','finalizado'].map(s=>`<option value="${s}" ${v('Estado','borrador')===s?'selected':''}>${s==='abierto'?'Abierto (inscripciones)':s}</option>`).join('')}
+        </select></div>
+    </div>
+    <label style="font-size:13px;font-weight:600">Cierre de modificación (opcional)</label>
+    <input id="trn-f-limite" type="datetime-local" class="filter-select" style="width:100%;margin-bottom:10px" value="${v('FechaLimiteModificacion')?String(v('FechaLimiteModificacion')).slice(0,16):''}">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-top:6px">
+      <input type="checkbox" id="trn-f-busqueda" ${(!t||t.BusquedaJugadores)?'checked':''}> Activar búsqueda de jugadores existentes
+    </label>`;
+}
+function trnAbrirModal() {
+  openModal('➕ Nuevo torneo', trnModalForm(null),
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="trnGuardar()">Crear torneo</button>`);
+}
+function trnEditarTorneo(id) {
+  const t = trnList.find(x => x.Id == id);
+  openModal('⚙️ Configurar torneo', trnModalForm(t),
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="trnGuardar(${id})">Guardar cambios</button>`);
+}
+async function trnGuardar(id) {
+  const body = {
+    nombre: document.getElementById('trn-f-nombre').value.trim(),
+    lugar: document.getElementById('trn-f-lugar').value.trim(),
+    fechaInicio: document.getElementById('trn-f-ini').value || null,
+    fechaFin: document.getElementById('trn-f-fin').value || null,
+    jugadoresPorEquipo: document.getElementById('trn-f-jug').value,
+    fechaLimiteModificacion: document.getElementById('trn-f-limite').value || null,
+    estado: document.getElementById('trn-f-estado').value,
+    busquedaJugadores: document.getElementById('trn-f-busqueda').checked
+  };
+  if (!body.nombre) { toast('El nombre es requerido', 'error'); return; }
+  const d = id
+    ? await api(TRN_API + '/torneos/' + id, { method:'PUT', body: JSON.stringify(body) })
+    : await api(TRN_API + '/torneos', { method:'POST', body: JSON.stringify(body) });
+  if (d?.success) { closeModal(); toast('Torneo guardado', 'success'); if (!id && d.data?.id) trnId = d.data.id; loadTorneos(); }
 }
 
 // ═══════════════════════════════════════════

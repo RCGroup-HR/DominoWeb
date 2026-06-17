@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Inscripción de equipos para torneos de dominó — ScoreDomino.">
+<title>Inscripción de Equipos — ScoreDomino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green-dark:#0a3d1f;--green-mid:#0f5c30;--green-base:#16a34a;--green-light:#22c55e;
+  --gold:#f59e0b;--white:#fff;--gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;
+  --gray-400:#94a3b8;--gray-500:#64748b;--gray-700:#334155;--gray-900:#0f172a;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+body{font-family:var(--font);background:var(--gray-50);color:var(--gray-900);min-height:100vh}
+a{text-decoration:none}
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;padding:14px 30px;display:flex;align-items:center;justify-content:space-between;
+  background:rgba(10,61,31,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-brand{display:flex;align-items:center;gap:12px}
+.nav-brand-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--green-base),var(--green-light));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(22,163,74,.4)}
+.nav-brand-text{font-size:1.25em;font-weight:800;color:#fff;letter-spacing:-.5px}
+.nav-brand-text span{color:var(--green-light)}
+.nav-links{display:flex;gap:4px;list-style:none}
+.nav-links a{color:rgba(255,255,255,.8);font-size:.875em;font-weight:500;padding:8px 14px;border-radius:8px;transition:.2s}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,.1)}
+/* HEADER */
+.page-head{background:linear-gradient(160deg,#061410,#0a3d1f 55%,#0d4e28);padding:48px 30px 36px;text-align:center}
+.page-head .eyebrow{font-size:.75em;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green-light);margin-bottom:8px}
+.page-head h1{color:#fff;font-size:clamp(1.8em,4vw,2.6em);font-weight:900;letter-spacing:-1px}
+.page-head p{color:rgba(255,255,255,.6);margin-top:10px;font-size:1.02em}
+/* TABS */
+.tabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:-22px auto 0;max-width:760px;padding:0 20px;position:relative;z-index:5}
+.tab{background:#fff;border:1px solid var(--gray-200);border-radius:50px;padding:12px 22px;font-size:.92em;font-weight:600;
+  color:var(--gray-500);cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:8px;transition:.2s;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.tab:hover{color:var(--green-base)}
+.tab.active{background:linear-gradient(135deg,var(--green-base),var(--green-light));color:#fff;border-color:transparent}
+/* CONTAINER */
+.wrap{max-width:880px;margin:30px auto 60px;padding:0 20px}
+.card{background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:26px;margin-bottom:20px}
+.section-title{display:flex;align-items:center;gap:9px;font-size:1.05em;font-weight:700;margin-bottom:18px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green-base)}
+label{display:block;font-size:.78em;font-weight:600;color:var(--gray-700);margin-bottom:5px}
+input,select{width:100%;height:40px;padding:0 12px;border:1px solid var(--gray-200);border-radius:9px;font-size:.92em;
+  color:var(--gray-900);background:#fff;font-family:var(--font);outline:none;transition:.15s}
+input:focus,select:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.field{margin-bottom:0}
+.btn{border:none;border-radius:50px;font-family:var(--font);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;
+  justify-content:center;gap:8px;transition:.25s}
+.btn-primary{background:linear-gradient(135deg,var(--green-base),var(--green-light));color:#fff;height:48px;padding:0 32px;
+  font-size:.98em;box-shadow:0 8px 24px rgba(22,163,74,.35);width:100%}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(22,163,74,.45)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-ghost{background:var(--gray-100);color:var(--gray-700);height:40px;padding:0 20px;font-size:.88em;font-weight:600}
+.players-head{display:flex;align-items:center;justify-content:space-between;margin:24px 0 14px}
+.chip{font-size:.78em;color:var(--gray-500);background:var(--gray-100);padding:5px 12px;border-radius:50px}
+.player-row{border:1px solid var(--gray-200);border-radius:12px;padding:14px;margin-bottom:12px;position:relative}
+.player-row .pnum{position:absolute;top:-9px;left:14px;background:var(--green-base);color:#fff;font-size:.72em;font-weight:700;
+  padding:2px 10px;border-radius:50px}
+.player-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+.autocomplete{position:absolute;z-index:20;background:#fff;border:1px solid var(--gray-200);border-radius:9px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:180px;overflow:auto;width:100%;display:none}
+.autocomplete div{padding:9px 12px;font-size:.88em;cursor:pointer}
+.autocomplete div:hover{background:var(--gray-50)}
+.hidden{display:none!important}
+.note{font-size:.78em;color:var(--gray-400);text-align:center;margin-top:12px}
+/* ALERTS */
+.alert{border-radius:12px;padding:14px 16px;font-size:.9em;margin-bottom:16px;display:none}
+.alert.err{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;display:block}
+.alert.ok{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;display:block}
+/* SUCCESS CODE */
+.code-box{background:var(--green-dark);color:var(--green-light);font-family:monospace;font-size:1.5em;font-weight:700;
+  letter-spacing:2px;padding:16px;border-radius:12px;text-align:center;margin:14px 0}
+/* SEARCH RESULTS */
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:18px}
+.team-card{border:1px solid var(--gray-200);border-radius:12px;padding:15px;background:#fff}
+.badge{font-size:.72em;font-weight:700;padding:4px 10px;border-radius:50px;white-space:nowrap}
+.badge.apr{background:#dcfce7;color:#15803d}
+.badge.pen{background:#fef3c7;color:#b45309}
+.tag{background:var(--gray-100);color:var(--gray-700);font-size:.78em;padding:3px 9px;border-radius:50px}
+.stats-row{display:flex;gap:16px;flex-wrap:wrap;font-size:.82em;color:var(--gray-500);margin-top:6px}
+.spinner{text-align:center;color:var(--gray-400);padding:30px;font-size:.9em}
+@media(max-width:600px){.nav-links{display:none}.player-grid{grid-template-columns:1fr}.page-head{padding:40px 20px 30px}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="nav-brand-icon"><svg width="20" height="12" viewBox="0 0 20 12" fill="none"><rect x=".5" y=".5" width="19" height="11" rx="2" fill="rgba(255,255,255,.15)" stroke="white" stroke-width=".8"/><line x1="10" y1=".5" x2="10" y2="11.5" stroke="white" stroke-width=".7"/><circle cx="5" cy="6" r="1.6" fill="white"/><circle cx="13" cy="3" r="1.4" fill="white"/><circle cx="16" cy="6" r="1.4" fill="white"/><circle cx="13" cy="9" r="1.4" fill="white"/></svg></div>
+    <span class="nav-brand-text">Score<span>Domino</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="ranking-general.html">Ranking</a></li>
+    <li><a href="inscripcion.html">Inscripción</a></li>
+  </ul>
+</nav>
+
+<div class="page-head">
+  <div class="eyebrow">Torneos · Inscripción</div>
+  <h1>Inscripción de Equipos</h1>
+  <p id="torneo-nombre">Cargando torneo…</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="inscribir"><span>📝</span> Inscribir equipo</button>
+  <button class="tab" data-tab="buscar"><span>🔎</span> Equipos inscritos</button>
+  <button class="tab" data-tab="editar"><span>✏️</span> Editar mi equipo</button>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== INSCRIBIR ===== -->
+  <section id="tab-inscribir">
+    <div class="alert" id="insc-alert"></div>
+
+    <div class="card" id="insc-form-wrap">
+      <div class="section-title"><span class="dot"></span> Datos del equipo</div>
+      <div style="margin-bottom:18px">
+        <label>Torneo *</label>
+        <select id="insc-torneo"></select>
+      </div>
+      <div class="grid">
+        <div class="field"><label>Nombre del equipo *</label><input id="f-nombre" placeholder="Los Capicúa"></div>
+        <div class="field"><label>Club</label><input id="f-club" placeholder="Club Dominó Santiago"></div>
+        <div class="field"><label>País</label><input id="f-pais" placeholder="República Dominicana"></div>
+        <div class="field"><label>Representante *</label><input id="f-rep" placeholder="Juan Pérez"></div>
+        <div class="field"><label>Correo del representante *</label><input id="f-correo" type="email" placeholder="juan@correo.com"></div>
+        <div class="field"><label>Teléfono</label><input id="f-tel" placeholder="+1 809 000 0000"></div>
+      </div>
+
+      <div class="players-head">
+        <div class="section-title" style="margin:0"><span class="dot"></span> Jugadores</div>
+        <span class="chip" id="insc-chip">—</span>
+      </div>
+      <div id="players-container"></div>
+
+      <div style="margin-top:18px">
+        <button class="btn btn-primary" id="btn-inscribir">✅ Registrar equipo</button>
+        <div class="note">Recibirás un código único para poder editar tu equipo después.</div>
+      </div>
+    </div>
+
+    <!-- Éxito -->
+    <div class="card hidden" id="insc-success" style="text-align:center">
+      <div style="font-size:2.4em">🎉</div>
+      <div class="section-title" style="justify-content:center;margin-top:8px">¡Equipo inscrito!</div>
+      <p style="color:var(--gray-500);font-size:.92em">Tu equipo quedó en estado <b>pendiente</b> de aprobación.<br>Guarda este código — lo necesitarás para editar tu equipo:</p>
+      <div class="code-box" id="success-code">EQ-XXXXXXXXX</div>
+      <button class="btn btn-ghost" onclick="navigator.clipboard.writeText(document.getElementById('success-code').textContent)">📋 Copiar código</button>
+      <button class="btn btn-primary" style="margin-top:14px" onclick="location.reload()">Inscribir otro equipo</button>
+    </div>
+  </section>
+
+  <!-- ===== BUSCAR ===== -->
+  <section id="tab-buscar" class="hidden">
+    <div class="card">
+      <div class="section-title"><span class="dot"></span> Buscar equipos registrados</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input id="search-q" placeholder="Buscar por equipo, club o representante…" style="flex:1;min-width:200px" oninput="debouncedSearch()">
+        <input id="search-pais" placeholder="País" style="max-width:160px" oninput="debouncedSearch()">
+      </div>
+      <div id="search-results" class="results"></div>
+      <div class="spinner hidden" id="search-spinner">Buscando…</div>
+    </div>
+  </section>
+
+  <!-- ===== EDITAR ===== -->
+  <section id="tab-editar" class="hidden">
+    <div class="alert" id="edit-alert"></div>
+    <div class="card" id="edit-access">
+      <div class="section-title"><span class="dot"></span> Acceder a mi equipo</div>
+      <p style="color:var(--gray-500);font-size:.9em;margin-bottom:14px">Ingresa el código que recibiste al inscribir tu equipo.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input id="edit-code" placeholder="EQ-XXXXXXXXX" style="flex:1;min-width:200px;text-transform:uppercase;font-family:monospace">
+        <button class="btn btn-primary" style="width:auto;padding:0 26px" id="btn-acceder">Acceder</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="edit-form-wrap">
+      <div class="section-title"><span class="dot"></span> Editar equipo</div>
+      <div class="grid">
+        <div class="field"><label>Nombre del equipo *</label><input id="e-nombre"></div>
+        <div class="field"><label>Club</label><input id="e-club"></div>
+        <div class="field"><label>País</label><input id="e-pais"></div>
+        <div class="field"><label>Representante *</label><input id="e-rep"></div>
+        <div class="field"><label>Teléfono</label><input id="e-tel"></div>
+      </div>
+      <div class="players-head">
+        <div class="section-title" style="margin:0"><span class="dot"></span> Jugadores</div>
+        <span class="chip" id="edit-chip">—</span>
+      </div>
+      <div id="edit-players"></div>
+      <div style="margin-top:18px"><button class="btn btn-primary" id="btn-guardar">💾 Guardar cambios</button></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const API = '/api/inscripcion';
+let torneos = [], torneoActual = null, editCodigo = null;
+
+// ── Tabs ──
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  ['inscribir','buscar','editar'].forEach(n => document.getElementById('tab-'+n).classList.add('hidden'));
+  document.getElementById('tab-'+t.dataset.tab).classList.remove('hidden');
+  if (t.dataset.tab === 'buscar') buscarEquipos();
+}));
+
+function showAlert(id, msg, ok) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.className = 'alert ' + (ok ? 'ok' : 'err');
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+// ── Cargar torneos ──
+async function cargarTorneos() {
+  try {
+    const r = await fetch(API + '/torneos'); const d = await r.json();
+    torneos = d.data || [];
+    const sel = document.getElementById('insc-torneo');
+    if (!torneos.length) {
+      document.getElementById('torneo-nombre').textContent = 'No hay torneos con inscripciones abiertas en este momento.';
+      document.getElementById('insc-form-wrap').innerHTML = '<p style="text-align:center;color:var(--gray-500)">Por ahora no hay inscripciones abiertas. Vuelve pronto.</p>';
+      return;
+    }
+    sel.innerHTML = torneos.map(t => `<option value="${t.Id}">${t.Nombre}</option>`).join('');
+    document.getElementById('torneo-nombre').textContent = torneos[0].Nombre;
+    sel.addEventListener('change', () => seleccionarTorneo(sel.value));
+    seleccionarTorneo(torneos[0].Id);
+  } catch(e) { document.getElementById('torneo-nombre').textContent = 'Error al cargar torneos.'; }
+}
+
+function seleccionarTorneo(id) {
+  torneoActual = torneos.find(t => String(t.Id) === String(id));
+  document.getElementById('torneo-nombre').textContent = torneoActual.Nombre;
+  document.getElementById('insc-chip').textContent = `${torneoActual.JugadoresPorEquipo} jugadores por equipo`;
+  generarJugadores(torneoActual.JugadoresPorEquipo);
+}
+
+function playerRowHTML(n, prefix) {
+  return `<div class="player-row">
+    <span class="pnum">Jugador ${n}</span>
+    <div class="player-grid">
+      <div style="position:relative">
+        <input class="${prefix}-nombre" placeholder="Nombre completo" autocomplete="off">
+        <div class="autocomplete"></div>
+      </div>
+      <select class="${prefix}-genero"><option value="">Género</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="otro">Otro</option></select>
+      <input class="${prefix}-tel" placeholder="Teléfono (opc.)">
+    </div>
+  </div>`;
+}
+
+function generarJugadores(n) {
+  const c = document.getElementById('players-container');
+  c.innerHTML = '';
+  for (let i = 1; i <= n; i++) c.insertAdjacentHTML('beforeend', playerRowHTML(i, 'p'));
+  if (torneoActual && torneoActual.BusquedaJugadores) attachAutocomplete(c);
+}
+
+// ── Autocompletado de jugadores existentes ──
+function attachAutocomplete(container) {
+  container.querySelectorAll('.p-nombre, .e-nombre').forEach(inp => {
+    const box = inp.parentElement.querySelector('.autocomplete');
+    let timer;
+    inp.addEventListener('input', () => {
+      clearTimeout(timer);
+      const q = inp.value.trim();
+      if (q.length < 2) { box.style.display='none'; return; }
+      timer = setTimeout(async () => {
+        try {
+          const r = await fetch(API + '/jugadores?q=' + encodeURIComponent(q));
+          const d = await r.json();
+          if (!d.data || !d.data.length) { box.style.display='none'; return; }
+          box.innerHTML = d.data.map(j => `<div data-n="${j.NombreCompleto.replace(/"/g,'&quot;')}">${j.NombreCompleto}</div>`).join('');
+          box.style.display = 'block';
+          box.querySelectorAll('div').forEach(opt => opt.addEventListener('click', () => {
+            inp.value = opt.dataset.n; box.style.display='none';
+          }));
+        } catch(e) { box.style.display='none'; }
+      }, 250);
+    });
+    inp.addEventListener('blur', () => setTimeout(() => box.style.display='none', 200));
+  });
+}
+
+function recogerJugadores(prefix) {
+  const rows = [...document.querySelectorAll('#'+(prefix==='p'?'players-container':'edit-players')+' .player-row')];
+  return rows.map(r => ({
+    nombre: r.querySelector('.'+prefix+'-nombre').value,
+    genero: r.querySelector('.'+prefix+'-genero').value,
+    telefono: r.querySelector('.'+prefix+'-tel').value
+  }));
+}
+
+// ── Inscribir ──
+document.getElementById('btn-inscribir').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-inscribir');
+  const body = {
+    torneoId: torneoActual.Id,
+    nombreEquipo: val('f-nombre'), club: val('f-club'), pais: val('f-pais'),
+    representante: val('f-rep'), correoRepresentante: val('f-correo'), telefono: val('f-tel'),
+    jugadores: recogerJugadores('p')
+  };
+  btn.disabled = true; btn.textContent = '⏳ Registrando…';
+  try {
+    const r = await fetch(API + '/equipos', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    const d = await r.json();
+    if (!d.success) { showAlert('insc-alert', d.message || 'Error', false); btn.disabled=false; btn.textContent='✅ Registrar equipo'; return; }
+    document.getElementById('insc-form-wrap').classList.add('hidden');
+    document.getElementById('insc-alert').className = 'alert';
+    document.getElementById('success-code').textContent = d.data.codigoEquipo;
+    document.getElementById('insc-success').classList.remove('hidden');
+    window.scrollTo({top:0, behavior:'smooth'});
+  } catch(e) { showAlert('insc-alert','Error de conexión', false); btn.disabled=false; btn.textContent='✅ Registrar equipo'; }
+});
+const val = id => document.getElementById(id).value;
+
+// ── Buscar equipos ──
+let searchTimer;
+function debouncedSearch(){ clearTimeout(searchTimer); searchTimer = setTimeout(buscarEquipos, 300); }
+async function buscarEquipos() {
+  const cont = document.getElementById('search-results');
+  const sp = document.getElementById('search-spinner');
+  sp.classList.remove('hidden'); cont.innerHTML='';
+  const q = val('search-q'), pais = val('search-pais');
+  const params = new URLSearchParams();
+  if (torneoActual) params.set('torneo', torneoActual.Id);
+  if (q) params.set('q', q); if (pais) params.set('pais', pais);
+  try {
+    const r = await fetch(API + '/equipos?' + params); const d = await r.json();
+    sp.classList.add('hidden');
+    if (!d.data || !d.data.length) { cont.innerHTML = '<p style="color:var(--gray-400);padding:20px">No se encontraron equipos.</p>'; return; }
+    cont.innerHTML = d.data.map(e => {
+      const jug = (e.Jugadores||[]).slice(0,4).map(n=>`<span class="tag">${n.split(' ')[0]}</span>`).join('');
+      const extra = (e.TotalJugadores>4)?`<span class="tag">+${e.TotalJugadores-4}</span>`:'';
+      const badge = e.Estado==='aprobado'?'<span class="badge apr">Aprobado</span>':'<span class="badge pen">Pendiente</span>';
+      return `<div class="team-card">
+        <div style="display:flex;justify-content:space-between;gap:8px">
+          <div><div style="font-weight:700">${e.NombreEquipo}</div>
+          <div style="font-size:.8em;color:var(--gray-500);margin-top:2px">${[e.Pais,e.Club].filter(Boolean).join(' · ')||'—'}</div></div>
+          ${badge}
+        </div>
+        <div style="border-top:1px solid var(--gray-100);margin-top:12px;padding-top:10px">
+          <div style="font-size:.72em;color:var(--gray-400);text-transform:uppercase;margin-bottom:6px">${e.TotalJugadores} jugadores</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">${jug}${extra}</div>
+        </div></div>`;
+    }).join('');
+  } catch(e) { sp.classList.add('hidden'); cont.innerHTML='<p style="color:#b91c1c;padding:20px">Error al buscar.</p>'; }
+}
+
+// ── Editar ──
+document.getElementById('btn-acceder').addEventListener('click', async () => {
+  const codigo = val('edit-code').trim().toUpperCase();
+  if (!codigo) return showAlert('edit-alert','Ingresa tu código', false);
+  try {
+    const r = await fetch(API + '/equipos/acceso', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({codigo})});
+    const d = await r.json();
+    if (!d.success) return showAlert('edit-alert', d.message, false);
+    if (!d.data.PuedeEditar) return showAlert('edit-alert','El plazo de modificación finalizó. Contacta a la organización.', false);
+    document.getElementById('edit-alert').className='alert';
+    editCodigo = codigo;
+    const e = d.data;
+    set('e-nombre',e.NombreEquipo); set('e-club',e.Club); set('e-pais',e.Pais); set('e-rep',e.Representante); set('e-tel',e.Telefono);
+    const c = document.getElementById('edit-players'); c.innerHTML='';
+    const max = e.JugadoresPorEquipo;
+    for (let i=1;i<=max;i++) c.insertAdjacentHTML('beforeend', playerRowHTML(i,'e'));
+    (e.Jugadores||[]).forEach((j,idx) => {
+      const row = c.children[idx]; if (!row) return;
+      row.querySelector('.e-nombre').value = j.NombreCompleto || '';
+      row.querySelector('.e-genero').value = j.Genero || '';
+      row.querySelector('.e-tel').value = j.Telefono || '';
+    });
+    document.getElementById('edit-chip').textContent = `${max} jugadores por equipo`;
+    attachAutocomplete(c);
+    document.getElementById('edit-form-wrap').classList.remove('hidden');
+    document.getElementById('edit-access').classList.add('hidden');
+  } catch(e) { showAlert('edit-alert','Error de conexión', false); }
+});
+
+document.getElementById('btn-guardar').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-guardar');
+  const body = { codigo: editCodigo, nombreEquipo: val('e-nombre'), club: val('e-club'), pais: val('e-pais'),
+    representante: val('e-rep'), telefono: val('e-tel'), jugadores: recogerJugadores('e') };
+  btn.disabled=true; btn.textContent='⏳ Guardando…';
+  try {
+    const r = await fetch(API + '/equipos', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    const d = await r.json();
+    showAlert('edit-alert', d.message, d.success);
+    if (d.success) window.scrollTo({top:0,behavior:'smooth'});
+  } catch(e) { showAlert('edit-alert','Error de conexión', false); }
+  btn.disabled=false; btn.textContent='💾 Guardar cambios';
+});
+
+const set = (id,v) => document.getElementById(id).value = v || '';
+
+cargarTorneos();
+</script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · Torneos e Inscripciones — ScoreDomino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--green-dark:#0a3d1f;--green-base:#16a34a;--green-light:#22c55e;--gold:#f59e0b;
+  --gray-50:#f8fafc;--gray-100:#f1f5f9;--gray-200:#e2e8f0;--gray-400:#94a3b8;--gray-500:#64748b;--gray-700:#334155;--gray-900:#0f172a;
+  --font:'Inter',-apple-system,sans-serif}
+body{font-family:var(--font);background:var(--gray-50);color:var(--gray-900)}
+.topbar{background:linear-gradient(160deg,#061410,#0a3d1f 60%,#0d4e28);padding:14px 26px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800}
+.brand .ico{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--green-base),var(--green-light));display:flex;align-items:center;justify-content:center;font-size:1.1em}
+.brand small{display:block;font-size:.6em;color:#86efac;font-weight:600}
+select,input,button{font-family:var(--font)}
+.sel-torneo{height:36px;padding:0 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);font-weight:600;font-size:.9em}
+.wrap{max-width:1100px;margin:24px auto;padding:0 20px}
+.login-box{max-width:380px;margin:80px auto;background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:30px;text-align:center}
+.login-box input{width:100%;height:42px;padding:0 12px;border:1px solid var(--gray-200);border-radius:9px;margin-bottom:12px;font-size:.95em}
+.btn{border:none;border-radius:50px;font-weight:700;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--green-base),var(--green-light));color:#fff;height:42px;padding:0 24px;font-size:.92em}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-sm{height:32px;padding:0 12px;font-size:.8em;font-weight:600;border-radius:7px}
+.btn-apr{background:var(--green-base);color:#fff;border:none}
+.btn-rej{background:#fff;color:#dc2626;border:1px solid #fecaca}
+.btn-ghost{background:#fff;color:var(--gray-700);border:1px solid var(--gray-200)}
+.cfgbar{background:var(--green-dark);border-radius:14px;padding:16px 20px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.cfgbar .item small{display:block;font-size:.7em;color:#86efac;text-transform:uppercase;letter-spacing:.5px}
+.cfgbar .item b{color:#fff;font-size:1.05em}
+.badge{font-size:.72em;font-weight:700;padding:4px 10px;border-radius:50px}
+.badge.apr{background:#dcfce7;color:#15803d}.badge.pen{background:#fef3c7;color:#b45309}.badge.rej{background:#fee2e2;color:#b91c1c}
+.badge.open{background:rgba(34,197,94,.18);color:#4ade80;border:1px solid rgba(34,197,94,.4)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--gray-200);border-radius:12px;padding:14px}
+.stat small{font-size:.78em;color:var(--gray-500)}
+.stat b{display:block;font-size:1.8em;font-weight:800;margin-top:2px}
+.card{background:#fff;border:1px solid var(--gray-200);border-radius:14px;padding:18px;margin-bottom:18px}
+.card-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.card-head h2{font-size:1.05em;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:.86em}
+th{text-align:left;color:var(--gray-500);font-weight:600;padding:9px 8px;border-bottom:1px solid var(--gray-200)}
+td{padding:11px 8px;border-bottom:1px solid var(--gray-100)}
+.codef{font-family:monospace;color:var(--green-dark);font-weight:600}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters input,.filters select{height:34px;padding:0 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:.85em}
+.hidden{display:none!important}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green-dark);color:#fff;padding:12px 18px;border-radius:10px;font-size:.9em;opacity:0;transition:.3s;z-index:50}
+.toast.show{opacity:1}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:40;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:14px;padding:22px;max-width:480px;width:100%}
+.modal label{display:block;font-size:.78em;font-weight:600;color:var(--gray-700);margin:10px 0 4px}
+.modal input,.modal select{width:100%;height:38px;padding:0 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:.9em}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.jug-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.tag{background:var(--gray-100);color:var(--gray-700);font-size:.78em;padding:3px 9px;border-radius:50px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="ico">⚙️</span><div>Admin · Torneos<small>ScoreDomino</small></div></div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <select class="sel-torneo" id="sel-torneo"></select>
+    <button class="btn btn-primary btn-sm" onclick="abrirModalTorneo()">+ Nuevo torneo</button>
+  </div>
+</div>
+
+<!-- LOGIN (si no hay token) -->
+<div class="login-box hidden" id="login-box">
+  <h2 style="margin-bottom:6px">Panel administrativo</h2>
+  <p style="color:var(--gray-500);font-size:.88em;margin-bottom:18px">Inicia sesión con tu cuenta de administrador.</p>
+  <input id="login-email" type="email" placeholder="Correo">
+  <input id="login-pass" type="password" placeholder="Contraseña">
+  <button class="btn btn-primary" style="width:100%" onclick="login()">Entrar</button>
+  <p id="login-err" style="color:#dc2626;font-size:.82em;margin-top:10px"></p>
+  <p style="color:var(--gray-400);font-size:.78em;margin-top:14px">También puedes entrar desde <a href="admin.html" style="color:var(--green-base)">admin.html</a></p>
+</div>
+
+<!-- PANEL -->
+<div class="wrap hidden" id="panel">
+  <div class="cfgbar" id="cfgbar"></div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Equipos inscritos</h2>
+      <div class="filters">
+        <input id="f-q" placeholder="Buscar equipo, código…" oninput="debounceEquipos()">
+        <select id="f-estado" onchange="cargarEquipos()">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="aprobado">Aprobado</option>
+          <option value="rechazado">Rechazado</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Código</th><th>Equipo</th><th>País</th><th>Jug.</th><th>Estado</th><th style="text-align:right">Acciones</th></tr></thead>
+        <tbody id="tbody-equipos"></tbody>
+      </table>
+    </div>
+    <p id="empty-eq" class="hidden" style="color:var(--gray-400);padding:20px;text-align:center">No hay equipos.</p>
+  </div>
+</div>
+
+<!-- MODAL TORNEO -->
+<div class="modal-bg" id="modal-torneo">
+  <div class="modal">
+    <h2 id="modal-title" style="font-size:1.1em">Nuevo torneo</h2>
+    <input type="hidden" id="t-id">
+    <label>Nombre *</label><input id="t-nombre">
+    <div class="row2">
+      <div><label>Fecha inicio</label><input id="t-ini" type="date"></div>
+      <div><label>Fecha fin</label><input id="t-fin" type="date"></div>
+    </div>
+    <div class="row2">
+      <div><label>Jugadores por equipo</label><input id="t-jug" type="number" min="1" max="20" value="4"></div>
+      <div><label>Estado</label><select id="t-estado"><option value="borrador">Borrador</option><option value="abierto">Abierto (inscripciones)</option><option value="cerrado">Cerrado</option><option value="finalizado">Finalizado</option></select></div>
+    </div>
+    <label>Cierre de modificación (opcional)</label><input id="t-limite" type="datetime-local">
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="t-busqueda" checked style="width:auto;height:auto"> Activar búsqueda de jugadores existentes</label>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
+      <button class="btn btn-ghost btn-sm" onclick="cerrarModalTorneo()">Cancelar</button>
+      <button class="btn btn-primary btn-sm" onclick="guardarTorneo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE EQUIPO -->
+<div class="modal-bg" id="modal-eq">
+  <div class="modal" id="modal-eq-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='/api/admin/inscripcion';
+let token = localStorage.getItem('admin_token') || '';
+let torneos=[], torneoId=null, eqTimer;
+
+function authHeaders(){ return {'Content-Type':'application/json','Authorization':'Bearer '+token}; }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+async function api(path, opts={}) {
+  const r = await fetch(API+path, {...opts, headers:{...authHeaders(), ...(opts.headers||{})}});
+  if (r.status===401 || r.status===403) { mostrarLogin(); throw new Error('no-auth'); }
+  return r.json();
+}
+
+function mostrarLogin(){ document.getElementById('login-box').classList.remove('hidden'); document.getElementById('panel').classList.add('hidden'); }
+function mostrarPanel(){ document.getElementById('login-box').classList.add('hidden'); document.getElementById('panel').classList.remove('hidden'); }
+
+async function login(){
+  const email=document.getElementById('login-email').value, pass=document.getElementById('login-pass').value;
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const d=await r.json();
+    if(!d.success){ document.getElementById('login-err').textContent=d.message||'Error'; return; }
+    token=d.data.token; localStorage.setItem('admin_token',token); init();
+  }catch(e){ document.getElementById('login-err').textContent='Error de conexión'; }
+}
+
+async function init(){
+  if(!token){ mostrarLogin(); return; }
+  try{
+    const d=await api('/torneos');
+    torneos=d.data||[];
+    mostrarPanel();
+    const sel=document.getElementById('sel-torneo');
+    if(!torneos.length){ sel.innerHTML='<option>Sin torneos</option>'; return; }
+    sel.innerHTML=torneos.map(t=>`<option value="${t.Id}">${t.Nombre}</option>`).join('');
+    sel.onchange=()=>seleccionar(sel.value);
+    seleccionar(torneos[0].Id);
+  }catch(e){ if(e.message!=='no-auth') console.error(e); }
+}
+
+function seleccionar(id){
+  torneoId=id;
+  const t=torneos.find(x=>String(x.Id)===String(id));
+  document.getElementById('cfgbar').innerHTML=`
+    <div style="display:flex;gap:18px;flex-wrap:wrap">
+      <div class="item"><small>Jugadores/equipo</small><b>${t.JugadoresPorEquipo}</b></div>
+      <div class="item"><small>Cierre modificación</small><b>${t.FechaLimiteModificacion?new Date(t.FechaLimiteModificacion).toLocaleDateString():'—'}</b></div>
+      <div class="item"><small>Búsqueda jugadores</small><b style="color:${t.BusquedaJugadores?'#4ade80':'#f87171'}">${t.BusquedaJugadores?'Activada':'Desactivada'}</b></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="badge ${t.Estado==='abierto'?'open':'pen'}">${t.Estado==='abierto'?'Inscripciones abiertas':t.Estado}</span>
+      <button class="btn btn-ghost btn-sm" onclick="editarTorneo(${t.Id})">Configurar</button>
+    </div>`;
+  cargarStats(); cargarEquipos();
+}
+
+async function cargarStats(){
+  const d=await api('/stats?torneo='+torneoId); const s=d.data;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><small>Total equipos</small><b>${s.total||0}</b></div>
+    <div class="stat"><small style="color:#b45309">Pendientes</small><b style="color:#b45309">${s.pendientes||0}</b></div>
+    <div class="stat"><small style="color:#15803d">Aprobados</small><b style="color:#15803d">${s.aprobados||0}</b></div>
+    <div class="stat"><small>Rechazados</small><b>${s.rechazados||0}</b></div>
+    <div class="stat"><small>Jugadores</small><b>${s.jugadores||0}</b></div>`;
+}
+
+function debounceEquipos(){ clearTimeout(eqTimer); eqTimer=setTimeout(cargarEquipos,300); }
+async function cargarEquipos(){
+  const q=document.getElementById('f-q').value, estado=document.getElementById('f-estado').value;
+  const p=new URLSearchParams({torneo:torneoId}); if(q)p.set('q',q); if(estado)p.set('estado',estado);
+  const d=await api('/equipos?'+p); const eq=d.data||[];
+  const tb=document.getElementById('tbody-equipos');
+  document.getElementById('empty-eq').classList.toggle('hidden', eq.length>0);
+  tb.innerHTML=eq.map(e=>{
+    const b=e.Estado==='aprobado'?'<span class="badge apr">Aprobado</span>':e.Estado==='rechazado'?'<span class="badge rej">Rechazado</span>':'<span class="badge pen">Pendiente</span>';
+    const acc=e.Estado==='pendiente'
+      ?`<button class="btn btn-sm btn-apr" onclick="cambiarEstado(${e.Id},'aprobado')">Aprobar</button>
+        <button class="btn btn-sm btn-rej" onclick="cambiarEstado(${e.Id},'rechazado')">Rechazar</button>`
+      :`<button class="btn btn-sm btn-ghost" onclick="cambiarEstado(${e.Id},'pendiente')">Reabrir</button>`;
+    return `<tr>
+      <td class="codef">${e.CodigoEquipo}</td>
+      <td><b>${e.NombreEquipo}</b><br><small style="color:var(--gray-400)">${e.Representante}</small></td>
+      <td style="color:var(--gray-500)">${e.Pais||'—'}</td>
+      <td>${e.TotalJugadores}/${e.JugadoresPorEquipo}</td>
+      <td>${b}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn btn-sm btn-ghost" onclick="verEquipo(${e.Id})">Ver</button> ${acc}
+      </td></tr>`;
+  }).join('');
+}
+
+async function cambiarEstado(id,estado){
+  await api('/equipos/'+id+'/estado',{method:'PATCH',body:JSON.stringify({estado})});
+  toast('Equipo '+estado); cargarStats(); cargarEquipos();
+}
+
+async function verEquipo(id){
+  const d=await api('/equipos/'+id); const e=d.data;
+  const jugs=(e.Jugadores||[]).map((j,i)=>`<span class="tag">${i+1}. ${j.NombreCompleto}${j.Genero?' ('+j.Genero[0].toUpperCase()+')':''}</span>`).join('');
+  document.getElementById('modal-eq-content').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:start">
+      <div><h2 style="font-size:1.15em">${e.NombreEquipo}</h2><div class="codef" style="margin-top:2px">${e.CodigoEquipo}</div></div>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-eq').classList.remove('show')">✕</button>
+    </div>
+    <div style="font-size:.88em;color:var(--gray-700);margin-top:12px;line-height:1.8">
+      <div><b>Club:</b> ${e.Club||'—'} &nbsp; <b>País:</b> ${e.Pais||'—'}</div>
+      <div><b>Representante:</b> ${e.Representante}</div>
+      <div><b>Correo:</b> ${e.CorreoRepresentante} &nbsp; <b>Tel:</b> ${e.Telefono||'—'}</div>
+    </div>
+    <div style="margin-top:12px"><b style="font-size:.85em">Jugadores (${e.TotalJugadores}/${e.JugadoresPorEquipo})</b><div class="jug-list">${jugs}</div></div>`;
+  document.getElementById('modal-eq').classList.add('show');
+}
+
+// ── Torneo modal ──
+function abrirModalTorneo(){ document.getElementById('modal-title').textContent='Nuevo torneo';
+  ['t-id','t-nombre','t-ini','t-fin','t-limite'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('t-jug').value=4; document.getElementById('t-estado').value='borrador'; document.getElementById('t-busqueda').checked=true;
+  document.getElementById('modal-torneo').classList.add('show'); }
+function cerrarModalTorneo(){ document.getElementById('modal-torneo').classList.remove('show'); }
+function editarTorneo(id){ const t=torneos.find(x=>x.Id===id); document.getElementById('modal-title').textContent='Configurar torneo';
+  document.getElementById('t-id').value=t.Id; document.getElementById('t-nombre').value=t.Nombre;
+  document.getElementById('t-ini').value=t.FechaInicio?t.FechaInicio.split('T')[0]:'';
+  document.getElementById('t-fin').value=t.FechaFin?t.FechaFin.split('T')[0]:'';
+  document.getElementById('t-jug').value=t.JugadoresPorEquipo; document.getElementById('t-estado').value=t.Estado;
+  document.getElementById('t-limite').value=t.FechaLimiteModificacion?t.FechaLimiteModificacion.slice(0,16):'';
+  document.getElementById('t-busqueda').checked=!!t.BusquedaJugadores;
+  document.getElementById('modal-torneo').classList.add('show'); }
+
+async function guardarTorneo(){
+  const id=document.getElementById('t-id').value;
+  const body={ nombre:document.getElementById('t-nombre').value, fechaInicio:document.getElementById('t-ini').value||null,
+    fechaFin:document.getElementById('t-fin').value||null, jugadoresPorEquipo:document.getElementById('t-jug').value,
+    fechaLimiteModificacion:document.getElementById('t-limite').value||null, estado:document.getElementById('t-estado').value,
+    busquedaJugadores:document.getElementById('t-busqueda').checked };
+  if(!body.nombre){ toast('Nombre requerido'); return; }
+  if(id) await api('/torneos/'+id,{method:'PUT',body:JSON.stringify(body)});
+  else await api('/torneos',{method:'POST',body:JSON.stringify(body)});
+  cerrarModalTorneo(); toast('Torneo guardado'); await init();
+}
+
+document.getElementById('modal-eq').addEventListener('click',e=>{ if(e.target.id==='modal-eq') e.target.classList.remove('show'); });
+init();
+</script>
+</body>
+</html>

@@ -70,6 +70,11 @@ input:focus,select:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rg
 .trn-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e}
 .trn-meta{display:flex;flex-wrap:wrap;gap:20px;font-size:.94em;color:rgba(255,255,255,.88)}
 .trn-meta span{display:inline-flex;align-items:center;gap:7px}
+.trn-pick{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.trn-pick .opt{border:1.5px solid var(--gray-200);border-radius:14px;padding:18px;cursor:pointer;transition:.2s;background:#fff}
+.trn-pick .opt:hover{border-color:var(--green-light);box-shadow:0 8px 22px rgba(22,163,74,.12);transform:translateY(-2px)}
+.trn-pick .opt h3{font-size:1.05em;font-weight:700;margin-bottom:8px;color:var(--gray-900)}
+.trn-pick .opt .m{font-size:.85em;color:var(--gray-500);display:flex;flex-direction:column;gap:4px}
 .autocomplete{position:absolute;z-index:20;background:#fff;border:1px solid var(--gray-200);border-radius:9px;
   box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:180px;overflow:auto;width:100%;display:none}
 .autocomplete div{padding:9px 12px;font-size:.88em;cursor:pointer}
@@ -126,6 +131,8 @@ input:focus,select:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rg
   <!-- ===== INSCRIBIR ===== -->
   <section id="tab-inscribir">
     <div class="alert" id="insc-alert"></div>
+
+    <div id="trn-chooser" style="display:none;margin-bottom:20px"></div>
 
     <div id="trn-banner" class="trn-banner" style="display:none"></div>
 
@@ -239,28 +246,62 @@ async function cargarTorneos() {
   try {
     const r = await fetch(API + '/torneos'); const d = await r.json();
     torneos = d.data || [];
+    const chooser = document.getElementById('trn-chooser');
+    const formWrap = document.getElementById('insc-form-wrap');
     if (!torneos.length) {
-      document.getElementById('torneo-nombre').textContent = 'No hay un torneo con inscripciones abiertas en este momento.';
-      document.getElementById('insc-form-wrap').innerHTML = '<p style="text-align:center;color:var(--gray-500)">Por ahora no hay inscripciones abiertas. Vuelve pronto.</p>';
+      document.getElementById('torneo-nombre').textContent = 'No hay torneos con inscripciones abiertas en este momento.';
+      document.getElementById('trn-banner').style.display = 'none';
+      formWrap.style.display = 'none';
+      chooser.style.display = 'block';
+      chooser.innerHTML = '<div class="card" style="text-align:center;color:var(--gray-500)">Por ahora no hay inscripciones abiertas. Vuelve pronto.</div>';
       return;
     }
-    // Solo se muestra el torneo activo
-    torneoActual = torneos[0];
-    const t = torneoActual;
-    document.getElementById('torneo-nombre').textContent = 'Inscribe tu equipo en el torneo activo';
-    const banner = document.getElementById('trn-banner');
-    banner.style.display = 'block';
-    banner.innerHTML = `
-      <span class="trn-badge"><span class="trn-dot"></span> Inscripciones abiertas</span>
-      <h2>${t.Nombre}</h2>
-      <div class="trn-meta">
-        <span>📍 ${t.Lugar || 'Sede por confirmar'}</span>
-        <span>📅 ${fmtRango(t.FechaInicio, t.FechaFin)}</span>
-        <span>👥 ${t.JugadoresPorEquipo} jugadores por equipo</span>
-      </div>`;
-    document.getElementById('insc-chip').textContent = `${t.JugadoresPorEquipo} jugadores por equipo`;
-    generarJugadores(t.JugadoresPorEquipo);
-  } catch(e) { document.getElementById('torneo-nombre').textContent = 'Error al cargar el torneo.'; }
+    if (torneos.length === 1) {
+      chooser.style.display = 'none';
+      activarTorneo(torneos[0]);
+      return;
+    }
+    // Varios torneos abiertos → el participante elige
+    document.getElementById('torneo-nombre').textContent = 'Elige el torneo en el que quieres inscribir tu equipo';
+    document.getElementById('trn-banner').style.display = 'none';
+    formWrap.style.display = 'none';
+    chooser.style.display = 'block';
+    chooser.innerHTML = `<div class="section-title" style="margin-bottom:14px"><span class="dot"></span> Selecciona un torneo</div>
+      <div class="trn-pick">${torneos.map((t,i) => `
+        <div class="opt" data-i="${i}">
+          <h3>${t.Nombre}</h3>
+          <div class="m">
+            <span>📍 ${t.Lugar || 'Sede por confirmar'}</span>
+            <span>📅 ${fmtRango(t.FechaInicio, t.FechaFin)}</span>
+            <span>👥 ${t.JugadoresPorEquipo} jugadores por equipo</span>
+          </div>
+        </div>`).join('')}</div>`;
+    chooser.querySelectorAll('.opt').forEach(el => el.addEventListener('click', () => {
+      activarTorneo(torneos[el.dataset.i]);
+      chooser.querySelectorAll('.opt').forEach(o => o.style.borderColor = '');
+      el.style.borderColor = 'var(--green-base)';
+      document.getElementById('trn-banner').scrollIntoView({ behavior:'smooth', block:'start' });
+    }));
+  } catch(e) { document.getElementById('torneo-nombre').textContent = 'Error al cargar los torneos.'; }
+}
+
+function activarTorneo(t) {
+  torneoActual = t;
+  document.getElementById('torneo-nombre').textContent = (torneos.length > 1)
+    ? 'Completa los datos de tu equipo' : 'Inscribe tu equipo en el torneo activo';
+  const banner = document.getElementById('trn-banner');
+  banner.style.display = 'block';
+  banner.innerHTML = `
+    <span class="trn-badge"><span class="trn-dot"></span> Inscripciones abiertas</span>
+    <h2>${t.Nombre}</h2>
+    <div class="trn-meta">
+      <span>📍 ${t.Lugar || 'Sede por confirmar'}</span>
+      <span>📅 ${fmtRango(t.FechaInicio, t.FechaFin)}</span>
+      <span>👥 ${t.JugadoresPorEquipo} jugadores por equipo</span>
+    </div>`;
+  document.getElementById('insc-form-wrap').style.display = '';
+  document.getElementById('insc-chip').textContent = `${t.JugadoresPorEquipo} jugadores por equipo`;
+  generarJugadores(t.JugadoresPorEquipo);
 }
 
 function playerRowHTML(n, prefix) {

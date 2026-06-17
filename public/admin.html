@@ -885,6 +885,26 @@
           </div>
         </div>
       </div>
+
+      <!-- Jugadores por equipo (grid + export Excel) -->
+      <div class="card" style="margin-top:18px">
+        <div class="card-header">
+          <span class="card-title">🧍 Jugadores por equipo</span>
+          <button class="btn btn-primary btn-sm" onclick="trnExportJugadores()">⬇️ Descargar Excel</button>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Equipo</th><th style="width:50px">#</th><th>Jugador</th><th style="width:120px">Género</th><th style="width:90px">País</th></tr>
+              </thead>
+              <tbody id="trn-jug-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-2)">Selecciona un torneo…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="sec-carga" class="section">
@@ -2280,22 +2300,79 @@ function trnSeleccionar(id) {
   document.getElementById('trn-select').value = id;
   const t = trnList.find(x => x.Id == id);
   if (!t) return;
-  const estadoBadge = t.Estado === 'abierto'
-    ? '<span class="badge badge-approved">Inscripciones abiertas</span>'
-    : `<span class="badge badge-user">${t.Estado}</span>`;
+  const opts = ['borrador','abierto','cerrado','finalizado']
+    .map(s => `<option value="${s}" ${t.Estado===s?'selected':''}>${s==='abierto'?'Abierto (inscripciones)':s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('');
   document.getElementById('trn-config').innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:center;justify-content:space-between">
-      <div style="display:flex;flex-wrap:wrap;gap:22px">
+      <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:center">
+        <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2);margin-bottom:3px">Estado</div>
+          <select class="filter-select" style="height:34px;font-weight:600" onchange="trnSetEstado(${t.Id}, this.value)">${opts}</select></div>
         <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2)">Lugar</div><b style="color:var(--text-1)">${t.Lugar || '—'}</b></div>
         <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2)">Fechas</div><b style="color:var(--text-1)">${fdate(t.FechaInicio)} – ${fdate(t.FechaFin)}</b></div>
         <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2)">Jugadores/equipo</div><b style="color:var(--text-1)">${t.JugadoresPorEquipo}</b></div>
-        <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2)">Cierre modif.</div><b style="color:var(--text-1)">${t.FechaLimiteModificacion ? fdate(t.FechaLimiteModificacion) : '—'}</b></div>
         <div><div style="font-size:11px;text-transform:uppercase;color:var(--text-2)">Búsqueda jugadores</div><b style="color:${t.BusquedaJugadores?'#16a34a':'#b91c1c'}">${t.BusquedaJugadores?'Activada':'Desactivada'}</b></div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">${estadoBadge}<button class="btn btn-ghost btn-sm" onclick="trnEditarTorneo(${t.Id})">⚙️ Configurar</button></div>
+      <button class="btn btn-ghost btn-sm" onclick="trnEditarTorneo(${t.Id})">⚙️ Configurar</button>
     </div>`;
   trnCargarStats();
   trnCargarEquipos();
+  trnCargarJugadores();
+}
+
+// Grid de jugadores ordenado por equipo
+function generoTxt(g) {
+  if (g === 'masculino') return '<span style="color:#185fa5">♂ Masculino</span>';
+  if (g === 'femenino')  return '<span style="color:#993556">♀ Femenino</span>';
+  if (g === 'otro')      return '<span style="color:var(--text-2)">Otro</span>';
+  return '<span style="color:#b45309">— sin definir</span>';
+}
+async function trnCargarJugadores() {
+  if (!trnId) return;
+  const d = await api(TRN_API + '/jugadores?torneo=' + trnId);
+  const rows = d?.data || [];
+  const tb = document.getElementById('trn-jug-tbody');
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-2)">Aún no hay jugadores inscritos.</td></tr>'; return; }
+  let last = null;
+  tb.innerHTML = rows.map(r => {
+    const nuevo = r.NombreEquipo !== last; last = r.NombreEquipo;
+    return `<tr style="${nuevo ? 'border-top:2px solid var(--border)' : ''}">
+      <td>${nuevo ? `<b>${r.NombreEquipo}</b><br><span style="font-size:11px;color:var(--text-2);font-family:monospace">${r.CodigoEquipo}</span>` : ''}</td>
+      <td>${r.Posicion}</td>
+      <td>${r.NombreCompleto}</td>
+      <td>${generoTxt(r.Genero)}</td>
+      <td>${nuevo ? (r.Pais || '—') : ''}</td>
+    </tr>`;
+  }).join('');
+}
+async function trnExportJugadores() {
+  if (!trnId) return;
+  try {
+    const res = await fetch(TRN_API + '/jugadores/export?torneo=' + trnId, { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) { toast('Error al exportar', 'error'); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'jugadores_por_equipo.xlsx';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    toast('Excel descargado', 'success');
+  } catch (e) { toast('Error al exportar', 'error'); }
+}
+
+// Cambio rápido de estado del torneo (envía el objeto completo para no perder datos)
+async function trnSetEstado(id, estado) {
+  const t = trnList.find(x => x.Id == id);
+  if (!t) return;
+  const body = {
+    nombre: t.Nombre,
+    lugar: t.Lugar || '',
+    fechaInicio: t.FechaInicio ? String(t.FechaInicio).split('T')[0] : null,
+    fechaFin: t.FechaFin ? String(t.FechaFin).split('T')[0] : null,
+    jugadoresPorEquipo: t.JugadoresPorEquipo,
+    fechaLimiteModificacion: t.FechaLimiteModificacion ? String(t.FechaLimiteModificacion).slice(0,19).replace('T',' ') : null,
+    busquedaJugadores: !!t.BusquedaJugadores,
+    estado
+  };
+  const d = await api(TRN_API + '/torneos/' + id, { method:'PUT', body: JSON.stringify(body) });
+  if (d?.success) { toast('Estado actualizado: ' + estado, 'success'); await loadTorneos(); }
 }
 
 async function trnCargarStats() {

@@ -19,6 +19,10 @@ router.get('/equipos',                  ctrl.adminListarEquipos);
 router.get('/equipos/:id',              ctrl.adminGetEquipo);
 router.patch('/equipos/:id/estado',     ctrl.adminCambiarEstado);
 
+// Jugadores (grid por equipo + exportar Excel)
+router.get('/jugadores',        ctrl.adminListarJugadores);
+router.get('/jugadores/export', ctrl.adminExportJugadores);
+
 // Estadísticas
 router.get('/stats',         ctrl.adminStats);
 

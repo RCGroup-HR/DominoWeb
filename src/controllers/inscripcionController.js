@@ -5,6 +5,7 @@
 // Admin:   torneos, listar equipos, aprobar/rechazar, stats.
 // ============================================================
 const pool = require('../config/database');
+const XLSX = require('xlsx');
 
 // ── Helpers ─────────────────────────────────────────────────
 
@@ -54,6 +55,21 @@ function normGenero(g) {
     if (v.startsWith('masc') || v === 'm') return 'masculino';
     if (v.startsWith('fem') || v === 'f') return 'femenino';
     if (v === 'otro' || v === 'o') return 'otro';
+    return null;
+}
+
+// Diccionarios de primer nombre para inferir género automáticamente
+const NOMBRES_M = new Set('jose juan jesus luis carlos miguel angel manuel rafael pedro antonio francisco javier daniel david fernando jorge alberto alejandro andres sergio pablo ramon ruben ivan oscar raul victor adrian mario diego marcos hector hugo gabriel samuel emilio felipe gustavo enrique eduardo roberto ricardo armando wilson franklin starling yunior junior nelson cristian christian elvis wander wandy jhon john johan jeison cesar elias isaac isaias abel noe simon tomas nicolas matias santiago benjamin lucas martin agustin joaquin ignacio emanuel emmanuel kelvin yael axel dylan derek brandon bryan kevin steven jefferson maximo aquiles dario amaury freddy genaro evaristo gregorio domingo bienvenido radhames confesor leonel danilo hipolito'.split(' '));
+const NOMBRES_F = new Set('maria ana carmen rosa laura sofia sara lucia paula martina valentina camila isabella isabel daniela gabriela mariana valeria victoria julia carla claudia patricia veronica monica raquel elena cristina beatriz silvia andrea natalia alejandra adriana carolina catalina diana fabiola yokasta yamilet yaritza yesenia yuderka dahiana massiel madeline noelia esther ruth noemi abigail irene ines mercedes nieves pilar dolores soledad consuelo guadalupe rocio luz cruz reyes milagros amparo soraya scarlet scarlett genesis ashley britney emely emily kimberly nicole melany melanie estefany estefania damaris altagracia francisca felicia juana ramona mirian miriam wendy yari katherine katerin clara'.split(' '));
+
+/** Infiere el género a partir del nombre (primer nombre + terminación). null si no es claro. */
+function inferGenero(nombre) {
+    const first = normNombre(nombre).split(' ')[0];
+    if (!first) return null;
+    if (NOMBRES_F.has(first)) return 'femenino';
+    if (NOMBRES_M.has(first)) return 'masculino';
+    if (/a$/.test(first))      return 'femenino';
+    if (/(o|os)$/.test(first)) return 'masculino';
     return null;
 }
 
@@ -226,7 +242,7 @@ exports.inscribirEquipo = async (req, res) => {
                 const [jRes] = await conn.query(
                     `INSERT INTO insc_jugadores (CodigoJugador, NombreCompleto, Genero, FechaNacimiento, Telefono)
                      VALUES (?, ?, ?, ?, ?)`,
-                    [codigoJugador, nombre, normGenero(j.genero),
+                    [codigoJugador, nombre, normGenero(j.genero) || inferGenero(nombre),
                      (j.fechaNacimiento || '').trim() || null, (j.telefono || '').trim() || null]
                 );
                 jugadorId = jRes.insertId;
@@ -344,7 +360,7 @@ exports.actualizarEquipo = async (req, res) => {
                 const cj = await generarCodigoJugador(conn);
                 const [jRes] = await conn.query(
                     'INSERT INTO insc_jugadores (CodigoJugador, NombreCompleto, Genero, FechaNacimiento, Telefono) VALUES (?, ?, ?, ?, ?)',
-                    [cj, nombre, normGenero(j.genero), (j.fechaNacimiento || '').trim() || null, (j.telefono || '').trim() || null]
+                    [cj, nombre, normGenero(j.genero) || inferGenero(nombre), (j.fechaNacimiento || '').trim() || null, (j.telefono || '').trim() || null]
                 );
                 jugadorId = jRes.insertId;
             }
@@ -501,5 +517,61 @@ exports.adminStats = async (req, res) => {
     } catch (error) {
         console.error('adminStats:', error.message);
         res.status(500).json({ success: false, message: 'Error al obtener estadísticas' });
+    }
+};
+
+// Consulta de jugadores ordenados por equipo (reutilizada por grid y export)
+async function consultarJugadoresPorEquipo(torneo) {
+    const params = torneo ? [torneo] : [];
+    const filtro = torneo ? 'WHERE e.TorneoId = ?' : '';
+    const [rows] = await pool.query(
+        `SELECT e.NombreEquipo, e.CodigoEquipo, e.Pais, e.Estado AS EstadoEquipo,
+                ej.Posicion, j.NombreCompleto, j.Genero, j.CodigoJugador
+         FROM insc_equipo_jugador ej
+         JOIN insc_equipos e   ON e.Id = ej.EquipoId
+         JOIN insc_jugadores j ON j.Id = ej.JugadorId
+         ${filtro}
+         ORDER BY e.NombreEquipo ASC, ej.Posicion ASC`,
+        params
+    );
+    return rows;
+}
+
+// GET /api/admin/inscripcion/jugadores?torneo=
+exports.adminListarJugadores = async (req, res) => {
+    try {
+        const data = await consultarJugadoresPorEquipo(req.query.torneo);
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('adminListarJugadores:', error.message);
+        res.status(500).json({ success: false, message: 'Error al listar jugadores' });
+    }
+};
+
+// GET /api/admin/inscripcion/jugadores/export?torneo=  → descarga Excel
+exports.adminExportJugadores = async (req, res) => {
+    try {
+        const rows = await consultarJugadoresPorEquipo(req.query.torneo);
+        const data = rows.map(r => ({
+            'Equipo':         r.NombreEquipo,
+            'Código equipo':  r.CodigoEquipo,
+            'País':           r.Pais || '',
+            'Pos.':           r.Posicion,
+            'Jugador':        r.NombreCompleto,
+            'Género':         r.Genero || '',
+            'Código jugador': r.CodigoJugador,
+            'Estado equipo':  r.EstadoEquipo
+        }));
+        const ws = XLSX.utils.json_to_sheet(data);
+        ws['!cols'] = [{ wch: 26 }, { wch: 14 }, { wch: 16 }, { wch: 6 }, { wch: 28 }, { wch: 12 }, { wch: 14 }, { wch: 14 }];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Jugadores');
+        const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+        res.setHeader('Content-Disposition', 'attachment; filename="jugadores_por_equipo.xlsx"');
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.send(buf);
+    } catch (error) {
+        console.error('adminExportJugadores:', error.message);
+        res.status(500).json({ success: false, message: 'Error al exportar jugadores' });
     }
 };

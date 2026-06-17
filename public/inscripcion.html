@@ -63,7 +63,13 @@ input:focus,select:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rg
 .player-row{border:1px solid var(--gray-200);border-radius:12px;padding:14px;margin-bottom:12px;position:relative}
 .player-row .pnum{position:absolute;top:-9px;left:14px;background:var(--green-base);color:#fff;font-size:.72em;font-weight:700;
   padding:2px 10px;border-radius:50px}
-.player-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+.player-grid{display:grid;grid-template-columns:1fr 180px;gap:10px}
+.trn-banner{background:linear-gradient(135deg,#0a3d1f,#0f5c30);border-radius:16px;padding:24px 26px;color:#fff;margin-bottom:20px;border:1px solid rgba(34,197,94,.25)}
+.trn-banner h2{font-size:1.55em;font-weight:800;letter-spacing:-.5px;margin:11px 0 14px}
+.trn-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(34,197,94,.2);border:1px solid rgba(34,197,94,.4);color:#4ade80;font-size:.72em;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:50px}
+.trn-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e}
+.trn-meta{display:flex;flex-wrap:wrap;gap:20px;font-size:.94em;color:rgba(255,255,255,.88)}
+.trn-meta span{display:inline-flex;align-items:center;gap:7px}
 .autocomplete{position:absolute;z-index:20;background:#fff;border:1px solid var(--gray-200);border-radius:9px;
   box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:180px;overflow:auto;width:100%;display:none}
 .autocomplete div{padding:9px 12px;font-size:.88em;cursor:pointer}
@@ -121,12 +127,10 @@ input:focus,select:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rg
   <section id="tab-inscribir">
     <div class="alert" id="insc-alert"></div>
 
+    <div id="trn-banner" class="trn-banner" style="display:none"></div>
+
     <div class="card" id="insc-form-wrap">
       <div class="section-title"><span class="dot"></span> Datos del equipo</div>
-      <div style="margin-bottom:18px">
-        <label>Torneo *</label>
-        <select id="insc-torneo"></select>
-      </div>
       <div class="grid">
         <div class="field"><label>Nombre del equipo *</label><input id="f-nombre" placeholder="Los Capicúa"></div>
         <div class="field"><label>Club</label><input id="f-club" placeholder="Club Dominó Santiago"></div>
@@ -224,28 +228,39 @@ function showAlert(id, msg, ok) {
 }
 
 // ── Cargar torneos ──
+function fmtRango(ini, fin) {
+  const f = s => s ? new Date(s).toLocaleDateString('es-DO', { day:'numeric', month:'long', year:'numeric' }) : null;
+  const a = f(ini), b = f(fin);
+  if (a && b) return `${a} – ${b}`;
+  return a || b || 'Fechas por confirmar';
+}
+
 async function cargarTorneos() {
   try {
     const r = await fetch(API + '/torneos'); const d = await r.json();
     torneos = d.data || [];
-    const sel = document.getElementById('insc-torneo');
     if (!torneos.length) {
-      document.getElementById('torneo-nombre').textContent = 'No hay torneos con inscripciones abiertas en este momento.';
+      document.getElementById('torneo-nombre').textContent = 'No hay un torneo con inscripciones abiertas en este momento.';
       document.getElementById('insc-form-wrap').innerHTML = '<p style="text-align:center;color:var(--gray-500)">Por ahora no hay inscripciones abiertas. Vuelve pronto.</p>';
       return;
     }
-    sel.innerHTML = torneos.map(t => `<option value="${t.Id}">${t.Nombre}</option>`).join('');
-    document.getElementById('torneo-nombre').textContent = torneos[0].Nombre;
-    sel.addEventListener('change', () => seleccionarTorneo(sel.value));
-    seleccionarTorneo(torneos[0].Id);
-  } catch(e) { document.getElementById('torneo-nombre').textContent = 'Error al cargar torneos.'; }
-}
-
-function seleccionarTorneo(id) {
-  torneoActual = torneos.find(t => String(t.Id) === String(id));
-  document.getElementById('torneo-nombre').textContent = torneoActual.Nombre;
-  document.getElementById('insc-chip').textContent = `${torneoActual.JugadoresPorEquipo} jugadores por equipo`;
-  generarJugadores(torneoActual.JugadoresPorEquipo);
+    // Solo se muestra el torneo activo
+    torneoActual = torneos[0];
+    const t = torneoActual;
+    document.getElementById('torneo-nombre').textContent = 'Inscribe tu equipo en el torneo activo';
+    const banner = document.getElementById('trn-banner');
+    banner.style.display = 'block';
+    banner.innerHTML = `
+      <span class="trn-badge"><span class="trn-dot"></span> Inscripciones abiertas</span>
+      <h2>${t.Nombre}</h2>
+      <div class="trn-meta">
+        <span>📍 ${t.Lugar || 'Sede por confirmar'}</span>
+        <span>📅 ${fmtRango(t.FechaInicio, t.FechaFin)}</span>
+        <span>👥 ${t.JugadoresPorEquipo} jugadores por equipo</span>
+      </div>`;
+    document.getElementById('insc-chip').textContent = `${t.JugadoresPorEquipo} jugadores por equipo`;
+    generarJugadores(t.JugadoresPorEquipo);
+  } catch(e) { document.getElementById('torneo-nombre').textContent = 'Error al cargar el torneo.'; }
 }
 
 function playerRowHTML(n, prefix) {
@@ -257,7 +272,6 @@ function playerRowHTML(n, prefix) {
         <div class="autocomplete"></div>
       </div>
       <select class="${prefix}-genero"><option value="">Género</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="otro">Otro</option></select>
-      <input class="${prefix}-tel" placeholder="Teléfono (opc.)">
     </div>
   </div>`;
 }
@@ -299,8 +313,7 @@ function recogerJugadores(prefix) {
   const rows = [...document.querySelectorAll('#'+(prefix==='p'?'players-container':'edit-players')+' .player-row')];
   return rows.map(r => ({
     nombre: r.querySelector('.'+prefix+'-nombre').value,
-    genero: r.querySelector('.'+prefix+'-genero').value,
-    telefono: r.querySelector('.'+prefix+'-tel').value
+    genero: r.querySelector('.'+prefix+'-genero').value
   }));
 }
 
@@ -380,7 +393,6 @@ document.getElementById('btn-acceder').addEventListener('click', async () => {
       const row = c.children[idx]; if (!row) return;
       row.querySelector('.e-nombre').value = j.NombreCompleto || '';
       row.querySelector('.e-genero').value = j.Genero || '';
-      row.querySelector('.e-tel').value = j.Telefono || '';
     });
     document.getElementById('edit-chip').textContent = `${max} jugadores por equipo`;
     attachAutocomplete(c);

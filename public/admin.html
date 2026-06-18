@@ -865,6 +865,7 @@
               <option value="aprobado">Aprobado</option>
               <option value="rechazado">Rechazado</option>
             </select>
+            <button class="btn btn-ghost btn-sm" onclick="trnReorganizar()" title="Renumerar IDs de equipos y jugadores">🔁 Reorganizar IDs</button>
             <button class="btn btn-ghost btn-sm" onclick="trnCargarEquipos()">↺</button>
           </div>
         </div>
@@ -2402,10 +2403,15 @@ async function trnCargarEquipos() {
     const b = e.Estado==='aprobado' ? '<span class="badge badge-approved">Aprobado</span>'
       : e.Estado==='rechazado' ? '<span class="badge badge-rejected">Rechazado</span>'
       : '<span class="badge badge-pending">Pendiente</span>';
-    const acc = e.Estado==='pendiente'
-      ? `<button class="btn btn-primary btn-sm" onclick="trnEstado(${e.Id},'aprobado')">Aprobar</button>
-         <button class="btn btn-ghost btn-sm" onclick="trnEstado(${e.Id},'rechazado')">Rechazar</button>`
-      : `<button class="btn btn-ghost btn-sm" onclick="trnEstado(${e.Id},'pendiente')">Reabrir</button>`;
+    let acc;
+    if (e.Estado === 'pendiente') {
+      acc = `<button class="btn btn-primary btn-sm" onclick="trnEstado(${e.Id},'aprobado')">Aprobar</button>
+             <button class="btn btn-ghost btn-sm" onclick="trnEstado(${e.Id},'rechazado')">Rechazar</button>`;
+    } else {
+      acc = `<button class="btn btn-ghost btn-sm" onclick="trnEstado(${e.Id},'pendiente')">Reabrir</button>`;
+      if (e.Estado === 'rechazado')
+        acc += ` <button class="btn btn-sm" style="background:#fee2e2;color:#b91c1c;border:1px solid #fecaca" onclick="trnEliminar(${e.Id})">🗑 Eliminar</button>`;
+    }
     return `<tr>
       <td style="font-family:monospace;font-weight:600">${e.CodigoEquipo}</td>
       <td><b>${e.NombreEquipo}</b><br><span style="font-size:12px;color:var(--text-2)">${e.Representante}</span></td>
@@ -2420,6 +2426,18 @@ async function trnCargarEquipos() {
 async function trnEstado(id, estado) {
   const d = await api(TRN_API + '/equipos/' + id + '/estado', { method:'PATCH', body: JSON.stringify({ estado }) });
   if (d?.success) { toast('Equipo ' + estado, 'success'); trnCargarStats(); trnCargarEquipos(); }
+}
+
+async function trnEliminar(id) {
+  if (!confirm('¿Eliminar este equipo de forma permanente? Esta acción no se puede deshacer.')) return;
+  const d = await api(TRN_API + '/equipos/' + id, { method:'DELETE' });
+  if (d?.success) { toast('Equipo eliminado', 'success'); trnCargarStats(); trnCargarEquipos(); trnCargarJugadores(); }
+}
+
+async function trnReorganizar() {
+  if (!confirm('Reorganizar los IDs de equipos y jugadores en orden secuencial (1, 2, 3…).\n\nLos códigos EQ-/JG- NO cambian. ¿Continuar?')) return;
+  const d = await api(TRN_API + '/reorganizar', { method:'POST' });
+  if (d?.success) { toast(d.message || 'IDs reorganizados', 'success'); trnCargarEquipos(); trnCargarJugadores(); }
 }
 
 async function trnVer(id) {

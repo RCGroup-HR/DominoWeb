@@ -575,3 +575,75 @@ exports.adminExportJugadores = async (req, res) => {
         res.status(500).json({ success: false, message: 'Error al exportar jugadores' });
     }
 };
+
+// DELETE /api/admin/inscripcion/equipos/:id  → eliminar equipo (y jugadores huérfanos)
+exports.adminEliminarEquipo = async (req, res) => {
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        const [[eq]] = await conn.query('SELECT Id, NombreEquipo FROM insc_equipos WHERE Id = ?', [req.params.id]);
+        if (!eq) { await conn.rollback(); return res.status(404).json({ success: false, message: 'Equipo no encontrado' }); }
+        // Borra el equipo (cascade quita sus relaciones) y limpia jugadores que queden sin equipo
+        await conn.query('DELETE FROM insc_equipos WHERE Id = ?', [req.params.id]);
+        await conn.query(
+            `DELETE j FROM insc_jugadores j
+             LEFT JOIN insc_equipo_jugador ej ON ej.JugadorId = j.Id
+             WHERE ej.Id IS NULL`
+        );
+        await conn.commit();
+        res.json({ success: true, message: `Equipo "${eq.NombreEquipo}" eliminado` });
+    } catch (error) {
+        await conn.rollback();
+        console.error('adminEliminarEquipo:', error.message);
+        res.status(500).json({ success: false, message: 'Error al eliminar el equipo' });
+    } finally {
+        conn.release();
+    }
+};
+
+// POST /api/admin/inscripcion/reorganizar  → renumera Ids de equipos y jugadores de forma secuencial
+// (los códigos EQ-/JG- NO cambian; solo se compactan los Id numéricos)
+exports.adminReorganizarIds = async (req, res) => {
+    const conn = await pool.getConnection();
+    try {
+        await conn.query('SET FOREIGN_KEY_CHECKS = 0');
+        await conn.beginTransaction();
+
+        // Equipos: asigna Id negativo temporal y actualiza la relación, luego invierte el signo
+        const [eqs] = await conn.query('SELECT Id FROM insc_equipos ORDER BY Id');
+        let i = 1;
+        for (const row of eqs) {
+            const nuevo = i++;
+            await conn.query('UPDATE insc_equipos SET Id = ? WHERE Id = ?', [-nuevo, row.Id]);
+            await conn.query('UPDATE insc_equipo_jugador SET EquipoId = ? WHERE EquipoId = ?', [-nuevo, row.Id]);
+        }
+        await conn.query('UPDATE insc_equipos SET Id = -Id WHERE Id < 0');
+        await conn.query('UPDATE insc_equipo_jugador SET EquipoId = -EquipoId WHERE EquipoId < 0');
+
+        // Jugadores: mismo procedimiento
+        const [jugs] = await conn.query('SELECT Id FROM insc_jugadores ORDER BY Id');
+        let k = 1;
+        for (const row of jugs) {
+            const nuevo = k++;
+            await conn.query('UPDATE insc_jugadores SET Id = ? WHERE Id = ?', [-nuevo, row.Id]);
+            await conn.query('UPDATE insc_equipo_jugador SET JugadorId = ? WHERE JugadorId = ?', [-nuevo, row.Id]);
+        }
+        await conn.query('UPDATE insc_jugadores SET Id = -Id WHERE Id < 0');
+        await conn.query('UPDATE insc_equipo_jugador SET JugadorId = -JugadorId WHERE JugadorId < 0');
+
+        await conn.commit();
+        await conn.query('SET FOREIGN_KEY_CHECKS = 1');
+        // Reinicia los contadores AUTO_INCREMENT (DDL, fuera de la transacción)
+        await conn.query(`ALTER TABLE insc_equipos   AUTO_INCREMENT = ${eqs.length + 1}`);
+        await conn.query(`ALTER TABLE insc_jugadores AUTO_INCREMENT = ${jugs.length + 1}`);
+
+        res.json({ success: true, message: `IDs reorganizados: ${eqs.length} equipos y ${jugs.length} jugadores` });
+    } catch (error) {
+        await conn.rollback().catch(() => {});
+        await conn.query('SET FOREIGN_KEY_CHECKS = 1').catch(() => {});
+        console.error('adminReorganizarIds:', error.message);
+        res.status(500).json({ success: false, message: 'Error al reorganizar los IDs' });
+    } finally {
+        conn.release();
+    }
+};

@@ -18,6 +18,10 @@ router.put('/torneos/:id',   ctrl.adminActualizarTorneo);
 router.get('/equipos',                  ctrl.adminListarEquipos);
 router.get('/equipos/:id',              ctrl.adminGetEquipo);
 router.patch('/equipos/:id/estado',     ctrl.adminCambiarEstado);
+router.delete('/equipos/:id',           ctrl.adminEliminarEquipo);
+
+// Mantenimiento: reorganizar IDs
+router.post('/reorganizar',             ctrl.adminReorganizarIds);
 
 // Jugadores (grid por equipo + exportar Excel)
 router.get('/jugadores',        ctrl.adminListarJugadores);

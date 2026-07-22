@@ -63,7 +63,10 @@ input:focus,select:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rg
 .player-row{border:1px solid var(--gray-200);border-radius:12px;padding:14px;margin-bottom:12px;position:relative}
 .player-row .pnum{position:absolute;top:-9px;left:14px;background:var(--green-base);color:#fff;font-size:.72em;font-weight:700;
   padding:2px 10px;border-radius:50px}
-.player-grid{display:grid;grid-template-columns:1fr 180px;gap:10px}
+.player-grid{display:grid;grid-template-columns:1fr 180px;gap:10px;align-items:start}
+.player-grid.with-carnet{grid-template-columns:130px 1fr 170px}
+.carnet-hint{display:block;font-size:.75em;font-weight:600;margin-top:4px;line-height:1.3}
+input[readonly].locked{background:#f0fdf4;color:#166534;cursor:not-allowed}
 .trn-banner{background:linear-gradient(135deg,#0a3d1f,#0f5c30);border-radius:16px;padding:24px 26px;color:#fff;margin-bottom:20px;border:1px solid rgba(34,197,94,.25)}
 .trn-banner h2{font-size:1.55em;font-weight:800;letter-spacing:-.5px;margin:11px 0 14px}
 .trn-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(34,197,94,.2);border:1px solid rgba(34,197,94,.4);color:#4ade80;font-size:.72em;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border-radius:50px}
@@ -101,7 +104,7 @@ input:focus,select:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rg
 .tag{background:var(--gray-100);color:var(--gray-700);font-size:.78em;padding:3px 9px;border-radius:50px}
 .stats-row{display:flex;gap:16px;flex-wrap:wrap;font-size:.82em;color:var(--gray-500);margin-top:6px}
 .spinner{text-align:center;color:var(--gray-400);padding:30px;font-size:.9em}
-@media(max-width:600px){.nav-links{display:none}.player-grid{grid-template-columns:1fr}.page-head{padding:40px 20px 30px}}
+@media(max-width:600px){.nav-links{display:none}.player-grid,.player-grid.with-carnet{grid-template-columns:1fr}.page-head{padding:40px 20px 30px}}
 </style>
 </head>
 <body>
@@ -192,11 +195,18 @@ input:focus,select:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rg
     <div class="alert" id="edit-alert"></div>
     <div class="card" id="edit-access">
       <div class="section-title"><span class="dot"></span> Acceder a mi equipo</div>
-      <p style="color:var(--gray-500);font-size:.9em;margin-bottom:14px">Ingresa el código que recibiste al inscribir tu equipo.</p>
+      <p style="color:var(--gray-500);font-size:.9em;margin-bottom:14px">Ingresa el código de tu equipo (EQ-…) o el código maestro del torneo (ADM-…) para editar todos los equipos.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <input id="edit-code" placeholder="EQ-XXXXXXXXX" style="flex:1;min-width:200px;text-transform:uppercase;font-family:monospace">
+        <input id="edit-code" placeholder="EQ-XXXXXXXXX / ADM-XXXXXXXX" style="flex:1;min-width:200px;text-transform:uppercase;font-family:monospace">
         <button class="btn btn-primary" style="width:auto;padding:0 26px" id="btn-acceder">Acceder</button>
       </div>
+    </div>
+
+    <div class="card hidden" id="edit-master">
+      <div class="section-title"><span class="dot"></span> <span id="master-title">Equipos del torneo</span></div>
+      <p style="color:var(--gray-500);font-size:.9em;margin-bottom:14px">Acceso de organización. Elige un equipo para editarlo.</p>
+      <div id="master-list"></div>
+      <div style="margin-top:14px"><button class="btn btn-ghost" style="width:auto" id="btn-master-salir">← Salir</button></div>
     </div>
 
     <div class="card hidden" id="edit-form-wrap">
@@ -221,7 +231,7 @@ input:focus,select:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rg
 
 <script>
 const API = '/api/inscripcion';
-let torneos = [], torneoActual = null, editCodigo = null;
+let torneos = [], torneoActual = null, editCodigo = null, editMaestro = '';
 
 // ── Tabs ──
 document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
@@ -308,13 +318,19 @@ function activarTorneo(t) {
   generarJugadores(t.JugadoresPorEquipo);
 }
 
-function playerRowHTML(n, prefix) {
+function playerRowHTML(n, prefix, carnet) {
+  const carnetCol = carnet ? `
+      <div>
+        <input class="${prefix}-carnet" type="number" min="1" inputmode="numeric" placeholder="Nº carnet" autocomplete="off">
+      </div>` : '';
   return `<div class="player-row">
     <span class="pnum">Jugador ${n}</span>
-    <div class="player-grid">
+    <div class="player-grid${carnet ? ' with-carnet' : ''}">
+      ${carnetCol}
       <div style="position:relative">
-        <input class="${prefix}-nombre" placeholder="Nombre completo" autocomplete="off">
+        <input class="${prefix}-nombre" placeholder="${carnet ? 'Escribe el nº de carnet' : 'Nombre completo'}" autocomplete="off">
         <div class="autocomplete"></div>
+        <small class="carnet-hint" style="display:none"></small>
       </div>
       <select class="${prefix}-genero"><option value="">Género</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="otro">Otro</option></select>
     </div>
@@ -323,9 +339,56 @@ function playerRowHTML(n, prefix) {
 
 function generarJugadores(n) {
   const c = document.getElementById('players-container');
+  const carnet = !!(torneoActual && torneoActual.ConsultarCarnet);
   c.innerHTML = '';
-  for (let i = 1; i <= n; i++) c.insertAdjacentHTML('beforeend', playerRowHTML(i, 'p'));
-  if (torneoActual && torneoActual.BusquedaJugadores) attachAutocomplete(c);
+  for (let i = 1; i <= n; i++) c.insertAdjacentHTML('beforeend', playerRowHTML(i, 'p', carnet));
+  if (carnet) attachCarnetLookup(c, torneoActual.Id, '');
+  else if (torneoActual && torneoActual.BusquedaJugadores) attachAutocomplete(c);
+}
+
+// ── Consulta por nº de carnet (opción "Consultar base de datos") ──
+// El nombre queda SIEMPRE editable: si el carnet existe se autocompleta (se puede
+// corregir → se actualiza); si es nuevo, se escribe y se registra al guardar.
+function attachCarnetLookup(container, torneoId, equipoCodigo) {
+  container.querySelectorAll('.p-carnet, .e-carnet').forEach(inp => {
+    const grid   = inp.closest('.player-grid');
+    const nombre = grid.querySelector('.p-nombre, .e-nombre');
+    const genero = grid.querySelector('.p-genero, .e-genero');
+    const hint   = grid.querySelector('.carnet-hint');
+    let timer;
+    inp.addEventListener('input', () => {
+      clearTimeout(timer);
+      const c = inp.value.trim();
+      if (!c) { hint.style.display = 'none'; return; }
+      hint.style.display = 'block'; hint.style.color = 'var(--gray-400,#94a3b8)'; hint.textContent = 'Buscando…';
+      timer = setTimeout(async () => {
+        try {
+          const qs = '?torneo=' + encodeURIComponent(torneoId || '') + '&equipo=' + encodeURIComponent(equipoCodigo || '');
+          const r = await fetch(API + '/carnet/' + encodeURIComponent(c) + qs);
+          const d = await r.json();
+          if (!d.success) {
+            hint.style.color = '#b91c1c'; hint.textContent = '⚠ ' + (d.message || 'Carnet inválido');
+            return;
+          }
+          if (d.data.enUso) {
+            hint.style.color = '#b91c1c';
+            hint.textContent = '⚠ Ese carnet ya está en el equipo "' + d.data.enUso + '"';
+            return;
+          }
+          if (d.data.encontrado) {
+            nombre.value = d.data.nombre;                       // editable por si desea corregir
+            if (genero && d.data.genero) genero.value = d.data.genero;
+            hint.style.color = '#16a34a'; hint.textContent = '✓ ' + d.data.nombre + ' (puedes editarlo)';
+          } else {
+            hint.style.color = '#2563eb';
+            hint.textContent = 'Carnet nuevo — escribe el nombre y se registrará';
+          }
+        } catch (e) {
+          hint.style.color = '#b91c1c'; hint.textContent = 'Error de conexión';
+        }
+      }, 350);
+    });
+  });
 }
 
 // ── Autocompletado de jugadores existentes ──
@@ -356,10 +419,14 @@ function attachAutocomplete(container) {
 
 function recogerJugadores(prefix) {
   const rows = [...document.querySelectorAll('#'+(prefix==='p'?'players-container':'edit-players')+' .player-row')];
-  return rows.map(r => ({
-    nombre: r.querySelector('.'+prefix+'-nombre').value,
-    genero: r.querySelector('.'+prefix+'-genero').value
-  }));
+  return rows.map(r => {
+    const carnetInp = r.querySelector('.'+prefix+'-carnet');
+    return {
+      nombre: r.querySelector('.'+prefix+'-nombre').value,
+      genero: r.querySelector('.'+prefix+'-genero').value,
+      carnet: carnetInp ? carnetInp.value.trim() : ''
+    };
+  });
 }
 
 // ── Inscribir ──
@@ -437,29 +504,73 @@ document.getElementById('btn-acceder').addEventListener('click', async () => {
     const r = await fetch(API + '/equipos/acceso', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({codigo})});
     const d = await r.json();
     if (!d.success) return showAlert('edit-alert', d.message, false);
-    if (!d.data.PuedeEditar) return showAlert('edit-alert','El plazo de modificación finalizó. Contacta a la organización.', false);
     document.getElementById('edit-alert').className='alert';
-    editCodigo = codigo;
-    const e = d.data;
-    set('e-nombre',e.NombreEquipo); set('e-club',e.Club); set('e-pais',e.Pais); set('e-rep',e.Representante); set('e-tel',e.Telefono);
-    const c = document.getElementById('edit-players'); c.innerHTML='';
-    const max = e.JugadoresPorEquipo;
-    for (let i=1;i<=max;i++) c.insertAdjacentHTML('beforeend', playerRowHTML(i,'e'));
-    (e.Jugadores||[]).forEach((j,idx) => {
-      const row = c.children[idx]; if (!row) return;
-      row.querySelector('.e-nombre').value = j.NombreCompleto || '';
-      row.querySelector('.e-genero').value = j.Genero || '';
-    });
-    document.getElementById('edit-chip').textContent = `${max} jugadores por equipo`;
-    attachAutocomplete(c);
-    document.getElementById('edit-form-wrap').classList.remove('hidden');
-    document.getElementById('edit-access').classList.add('hidden');
+    if (d.data.esMaestro) { editMaestro = codigo; mostrarListaMaestra(d.data); return; }
+    editMaestro = '';
+    cargarEquipoEnFormulario(d.data);
   } catch(e) { showAlert('edit-alert','Error de conexión', false); }
+});
+
+// Lista de equipos cuando se ingresa el código maestro del torneo
+function mostrarListaMaestra(data) {
+  document.getElementById('master-title').textContent = 'Equipos · ' + data.torneoNombre;
+  const cont = document.getElementById('master-list');
+  cont.innerHTML = (data.equipos||[]).map(e => `
+    <div class="player-row" style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <div>
+        <b>${(e.NombreEquipo||'').replace(/</g,'&lt;')}</b>
+        <div style="font-size:.82em;color:var(--gray-500)">${e.CodigoEquipo} · ${e.TotalJugadores} jugador(es) · ${e.Estado}</div>
+      </div>
+      <button class="btn btn-primary" style="width:auto;padding:0 20px" data-code="${e.CodigoEquipo}">Editar</button>
+    </div>`).join('') || '<p style="color:var(--gray-500)">No hay equipos en este torneo todavía.</p>';
+  cont.querySelectorAll('button[data-code]').forEach(b =>
+    b.addEventListener('click', () => abrirEquipoMaestro(b.dataset.code)));
+  document.getElementById('edit-access').classList.add('hidden');
+  document.getElementById('edit-master').classList.remove('hidden');
+}
+
+async function abrirEquipoMaestro(codigo) {
+  try {
+    const r = await fetch(API + '/equipos/acceso', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({codigo, codigoMaestro: editMaestro})});
+    const d = await r.json();
+    if (!d.success) return showAlert('edit-alert', d.message, false);
+    document.getElementById('edit-master').classList.add('hidden');
+    cargarEquipoEnFormulario(d.data);
+  } catch(e) { showAlert('edit-alert','Error de conexión', false); }
+}
+
+function cargarEquipoEnFormulario(e) {
+  if (!e.PuedeEditar) return showAlert('edit-alert','El plazo de modificación finalizó. Contacta a la organización.', false);
+  editCodigo = e.CodigoEquipo;
+  set('e-nombre',e.NombreEquipo); set('e-club',e.Club); set('e-pais',e.Pais); set('e-rep',e.Representante); set('e-tel',e.Telefono);
+  const c = document.getElementById('edit-players'); c.innerHTML='';
+  const max = e.JugadoresPorEquipo;
+  const carnet = !!e.ConsultarCarnet;
+  for (let i=1;i<=max;i++) c.insertAdjacentHTML('beforeend', playerRowHTML(i,'e',carnet));
+  (e.Jugadores||[]).forEach((j,idx) => {
+    const row = c.children[idx]; if (!row) return;
+    row.querySelector('.e-nombre').value = j.NombreCompleto || '';
+    row.querySelector('.e-genero').value = j.Genero || '';
+    if (carnet && j.Carnet) row.querySelector('.e-carnet').value = j.Carnet;
+  });
+  document.getElementById('edit-chip').textContent = `${max} jugadores por equipo`;
+  if (carnet) attachCarnetLookup(c, e.TorneoId, editCodigo);
+  else if (e.BusquedaJugadores) attachAutocomplete(c);
+  document.getElementById('edit-form-wrap').classList.remove('hidden');
+  document.getElementById('edit-access').classList.add('hidden');
+}
+
+document.getElementById('btn-master-salir').addEventListener('click', () => {
+  editMaestro = '';
+  document.getElementById('edit-master').classList.add('hidden');
+  document.getElementById('edit-access').classList.remove('hidden');
 });
 
 document.getElementById('btn-guardar').addEventListener('click', async () => {
   const btn = document.getElementById('btn-guardar');
-  const body = { codigo: editCodigo, nombreEquipo: val('e-nombre'), club: val('e-club'), pais: val('e-pais'),
+  const body = { codigo: editCodigo, codigoMaestro: editMaestro,
+    nombreEquipo: val('e-nombre'), club: val('e-club'), pais: val('e-pais'),
     representante: val('e-rep'), telefono: val('e-tel'), jugadores: recogerJugadores('e') };
   btn.disabled=true; btn.textContent='⏳ Guardando…';
   try {

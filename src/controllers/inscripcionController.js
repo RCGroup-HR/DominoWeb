@@ -12,6 +12,126 @@ const XLSX = require('xlsx');
 // Caracteres sin ambigüedad (sin 0/O/1/I) para los códigos
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
+// Tabla DEDICADA de carnets del módulo de inscripción (separada de la de
+// FEMUNDO `carnetjugadores` para no mezclar instituciones distintas).
+const TABLA_CARNET = 'insc_carnet_jugadores';
+
+// Federación cuyos carnets se consultan en la opción "Consultar base de datos".
+// Cambiar aquí si se usa otra federación dentro de la tabla dedicada.
+const FEDERACION_CARNET = 1;
+
+// Los carnets asignados automáticamente (jugador sin nº de carnet) empiezan aquí.
+const CARNET_INICIO_SECUENCIAL = 3000;
+
+// Error con mensaje para el usuario (se responde con su status, no como 500)
+class ClientError extends Error {
+    constructor(message, status = 400) { super(message); this.status = status; }
+}
+
+// Fecha corta (para FechaRegistro varchar de carnetjugadores)
+const hoyISO = () => new Date().toISOString().slice(0, 10);
+
+// Género interno ('masculino'|'femenino'|'otro') → 'M'/'F' de carnetjugadores
+const generoACarnet = (g) => (g === 'femenino' ? 'F' : 'M');
+
+// Marca de los carnets asignados automáticamente (para que su secuencia
+// no se vea afectada por carnets manuales altos).
+const USUARIO_AUTO = 'auto';
+
+// Próximo carnet AUTO-asignado: continúa la secuencia (>= 3000) de los
+// carnets marcados como 'auto', ignorando los manuales. Salta cualquier
+// número ya ocupado (manual o auto) o usado en el mismo envío.
+async function nextCarnetSecuencial(conn, usados) {
+    const [[r]] = await conn.query(
+        `SELECT COALESCE(MAX(Carnet), ?) + 1 AS next
+         FROM ${TABLA_CARNET}
+         WHERE Id_Federacion = ? AND Usuario = ? AND Carnet >= ?`,
+        [CARNET_INICIO_SECUENCIAL - 1, FEDERACION_CARNET, USUARIO_AUTO, CARNET_INICIO_SECUENCIAL]
+    );
+    let c = r.next;
+    for (;;) {
+        if (usados && usados.carnets.has(c)) { c++; continue; }
+        const [[ocupado]] = await conn.query(
+            `SELECT 1 FROM ${TABLA_CARNET} WHERE Carnet = ? AND Id_Federacion = ? LIMIT 1`,
+            [c, FEDERACION_CARNET]
+        );
+        if (ocupado) { c++; continue; }
+        return c;
+    }
+}
+
+// Inserta o actualiza un jugador en la tabla dedicada (federación configurada).
+// `usuario` marca el origen: 'inscripcion' (carnet manual) o 'auto' (asignado).
+// En UPDATE no se toca Usuario, así que la marca 'auto' se conserva.
+async function upsertCarnet(conn, carnet, nombre, generoInterno, usuario = 'inscripcion') {
+    await conn.query(
+        `INSERT INTO ${TABLA_CARNET}
+           (Carnet, Identificacion, Nombre, Apellidos, Club, ID_Provincia, Celular,
+            Estatus, Comentarios, FechaRegistro, Id_Equipo, Genero, Usuario,
+            FechaNacimiento, Id_Federacion)
+         VALUES (?, '', ?, '', 0, 0, '', 1, '', ?, 0, ?, ?, '', ?)
+         ON DUPLICATE KEY UPDATE Nombre = VALUES(Nombre), Genero = VALUES(Genero)`,
+        [carnet, nombre, hoyISO(), generoACarnet(generoInterno), usuario, FEDERACION_CARNET]
+    );
+}
+
+// Genera un CodigoMaestro único por torneo (ADM-XXXXXXXX)
+async function generarCodigoMaestro(runner) {
+    for (let intento = 0; intento < 10; intento++) {
+        const codigo = 'ADM-' + randomCode(8);
+        const [rows] = await runner.query('SELECT Id FROM insc_torneos WHERE CodigoMaestro = ?', [codigo]);
+        if (rows.length === 0) return codigo;
+    }
+    throw new Error('No se pudo generar un código maestro único');
+}
+
+// Resuelve un jugador en modo carnet: fija carnet + nombre + género, registra/actualiza
+// en la tabla dedicada y valida unicidad. Devuelve { carnet, nombre, genero }.
+// `usados` acumula los carnets ya vistos en este mismo envío.
+async function resolverJugadorCarnet(conn, torneoId, equipoId, entrada, usados) {
+    let carnet = parseInt(entrada.carnet, 10);
+    let nombre = (entrada.nombre || '').trim();
+
+    // Carnet sin nombre en el formulario: intenta traer el nombre existente
+    if (carnet > 0 && !nombre) {
+        const [[row]] = await conn.query(
+            `SELECT Nombre FROM ${TABLA_CARNET} WHERE Carnet = ? AND Id_Federacion = ? LIMIT 1`,
+            [carnet, FEDERACION_CARNET]
+        );
+        if (row && row.Nombre) nombre = row.Nombre.trim();
+    }
+    if (!nombre) return null; // sin nombre no hay nada que registrar
+
+    const genero = normGenero(entrada.genero) || inferGenero(nombre) || 'masculino';
+
+    // Sin carnet → asignar secuencial 'auto' desde 3000 (los manuales no la afectan)
+    const esAuto = !(carnet > 0);
+    if (esAuto) {
+        carnet = await nextCarnetSecuencial(conn, usados);
+    }
+
+    // No repetir el mismo carnet dentro del propio equipo
+    if (usados.carnets.has(carnet)) {
+        throw new ClientError(`El carnet ${carnet} está repetido en este equipo`);
+    }
+    // No usar un carnet ya registrado en OTRO equipo del torneo
+    const [dup] = await conn.query(
+        `SELECT e.NombreEquipo FROM insc_equipo_jugador ej
+         JOIN insc_equipos e   ON e.Id = ej.EquipoId
+         JOIN insc_jugadores j ON j.Id = ej.JugadorId
+         WHERE e.TorneoId = ? AND j.Carnet = ? AND e.Id <> ? LIMIT 1`,
+        [torneoId, carnet, equipoId || 0]
+    );
+    if (dup.length) {
+        throw new ClientError(`El carnet ${carnet} ya está registrado en el equipo "${dup[0].NombreEquipo}"`);
+    }
+
+    // Registrar / actualizar el jugador en la tabla dedicada
+    await upsertCarnet(conn, carnet, nombre, genero, esAuto ? USUARIO_AUTO : 'inscripcion');
+    usados.carnets.add(carnet);
+    return { carnet, nombre, genero };
+}
+
 function randomCode(len) {
     let s = '';
     for (let i = 0; i < len; i++) {
@@ -85,7 +205,7 @@ function emailValido(e) {
 exports.listarTorneosAbiertos = async (req, res) => {
     try {
         const [torneos] = await pool.query(
-            `SELECT Id, Nombre, Lugar, FechaInicio, FechaFin, JugadoresPorEquipo, BusquedaJugadores, Estado
+            `SELECT Id, Nombre, Lugar, FechaInicio, FechaFin, JugadoresPorEquipo, BusquedaJugadores, ConsultarCarnet, Estado
              FROM insc_torneos
              WHERE Estado = 'abierto'
              ORDER BY FechaInicio IS NULL, FechaInicio ASC, Id DESC`
@@ -102,7 +222,7 @@ exports.getTorneo = async (req, res) => {
     try {
         const [[torneo]] = await pool.query(
             `SELECT Id, Nombre, Lugar, FechaInicio, FechaFin, JugadoresPorEquipo,
-                    FechaLimiteModificacion, BusquedaJugadores, Estado
+                    FechaLimiteModificacion, BusquedaJugadores, ConsultarCarnet, Estado
              FROM insc_torneos WHERE Id = ?`,
             [req.params.id]
         );
@@ -130,6 +250,51 @@ exports.buscarJugadores = async (req, res) => {
     } catch (error) {
         console.error('buscarJugadores:', error.message);
         res.status(500).json({ success: false, message: 'Error al buscar jugadores' });
+    }
+};
+
+// GET /api/inscripcion/carnet/:carnet  → consulta un jugador por nº de carnet
+// en la base de la federación (opción "Consultar base de datos" del torneo)
+exports.buscarPorCarnet = async (req, res) => {
+    try {
+        const carnet = parseInt(req.params.carnet, 10);
+        if (!carnet || carnet < 1) {
+            return res.status(400).json({ success: false, message: 'Carnet inválido' });
+        }
+        const [[jug]] = await pool.query(
+            `SELECT Carnet, TRIM(CONCAT(Nombre, ' ', Apellidos)) AS NombreCompleto, Genero
+             FROM ${TABLA_CARNET}
+             WHERE Carnet = ? AND Id_Federacion = ? LIMIT 1`,
+            [carnet, FEDERACION_CARNET]
+        );
+        const nombre = jug && jug.NombreCompleto ? jug.NombreCompleto : '';
+
+        // ¿El carnet ya está usado por otro equipo del torneo? (validación en vivo)
+        let enUso = null;
+        if (req.query.torneo) {
+            const [dup] = await pool.query(
+                `SELECT e.NombreEquipo FROM insc_equipo_jugador ej
+                 JOIN insc_equipos e   ON e.Id = ej.EquipoId
+                 JOIN insc_jugadores j ON j.Id = ej.JugadorId
+                 WHERE e.TorneoId = ? AND j.Carnet = ? AND e.CodigoEquipo <> ? LIMIT 1`,
+                [req.query.torneo, carnet, (req.query.equipo || '').trim().toUpperCase()]
+            );
+            if (dup.length) enUso = dup[0].NombreEquipo;
+        }
+
+        res.json({
+            success: true,
+            data: {
+                carnet,
+                nombre,
+                genero: jug ? normGenero(jug.Genero) : null,
+                encontrado: !!nombre,
+                enUso
+            }
+        });
+    } catch (error) {
+        console.error('buscarPorCarnet:', error.message);
+        res.status(500).json({ success: false, message: 'Error al consultar el carnet' });
     }
 };
 
@@ -190,7 +355,9 @@ exports.inscribirEquipo = async (req, res) => {
         if (!representante) return res.status(400).json({ success: false, message: 'El representante es requerido' });
         if (!emailValido(correo)) return res.status(400).json({ success: false, message: 'Correo del representante inválido' });
 
-        const jugadoresValidos = jugadores.filter(j => (j.nombre || '').trim());
+        // En modo carnet, un jugador es válido si trae nombre O nº de carnet
+        const tieneCarnet = j => parseInt(j.carnet, 10) > 0;
+        const jugadoresValidos = jugadores.filter(j => (j.nombre || '').trim() || tieneCarnet(j));
         if (jugadoresValidos.length === 0) {
             return res.status(400).json({ success: false, message: 'Agrega al menos un jugador' });
         }
@@ -199,7 +366,7 @@ exports.inscribirEquipo = async (req, res) => {
 
         // Torneo válido y abierto
         const [[torneo]] = await conn.query(
-            'SELECT Id, JugadoresPorEquipo, BusquedaJugadores, Estado FROM insc_torneos WHERE Id = ?',
+            'SELECT Id, JugadoresPorEquipo, BusquedaJugadores, ConsultarCarnet, Estado FROM insc_torneos WHERE Id = ?',
             [torneoId]
         );
         if (!torneo) { await conn.rollback(); return res.status(404).json({ success: false, message: 'Torneo no encontrado' }); }
@@ -223,36 +390,7 @@ exports.inscribirEquipo = async (req, res) => {
         );
         const equipoId = eqRes.insertId;
 
-        // Jugadores: reutilizar si la búsqueda está activa y hay coincidencia exacta de nombre
-        let posicion = 1;
-        for (const j of jugadoresValidos) {
-            const nombre = j.nombre.trim();
-            let jugadorId = null;
-
-            if (torneo.BusquedaJugadores) {
-                const [match] = await conn.query(
-                    'SELECT Id FROM insc_jugadores WHERE LOWER(NombreCompleto) = LOWER(?) LIMIT 1',
-                    [nombre]
-                );
-                if (match.length) jugadorId = match[0].Id;
-            }
-
-            if (!jugadorId) {
-                const codigoJugador = await generarCodigoJugador(conn);
-                const [jRes] = await conn.query(
-                    `INSERT INTO insc_jugadores (CodigoJugador, NombreCompleto, Genero, FechaNacimiento, Telefono)
-                     VALUES (?, ?, ?, ?, ?)`,
-                    [codigoJugador, nombre, normGenero(j.genero) || inferGenero(nombre),
-                     (j.fechaNacimiento || '').trim() || null, (j.telefono || '').trim() || null]
-                );
-                jugadorId = jRes.insertId;
-            }
-
-            await conn.query(
-                'INSERT IGNORE INTO insc_equipo_jugador (EquipoId, JugadorId, Posicion) VALUES (?, ?, ?)',
-                [equipoId, jugadorId, posicion++]
-            );
-        }
+        await agregarJugadores(conn, torneo, torneoId, equipoId, jugadoresValidos);
 
         await conn.commit();
         res.json({
@@ -262,6 +400,7 @@ exports.inscribirEquipo = async (req, res) => {
         });
     } catch (error) {
         await conn.rollback();
+        if (error.status) return res.status(error.status).json({ success: false, message: error.message });
         console.error('inscribirEquipo:', error.message);
         res.status(500).json({ success: false, message: 'Error al inscribir el equipo' });
     } finally {
@@ -269,18 +408,79 @@ exports.inscribirEquipo = async (req, res) => {
     }
 };
 
+// Inserta los jugadores de un equipo según el modo del torneo.
+// Modo carnet: registra/valida en la tabla dedicada y guarda el Carnet.
+// Modo normal: reutiliza jugadores por nombre si BusquedaJugadores está activo.
+async function agregarJugadores(conn, torneo, torneoId, equipoId, jugadoresValidos) {
+    const usados = { carnets: new Set() };
+    let posicion = 1;
+    for (const j of jugadoresValidos) {
+        let jugadorId = null;
+        let carnet = null;
+        let nombre = (j.nombre || '').trim();
+        let genero = normGenero(j.genero) || inferGenero(nombre);
+
+        if (torneo.ConsultarCarnet) {
+            const r = await resolverJugadorCarnet(conn, torneoId, equipoId, j, usados);
+            if (!r) continue; // sin nombre ni carnet resoluble
+            nombre = r.nombre; genero = r.genero; carnet = r.carnet;
+        } else if (torneo.BusquedaJugadores) {
+            const [match] = await conn.query(
+                'SELECT Id FROM insc_jugadores WHERE LOWER(NombreCompleto) = LOWER(?) LIMIT 1',
+                [nombre]
+            );
+            if (match.length) jugadorId = match[0].Id;
+        }
+
+        if (!jugadorId) {
+            const codigoJugador = await generarCodigoJugador(conn);
+            const [jRes] = await conn.query(
+                `INSERT INTO insc_jugadores (CodigoJugador, NombreCompleto, Carnet, Genero, FechaNacimiento, Telefono)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [codigoJugador, nombre, carnet, genero,
+                 (j.fechaNacimiento || '').trim() || null, (j.telefono || '').trim() || null]
+            );
+            jugadorId = jRes.insertId;
+        }
+
+        await conn.query(
+            'INSERT IGNORE INTO insc_equipo_jugador (EquipoId, JugadorId, Posicion) VALUES (?, ?, ?)',
+            [equipoId, jugadorId, posicion++]
+        );
+    }
+}
+
 // POST /api/inscripcion/equipos/acceso  → obtener equipo por código (para editar)
-// body: { codigo }
+// body: { codigo, codigoMaestro? }
+// Si `codigo` es el CodigoMaestro de un torneo → devuelve la lista de sus equipos.
 exports.accederEquipo = async (req, res) => {
     try {
         const codigo = (req.body.codigo || '').trim().toUpperCase();
         if (!codigo) return res.status(400).json({ success: false, message: 'Código requerido' });
 
+        // ¿Es el código maestro de un torneo? → listar todos sus equipos
+        const [[torneoMaestro]] = await pool.query(
+            'SELECT Id, Nombre FROM insc_torneos WHERE CodigoMaestro = ?',
+            [codigo]
+        );
+        if (torneoMaestro) {
+            const [equipos] = await pool.query(
+                `SELECT e.Id, e.CodigoEquipo, e.NombreEquipo, e.Club, e.Pais, e.Estado,
+                        (SELECT COUNT(*) FROM insc_equipo_jugador ej WHERE ej.EquipoId = e.Id) AS TotalJugadores
+                 FROM insc_equipos e WHERE e.TorneoId = ? ORDER BY e.NombreEquipo ASC`,
+                [torneoMaestro.Id]
+            );
+            return res.json({
+                success: true,
+                data: { esMaestro: true, torneoId: torneoMaestro.Id, torneoNombre: torneoMaestro.Nombre, equipos }
+            });
+        }
+
         const [[equipo]] = await pool.query(
             `SELECT e.Id, e.CodigoEquipo, e.TorneoId, e.NombreEquipo, e.Club, e.Pais,
                     e.Representante, e.CorreoRepresentante, e.Telefono, e.Estado,
                     t.Nombre AS TorneoNombre, t.JugadoresPorEquipo, t.Estado AS TorneoEstado,
-                    t.FechaLimiteModificacion
+                    t.FechaLimiteModificacion, t.BusquedaJugadores, t.ConsultarCarnet, t.CodigoMaestro
              FROM insc_equipos e JOIN insc_torneos t ON e.TorneoId = t.Id
              WHERE e.CodigoEquipo = ?`,
             [codigo]
@@ -288,17 +488,22 @@ exports.accederEquipo = async (req, res) => {
         if (!equipo) return res.status(404).json({ success: false, message: 'Código no encontrado' });
 
         const [jugadores] = await pool.query(
-            `SELECT j.Id, j.NombreCompleto, j.Genero, j.FechaNacimiento, j.Telefono, ej.Posicion
+            `SELECT j.Id, j.NombreCompleto, j.Carnet, j.Genero, j.FechaNacimiento, j.Telefono, ej.Posicion
              FROM insc_equipo_jugador ej JOIN insc_jugadores j ON j.Id = ej.JugadorId
              WHERE ej.EquipoId = ? ORDER BY ej.Posicion ASC`,
             [equipo.Id]
         );
         equipo.Jugadores = jugadores;
 
-        // ¿Edición permitida? (no rechazado y dentro de fecha límite)
+        // El código maestro habilita edición aunque el plazo haya cerrado
+        const esMaestro = !!equipo.CodigoMaestro
+            && (req.body.codigoMaestro || '').trim().toUpperCase() === equipo.CodigoMaestro;
+        equipo.EsMaestro = esMaestro;
+        delete equipo.CodigoMaestro; // no exponer
+
         const limite = equipo.FechaLimiteModificacion ? new Date(equipo.FechaLimiteModificacion) : null;
-        equipo.PuedeEditar = equipo.TorneoEstado === 'abierto'
-            && (!limite || limite > new Date());
+        equipo.PuedeEditar = esMaestro
+            || (equipo.TorneoEstado === 'abierto' && (!limite || limite > new Date()));
 
         res.json({ success: true, data: equipo });
     } catch (error) {
@@ -317,22 +522,27 @@ exports.actualizarEquipo = async (req, res) => {
 
         await conn.beginTransaction();
         const [[equipo]] = await conn.query(
-            `SELECT e.Id, e.TorneoId, t.JugadoresPorEquipo, t.BusquedaJugadores, t.Estado AS TorneoEstado,
-                    t.FechaLimiteModificacion
+            `SELECT e.Id, e.TorneoId, t.JugadoresPorEquipo, t.BusquedaJugadores, t.ConsultarCarnet,
+                    t.Estado AS TorneoEstado, t.FechaLimiteModificacion, t.CodigoMaestro
              FROM insc_equipos e JOIN insc_torneos t ON e.TorneoId = t.Id
              WHERE e.CodigoEquipo = ?`,
             [codigo]
         );
         if (!equipo) { await conn.rollback(); return res.status(404).json({ success: false, message: 'Código no encontrado' }); }
 
+        // El código maestro del torneo permite editar aunque el plazo haya cerrado
+        const esMaestro = !!equipo.CodigoMaestro
+            && (req.body.codigoMaestro || '').trim().toUpperCase() === equipo.CodigoMaestro;
+
         const limite = equipo.FechaLimiteModificacion ? new Date(equipo.FechaLimiteModificacion) : null;
-        if (equipo.TorneoEstado !== 'abierto' || (limite && limite <= new Date())) {
+        if (!esMaestro && (equipo.TorneoEstado !== 'abierto' || (limite && limite <= new Date()))) {
             await conn.rollback();
             return res.status(403).json({ success: false, message: 'El plazo de modificación ha finalizado. Contacta a la organización.' });
         }
 
         const b = req.body;
-        const jugadoresValidos = (Array.isArray(b.jugadores) ? b.jugadores : []).filter(j => (j.nombre || '').trim());
+        const tieneCarnet = j => parseInt(j.carnet, 10) > 0;
+        const jugadoresValidos = (Array.isArray(b.jugadores) ? b.jugadores : []).filter(j => (j.nombre || '').trim() || tieneCarnet(j));
         if (!(b.nombreEquipo || '').trim()) { await conn.rollback(); return res.status(400).json({ success: false, message: 'Nombre de equipo requerido' }); }
         if (jugadoresValidos.length === 0) { await conn.rollback(); return res.status(400).json({ success: false, message: 'Agrega al menos un jugador' }); }
         if (jugadoresValidos.length > equipo.JugadoresPorEquipo) { await conn.rollback(); return res.status(400).json({ success: false, message: `Máximo ${equipo.JugadoresPorEquipo} jugadores` }); }
@@ -348,29 +558,13 @@ exports.actualizarEquipo = async (req, res) => {
 
         // Rehacer la lista de jugadores
         await conn.query('DELETE FROM insc_equipo_jugador WHERE EquipoId = ?', [equipo.Id]);
-        let posicion = 1;
-        for (const j of jugadoresValidos) {
-            const nombre = j.nombre.trim();
-            let jugadorId = null;
-            if (equipo.BusquedaJugadores) {
-                const [match] = await conn.query('SELECT Id FROM insc_jugadores WHERE LOWER(NombreCompleto) = LOWER(?) LIMIT 1', [nombre]);
-                if (match.length) jugadorId = match[0].Id;
-            }
-            if (!jugadorId) {
-                const cj = await generarCodigoJugador(conn);
-                const [jRes] = await conn.query(
-                    'INSERT INTO insc_jugadores (CodigoJugador, NombreCompleto, Genero, FechaNacimiento, Telefono) VALUES (?, ?, ?, ?, ?)',
-                    [cj, nombre, normGenero(j.genero) || inferGenero(nombre), (j.fechaNacimiento || '').trim() || null, (j.telefono || '').trim() || null]
-                );
-                jugadorId = jRes.insertId;
-            }
-            await conn.query('INSERT IGNORE INTO insc_equipo_jugador (EquipoId, JugadorId, Posicion) VALUES (?, ?, ?)', [equipo.Id, jugadorId, posicion++]);
-        }
+        await agregarJugadores(conn, equipo, equipo.TorneoId, equipo.Id, jugadoresValidos);
 
         await conn.commit();
         res.json({ success: true, message: 'Equipo actualizado correctamente' });
     } catch (error) {
         await conn.rollback();
+        if (error.status) return res.status(error.status).json({ success: false, message: error.message });
         console.error('actualizarEquipo:', error.message);
         res.status(500).json({ success: false, message: 'Error al actualizar el equipo' });
     } finally {
@@ -401,13 +595,14 @@ exports.adminCrearTorneo = async (req, res) => {
     try {
         const b = req.body;
         if (!(b.nombre || '').trim()) return res.status(400).json({ success: false, message: 'Nombre requerido' });
+        const codigoMaestro = await generarCodigoMaestro(pool);
         const [r] = await pool.query(
             `INSERT INTO insc_torneos
-             (Nombre, Lugar, FechaInicio, FechaFin, JugadoresPorEquipo, FechaLimiteModificacion, BusquedaJugadores, Estado)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+             (Nombre, Lugar, FechaInicio, FechaFin, JugadoresPorEquipo, FechaLimiteModificacion, BusquedaJugadores, ConsultarCarnet, CodigoMaestro, Estado)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [b.nombre.trim(), (b.lugar || '').trim() || null, b.fechaInicio || null, b.fechaFin || null,
              parseInt(b.jugadoresPorEquipo) || 4, b.fechaLimiteModificacion || null,
-             b.busquedaJugadores ? 1 : 0, b.estado || 'borrador']
+             b.busquedaJugadores ? 1 : 0, b.consultarCarnet ? 1 : 0, codigoMaestro, b.estado || 'borrador']
         );
         res.json({ success: true, message: 'Torneo creado', data: { id: r.insertId } });
     } catch (error) {
@@ -420,14 +615,20 @@ exports.adminCrearTorneo = async (req, res) => {
 exports.adminActualizarTorneo = async (req, res) => {
     try {
         const b = req.body;
+        // Genera el código maestro si el torneo aún no tiene uno
+        const [[actual]] = await pool.query('SELECT CodigoMaestro FROM insc_torneos WHERE Id = ?', [req.params.id]);
+        if (actual && !actual.CodigoMaestro) {
+            await pool.query('UPDATE insc_torneos SET CodigoMaestro = ? WHERE Id = ?',
+                [await generarCodigoMaestro(pool), req.params.id]);
+        }
         await pool.query(
             `UPDATE insc_torneos
              SET Nombre = ?, Lugar = ?, FechaInicio = ?, FechaFin = ?, JugadoresPorEquipo = ?,
-                 FechaLimiteModificacion = ?, BusquedaJugadores = ?, Estado = ?
+                 FechaLimiteModificacion = ?, BusquedaJugadores = ?, ConsultarCarnet = ?, Estado = ?
              WHERE Id = ?`,
             [b.nombre, (b.lugar || '').trim() || null, b.fechaInicio || null, b.fechaFin || null,
              parseInt(b.jugadoresPorEquipo) || 4,
-             b.fechaLimiteModificacion || null, b.busquedaJugadores ? 1 : 0, b.estado, req.params.id]
+             b.fechaLimiteModificacion || null, b.busquedaJugadores ? 1 : 0, b.consultarCarnet ? 1 : 0, b.estado, req.params.id]
         );
         res.json({ success: true, message: 'Torneo actualizado' });
     } catch (error) {

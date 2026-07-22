@@ -13,6 +13,7 @@ router.get('/torneos/:id',  ctrl.getTorneo);
 // Búsqueda pública de equipos y autocompletado de jugadores
 router.get('/equipos',      ctrl.buscarEquiposPublico);
 router.get('/jugadores',    ctrl.buscarJugadores);
+router.get('/carnet/:carnet', ctrl.buscarPorCarnet);
 
 // Inscribir un equipo
 router.post('/equipos',     ctrl.inscribirEquipo);

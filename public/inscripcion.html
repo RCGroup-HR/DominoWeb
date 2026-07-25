@@ -143,6 +143,16 @@ input[readonly].locked{background:#f0fdf4;color:#166534;cursor:not-allowed}
 
     <div id="trn-banner" class="trn-banner" style="display:none"></div>
 
+    <div class="card hidden" id="insc-gate">
+      <div class="section-title"><span class="dot"></span> Torneo con acceso por código</div>
+      <p style="color:var(--gray-500);font-size:.9em;margin-bottom:14px">Este torneo requiere el código del torneo para inscribir equipos. Ingrésalo para continuar.</p>
+      <div class="alert" id="gate-alert"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input id="gate-code" placeholder="Código del torneo" style="flex:1;min-width:200px;text-transform:uppercase;font-family:monospace">
+        <button class="btn btn-primary" style="width:auto;padding:0 26px" id="btn-gate">Continuar</button>
+      </div>
+    </div>
+
     <div class="card" id="insc-form-wrap">
       <div class="section-title"><span class="dot"></span> Datos del equipo</div>
       <div class="grid">
@@ -231,7 +241,7 @@ input[readonly].locked{background:#f0fdf4;color:#166534;cursor:not-allowed}
 
 <script>
 const API = '/api/inscripcion';
-let torneos = [], torneoActual = null, editCodigo = null, editMaestro = '';
+let torneos = [], torneoActual = null, editCodigo = null, editMaestro = '', accesoCodigo = '';
 
 // ── Tabs ──
 document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
@@ -313,10 +323,40 @@ function activarTorneo(t) {
       <span>📅 ${fmtRango(t.FechaInicio, t.FechaFin)}</span>
       <span>👥 ${t.JugadoresPorEquipo} jugadores por equipo</span>
     </div>`;
+  // Modo 'codigo': pedir el código del torneo antes de mostrar el formulario
+  accesoCodigo = '';
+  const gate = document.getElementById('insc-gate');
+  const form = document.getElementById('insc-form-wrap');
+  if (t.ModoAcceso === 'codigo') {
+    gate.classList.remove('hidden');
+    document.getElementById('gate-alert').className = 'alert';
+    document.getElementById('gate-code').value = '';
+    form.style.display = 'none';
+    return;
+  }
+  gate.classList.add('hidden');
+  mostrarFormularioInscripcion(t);
+}
+
+function mostrarFormularioInscripcion(t) {
   document.getElementById('insc-form-wrap').style.display = '';
   document.getElementById('insc-chip').textContent = `${t.JugadoresPorEquipo} jugadores por equipo`;
   generarJugadores(t.JugadoresPorEquipo);
 }
+
+document.getElementById('btn-gate').addEventListener('click', async () => {
+  const codigo = document.getElementById('gate-code').value.trim().toUpperCase();
+  if (!codigo) return showAlert('gate-alert', 'Ingresa el código del torneo', false);
+  try {
+    const r = await fetch(API + '/verificar-codigo', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({torneoId: torneoActual.Id, codigo})});
+    const d = await r.json();
+    if (!d.success || !d.valido) return showAlert('gate-alert', 'Código inválido para este torneo', false);
+    accesoCodigo = codigo;
+    document.getElementById('insc-gate').classList.add('hidden');
+    mostrarFormularioInscripcion(torneoActual);
+  } catch(e) { showAlert('gate-alert', 'Error de conexión', false); }
+});
 
 function playerRowHTML(n, prefix, carnet) {
   const carnetCol = carnet ? `
@@ -434,6 +474,7 @@ document.getElementById('btn-inscribir').addEventListener('click', async () => {
   const btn = document.getElementById('btn-inscribir');
   const body = {
     torneoId: torneoActual.Id,
+    codigoAcceso: accesoCodigo,
     nombreEquipo: val('f-nombre'), club: val('f-club'), pais: val('f-pais'),
     representante: val('f-rep'), correoRepresentante: val('f-correo'), telefono: val('f-tel'),
     jugadores: recogerJugadores('p')

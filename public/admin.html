@@ -2479,6 +2479,15 @@ function trnModalForm(t) {
     </div>
     <label style="font-size:13px;font-weight:600">Cierre de modificación (opcional)</label>
     <input id="trn-f-limite" type="datetime-local" class="filter-select" style="width:100%;margin-bottom:10px" value="${v('FechaLimiteModificacion')?String(v('FechaLimiteModificacion')).slice(0,16):''}">
+    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Modo de inscripción</label>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500">
+        <input type="radio" name="trn-f-modo" value="publico" ${(!t||t.ModoAcceso!=='codigo')?'checked':''} style="width:auto;height:auto"> Pública — cualquiera puede inscribir y editar su equipo
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500">
+        <input type="radio" name="trn-f-modo" value="codigo" ${(t&&t.ModoAcceso==='codigo')?'checked':''} style="width:auto;height:auto"> Con código — se pide el código del torneo para inscribir/modificar
+      </label>
+    </div>
     <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin-top:6px">
       <input type="checkbox" id="trn-f-busqueda" ${(!t||t.BusquedaJugadores)?'checked':''}> Activar búsqueda de jugadores existentes
     </label>
@@ -2487,9 +2496,9 @@ function trnModalForm(t) {
     </label>
     <small style="display:block;color:var(--text-2);margin-top:4px;line-height:1.4">Al activarlo, en el formulario público cada jugador tendrá un campo de <b>carnet</b>: al escribirlo se autocompleta el nombre desde la base de la federación.</small>
     ${t ? `<div style="margin-top:12px;padding:10px 12px;background:var(--bg-2,#f8fafc);border:1px solid var(--border);border-radius:8px">
-      <div style="font-size:12px;font-weight:600;color:var(--text-2)">Código maestro (editar todos los equipos)</div>
+      <div style="font-size:12px;font-weight:600;color:var(--text-2)">Código del torneo (maestro)</div>
       <code style="font-size:15px;font-weight:700;letter-spacing:.5px">${t.CodigoMaestro || '— se generará al guardar —'}</code>
-      <div style="font-size:11px;color:var(--text-2);margin-top:2px">Compártelo solo con la organización. Permite editar cualquier equipo del torneo desde "Editar mi equipo".</div>
+      <div style="font-size:11px;color:var(--text-2);margin-top:2px">Permite editar cualquier equipo desde "Editar mi equipo"${t.ModoAcceso==='codigo'?' y es el código requerido para inscribir en este torneo':''}. Compártelo solo con la organización.</div>
     </div>` : `<small style="display:block;color:var(--text-2);margin-top:10px">Se generará un <b>código maestro</b> al crear el torneo (para editar todos los equipos).</small>`}`;
 }
 function trnAbrirModal() {
@@ -2511,7 +2520,8 @@ async function trnGuardar(id) {
     fechaLimiteModificacion: document.getElementById('trn-f-limite').value || null,
     estado: document.getElementById('trn-f-estado').value,
     busquedaJugadores: document.getElementById('trn-f-busqueda').checked,
-    consultarCarnet: document.getElementById('trn-f-carnet').checked
+    consultarCarnet: document.getElementById('trn-f-carnet').checked,
+    modoAcceso: (document.querySelector('input[name="trn-f-modo"]:checked')||{}).value || 'publico'
   };
   if (!body.nombre) { toast('El nombre es requerido', 'error'); return; }
   const d = id

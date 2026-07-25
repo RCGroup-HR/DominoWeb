@@ -205,7 +205,7 @@ function emailValido(e) {
 exports.listarTorneosAbiertos = async (req, res) => {
     try {
         const [torneos] = await pool.query(
-            `SELECT Id, Nombre, Lugar, FechaInicio, FechaFin, JugadoresPorEquipo, BusquedaJugadores, ConsultarCarnet, Estado
+            `SELECT Id, Nombre, Lugar, FechaInicio, FechaFin, JugadoresPorEquipo, BusquedaJugadores, ConsultarCarnet, ModoAcceso, Estado
              FROM insc_torneos
              WHERE Estado = 'abierto'
              ORDER BY FechaInicio IS NULL, FechaInicio ASC, Id DESC`
@@ -222,7 +222,7 @@ exports.getTorneo = async (req, res) => {
     try {
         const [[torneo]] = await pool.query(
             `SELECT Id, Nombre, Lugar, FechaInicio, FechaFin, JugadoresPorEquipo,
-                    FechaLimiteModificacion, BusquedaJugadores, ConsultarCarnet, Estado
+                    FechaLimiteModificacion, BusquedaJugadores, ConsultarCarnet, ModoAcceso, Estado
              FROM insc_torneos WHERE Id = ?`,
             [req.params.id]
         );
@@ -298,6 +298,22 @@ exports.buscarPorCarnet = async (req, res) => {
     }
 };
 
+// POST /api/inscripcion/verificar-codigo  body: { torneoId, codigo }
+// Valida el código de acceso (CodigoMaestro) de un torneo en modo 'codigo'.
+exports.verificarCodigoTorneo = async (req, res) => {
+    try {
+        const torneoId = parseInt(req.body.torneoId, 10);
+        const codigo = (req.body.codigo || '').trim().toUpperCase();
+        if (!torneoId || !codigo) return res.json({ success: true, valido: false });
+        const [[t]] = await pool.query('SELECT CodigoMaestro FROM insc_torneos WHERE Id = ?', [torneoId]);
+        const valido = !!(t && t.CodigoMaestro && t.CodigoMaestro === codigo);
+        res.json({ success: true, valido });
+    } catch (error) {
+        console.error('verificarCodigoTorneo:', error.message);
+        res.status(500).json({ success: false, message: 'Error al verificar el código' });
+    }
+};
+
 // GET /api/inscripcion/equipos?torneo=&q=&pais=  → búsqueda pública (sin datos sensibles)
 exports.buscarEquiposPublico = async (req, res) => {
     try {
@@ -366,13 +382,21 @@ exports.inscribirEquipo = async (req, res) => {
 
         // Torneo válido y abierto
         const [[torneo]] = await conn.query(
-            'SELECT Id, JugadoresPorEquipo, BusquedaJugadores, ConsultarCarnet, Estado FROM insc_torneos WHERE Id = ?',
+            'SELECT Id, JugadoresPorEquipo, BusquedaJugadores, ConsultarCarnet, ModoAcceso, CodigoMaestro, Estado FROM insc_torneos WHERE Id = ?',
             [torneoId]
         );
         if (!torneo) { await conn.rollback(); return res.status(404).json({ success: false, message: 'Torneo no encontrado' }); }
         if (torneo.Estado !== 'abierto') {
             await conn.rollback();
             return res.status(400).json({ success: false, message: 'Las inscripciones de este torneo están cerradas' });
+        }
+        // Modo 'codigo': exige el código del torneo para poder inscribir
+        if (torneo.ModoAcceso === 'codigo') {
+            const codigoAcceso = (b.codigoAcceso || '').trim().toUpperCase();
+            if (!codigoAcceso || codigoAcceso !== torneo.CodigoMaestro) {
+                await conn.rollback();
+                return res.status(403).json({ success: false, message: 'Este torneo requiere un código válido para inscribir equipos' });
+            }
         }
         if (jugadoresValidos.length > torneo.JugadoresPorEquipo) {
             await conn.rollback();
@@ -598,11 +622,12 @@ exports.adminCrearTorneo = async (req, res) => {
         const codigoMaestro = await generarCodigoMaestro(pool);
         const [r] = await pool.query(
             `INSERT INTO insc_torneos
-             (Nombre, Lugar, FechaInicio, FechaFin, JugadoresPorEquipo, FechaLimiteModificacion, BusquedaJugadores, ConsultarCarnet, CodigoMaestro, Estado)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (Nombre, Lugar, FechaInicio, FechaFin, JugadoresPorEquipo, FechaLimiteModificacion, BusquedaJugadores, ConsultarCarnet, CodigoMaestro, ModoAcceso, Estado)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [b.nombre.trim(), (b.lugar || '').trim() || null, b.fechaInicio || null, b.fechaFin || null,
              parseInt(b.jugadoresPorEquipo) || 4, b.fechaLimiteModificacion || null,
-             b.busquedaJugadores ? 1 : 0, b.consultarCarnet ? 1 : 0, codigoMaestro, b.estado || 'borrador']
+             b.busquedaJugadores ? 1 : 0, b.consultarCarnet ? 1 : 0, codigoMaestro,
+             b.modoAcceso === 'codigo' ? 'codigo' : 'publico', b.estado || 'borrador']
         );
         res.json({ success: true, message: 'Torneo creado', data: { id: r.insertId } });
     } catch (error) {
@@ -624,11 +649,12 @@ exports.adminActualizarTorneo = async (req, res) => {
         await pool.query(
             `UPDATE insc_torneos
              SET Nombre = ?, Lugar = ?, FechaInicio = ?, FechaFin = ?, JugadoresPorEquipo = ?,
-                 FechaLimiteModificacion = ?, BusquedaJugadores = ?, ConsultarCarnet = ?, Estado = ?
+                 FechaLimiteModificacion = ?, BusquedaJugadores = ?, ConsultarCarnet = ?, ModoAcceso = ?, Estado = ?
              WHERE Id = ?`,
             [b.nombre, (b.lugar || '').trim() || null, b.fechaInicio || null, b.fechaFin || null,
              parseInt(b.jugadoresPorEquipo) || 4,
-             b.fechaLimiteModificacion || null, b.busquedaJugadores ? 1 : 0, b.consultarCarnet ? 1 : 0, b.estado, req.params.id]
+             b.fechaLimiteModificacion || null, b.busquedaJugadores ? 1 : 0, b.consultarCarnet ? 1 : 0,
+             b.modoAcceso === 'codigo' ? 'codigo' : 'publico', b.estado, req.params.id]
         );
         res.json({ success: true, message: 'Torneo actualizado' });
     } catch (error) {

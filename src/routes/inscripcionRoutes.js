@@ -14,6 +14,7 @@ router.get('/torneos/:id',  ctrl.getTorneo);
 router.get('/equipos',      ctrl.buscarEquiposPublico);
 router.get('/jugadores',    ctrl.buscarJugadores);
 router.get('/carnet/:carnet', ctrl.buscarPorCarnet);
+router.post('/verificar-codigo', ctrl.verificarCodigoTorneo);
 
 // Inscribir un equipo
 router.post('/equipos',     ctrl.inscribirEquipo);

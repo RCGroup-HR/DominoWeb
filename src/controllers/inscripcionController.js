@@ -369,7 +369,8 @@ exports.inscribirEquipo = async (req, res) => {
         if (!torneoId) return res.status(400).json({ success: false, message: 'Torneo requerido' });
         if (!nombreEquipo) return res.status(400).json({ success: false, message: 'El nombre del equipo es requerido' });
         if (!representante) return res.status(400).json({ success: false, message: 'El representante es requerido' });
-        if (!emailValido(correo)) return res.status(400).json({ success: false, message: 'Correo del representante inválido' });
+        // El correo es opcional; solo se valida el formato si viene escrito
+        if (correo && !emailValido(correo)) return res.status(400).json({ success: false, message: 'Correo del representante inválido' });
 
         // En modo carnet, un jugador es válido si trae nombre O nº de carnet
         const tieneCarnet = j => parseInt(j.carnet, 10) > 0;
@@ -687,7 +688,7 @@ exports.adminGetEquipo = async (req, res) => {
         const [[equipo]] = await pool.query('SELECT * FROM vista_insc_equipos_admin WHERE Id = ?', [req.params.id]);
         if (!equipo) return res.status(404).json({ success: false, message: 'Equipo no encontrado' });
         const [jugadores] = await pool.query(
-            `SELECT j.Id, j.CodigoJugador, j.NombreCompleto, j.Genero, j.FechaNacimiento, j.Telefono, ej.Posicion
+            `SELECT j.Id, j.CodigoJugador, j.NombreCompleto, j.Carnet, j.Genero, j.FechaNacimiento, j.Telefono, ej.Posicion
              FROM insc_equipo_jugador ej JOIN insc_jugadores j ON j.Id = ej.JugadorId
              WHERE ej.EquipoId = ? ORDER BY ej.Posicion ASC`,
             [equipo.Id]
@@ -753,10 +754,12 @@ async function consultarJugadoresPorEquipo(torneo) {
     const filtro = torneo ? 'WHERE e.TorneoId = ?' : '';
     const [rows] = await pool.query(
         `SELECT e.NombreEquipo, e.CodigoEquipo, e.Pais, e.Estado AS EstadoEquipo,
-                ej.Posicion, j.NombreCompleto, j.Genero, j.CodigoJugador
+                ej.Posicion, j.NombreCompleto, j.Genero, j.CodigoJugador, j.Carnet,
+                t.ConsultarCarnet
          FROM insc_equipo_jugador ej
          JOIN insc_equipos e   ON e.Id = ej.EquipoId
          JOIN insc_jugadores j ON j.Id = ej.JugadorId
+         JOIN insc_torneos t   ON t.Id = e.TorneoId
          ${filtro}
          ORDER BY e.NombreEquipo ASC, ej.Posicion ASC`,
         params
@@ -779,18 +782,23 @@ exports.adminListarJugadores = async (req, res) => {
 exports.adminExportJugadores = async (req, res) => {
     try {
         const rows = await consultarJugadoresPorEquipo(req.query.torneo);
+        // La columna Carnet solo aparece si el torneo trabaja por carnet
+        const conCarnet = rows.some(r => r.ConsultarCarnet || r.Carnet);
         const data = rows.map(r => ({
             'Equipo':         r.NombreEquipo,
             'Código equipo':  r.CodigoEquipo,
             'País':           r.Pais || '',
             'Pos.':           r.Posicion,
+            ...(conCarnet ? { 'Carnet': r.Carnet || '' } : {}),
             'Jugador':        r.NombreCompleto,
             'Género':         r.Genero || '',
             'Código jugador': r.CodigoJugador,
             'Estado equipo':  r.EstadoEquipo
         }));
         const ws = XLSX.utils.json_to_sheet(data);
-        ws['!cols'] = [{ wch: 26 }, { wch: 14 }, { wch: 16 }, { wch: 6 }, { wch: 28 }, { wch: 12 }, { wch: 14 }, { wch: 14 }];
+        ws['!cols'] = [{ wch: 26 }, { wch: 14 }, { wch: 16 }, { wch: 6 },
+                       ...(conCarnet ? [{ wch: 10 }] : []),
+                       { wch: 28 }, { wch: 12 }, { wch: 14 }, { wch: 14 }];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Jugadores');
         const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });

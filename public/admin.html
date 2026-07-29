@@ -897,10 +897,10 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Equipo</th><th style="width:50px">#</th><th>Jugador</th><th style="width:120px">Género</th><th style="width:90px">País</th></tr>
+                <tr><th>Equipo</th><th style="width:50px">#</th><th id="trn-jug-th-carnet" style="width:90px;display:none">Carnet</th><th>Jugador</th><th style="width:120px">Género</th><th style="width:90px">País</th></tr>
               </thead>
               <tbody id="trn-jug-tbody">
-                <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-2)">Selecciona un torneo…</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-2)">Selecciona un torneo…</td></tr>
               </tbody>
             </table>
           </div>
@@ -2332,13 +2332,17 @@ async function trnCargarJugadores() {
   const d = await api(TRN_API + '/jugadores?torneo=' + trnId);
   const rows = d?.data || [];
   const tb = document.getElementById('trn-jug-tbody');
-  if (!rows.length) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-2)">Aún no hay jugadores inscritos.</td></tr>'; return; }
+  // La columna Carnet solo se muestra en torneos que trabajan por carnet
+  const conCarnet = rows.some(r => r.ConsultarCarnet || r.Carnet);
+  document.getElementById('trn-jug-th-carnet').style.display = conCarnet ? '' : 'none';
+  if (!rows.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-2)">Aún no hay jugadores inscritos.</td></tr>'; return; }
   let last = null;
   tb.innerHTML = rows.map(r => {
     const nuevo = r.NombreEquipo !== last; last = r.NombreEquipo;
     return `<tr style="${nuevo ? 'border-top:2px solid var(--border)' : ''}">
       <td>${nuevo ? `<b>${r.NombreEquipo}</b><br><span style="font-size:11px;color:var(--text-2);font-family:monospace">${r.CodigoEquipo}</span>` : ''}</td>
       <td>${r.Posicion}</td>
+      ${conCarnet ? `<td style="font-family:monospace;font-weight:600">${r.Carnet || '—'}</td>` : ''}
       <td>${r.NombreCompleto}</td>
       <td>${generoTxt(r.Genero)}</td>
       <td>${nuevo ? (r.Pais || '—') : ''}</td>
@@ -2370,6 +2374,8 @@ async function trnSetEstado(id, estado) {
     jugadoresPorEquipo: t.JugadoresPorEquipo,
     fechaLimiteModificacion: t.FechaLimiteModificacion ? String(t.FechaLimiteModificacion).slice(0,19).replace('T',' ') : null,
     busquedaJugadores: !!t.BusquedaJugadores,
+    consultarCarnet: !!t.ConsultarCarnet,
+    modoAcceso: t.ModoAcceso || 'publico',
     estado
   };
   const d = await api(TRN_API + '/torneos/' + id, { method:'PUT', body: JSON.stringify(body) });
@@ -2444,16 +2450,17 @@ async function trnVer(id) {
   const d = await api(TRN_API + '/equipos/' + id);
   if (!d?.success) return;
   const e = d.data;
-  const jugs = (e.Jugadores||[]).map((j,i) => `<tr><td>${i+1}</td><td>${j.NombreCompleto}</td><td>${j.Genero||'—'}</td><td>${j.Telefono||'—'}</td></tr>`).join('');
+  const conCarnet = (e.Jugadores||[]).some(j => j.Carnet);
+  const jugs = (e.Jugadores||[]).map((j,i) => `<tr><td>${i+1}</td>${conCarnet ? `<td style="font-family:monospace;font-weight:600">${j.Carnet||'—'}</td>` : ''}<td>${j.NombreCompleto}</td><td>${j.Genero||'—'}</td><td>${j.Telefono||'—'}</td></tr>`).join('');
   openModal(`${e.NombreEquipo} · ${e.CodigoEquipo}`, `
     <div style="font-size:14px;line-height:1.9">
       <b>Club:</b> ${e.Club||'—'} &nbsp;·&nbsp; <b>País:</b> ${e.Pais||'—'}<br>
       <b>Representante:</b> ${e.Representante}<br>
-      <b>Correo:</b> ${e.CorreoRepresentante} &nbsp;·&nbsp; <b>Tel:</b> ${e.Telefono||'—'}
+      <b>Correo:</b> ${e.CorreoRepresentante || '—'} &nbsp;·&nbsp; <b>Tel:</b> ${e.Telefono||'—'}
     </div>
     <div class="table-wrap" style="margin-top:14px"><table>
-      <thead><tr><th style="width:40px">#</th><th>Jugador</th><th>Género</th><th>Teléfono</th></tr></thead>
-      <tbody>${jugs || '<tr><td colspan="4" style="color:var(--text-2)">Sin jugadores</td></tr>'}</tbody>
+      <thead><tr><th style="width:40px">#</th>${conCarnet ? '<th style="width:90px">Carnet</th>' : ''}<th>Jugador</th><th>Género</th><th>Teléfono</th></tr></thead>
+      <tbody>${jugs || '<tr><td colspan="5" style="color:var(--text-2)">Sin jugadores</td></tr>'}</tbody>
     </table></div>`,
     `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>`);
 }
